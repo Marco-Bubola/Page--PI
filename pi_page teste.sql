@@ -1,75 +1,52 @@
--- phpMyAdmin SQL Dump
--- version 5.2.1
--- https://www.phpmyadmin.net/
---
--- Host: 127.0.0.1
--- Tempo de geração: 31/05/2025 às 20:00
--- Versão do servidor: 9.2.0
--- Versão do PHP: 8.2.12
-
-SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-START TRANSACTION;
-SET time_zone = "+00:00";
-
-
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
-
---
--- Banco de dados: `pi_page`
---
+-- Criação do banco
 CREATE DATABASE IF NOT EXISTS `pi_page` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
 USE `pi_page`;
 
--- --------------------------------------------------------
+-- -------------------------
+-- Tabela: usuarios
+-- -------------------------
+CREATE TABLE usuarios (
+  id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  nome VARCHAR(100) NOT NULL,
+  email VARCHAR(100) NOT NULL UNIQUE,
+  senha VARCHAR(255) NOT NULL,
+  tipo ENUM('professor', 'admin', 'coordenador') NOT NULL
+);
 
---
--- Estrutura para tabela `usuarios`
---
-
-CREATE TABLE `usuarios` (
-  `id` int NOT NULL,
-  `nome` varchar(100) NOT NULL,
-  `email` varchar(100) NOT NULL,
-  `senha` varchar(255) NOT NULL,
-  `tipo` enum('professor','admin','coordenador') NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Despejando dados para a tabela `usuarios`
---
-
-INSERT INTO `usuarios` (`id`, `nome`, `email`, `senha`, `tipo`) VALUES
-(1, 'marco', 'marcobubola@hotmail.com', '12345', 'admin'),
-(3, 'professor ', 'professor@gmail.com', '12345', 'professor'),
-(4, 'coordenador ', 'coordenador@gmail.com', '12345', 'coordenador');
-
---
--- Índices para tabelas despejadas
---
-
---
--- Índices de tabela `usuarios`
---
-ALTER TABLE `usuarios`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `email` (`email`);
-
---
-ALTER TABLE `usuarios`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
-COMMIT;
-USE `pi_page`;
-
--- Tabela de Disciplinas (Matérias)
+-- -------------------------
+-- Tabela: disciplinas
+-- -------------------------
 CREATE TABLE disciplinas (
   id INT AUTO_INCREMENT PRIMARY KEY,
   nome VARCHAR(100) NOT NULL UNIQUE
 );
 
--- Plano de aula por disciplina
+-- -------------------------
+-- Tabela: turmas
+-- -------------------------
+CREATE TABLE turmas (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nome VARCHAR(100) NOT NULL,
+  ano_letivo YEAR NOT NULL,
+  turno ENUM('manha', 'tarde', 'noite') DEFAULT 'manha'
+);
+
+-- -------------------------
+-- Tabela: turma_disciplinas (ligação entre turmas e disciplinas)
+-- -------------------------
+CREATE TABLE turma_disciplinas (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  turma_id INT NOT NULL,
+  disciplina_id INT NOT NULL,
+  professor_id INT,
+  FOREIGN KEY (turma_id) REFERENCES turmas(id),
+  FOREIGN KEY (disciplina_id) REFERENCES disciplinas(id),
+  FOREIGN KEY (professor_id) REFERENCES usuarios(id)
+);
+
+-- -------------------------
+-- Tabela: planos (planos de aula por disciplina)
+-- -------------------------
 CREATE TABLE planos (
   id INT AUTO_INCREMENT PRIMARY KEY,
   disciplina_id INT NOT NULL,
@@ -82,7 +59,9 @@ CREATE TABLE planos (
   FOREIGN KEY (criado_por) REFERENCES usuarios(id)
 );
 
-
+-- -------------------------
+-- Tabela: capitulos (capítulos dos planos)
+-- -------------------------
 CREATE TABLE capitulos (
   id INT AUTO_INCREMENT PRIMARY KEY,
   plano_id INT NOT NULL,
@@ -92,8 +71,9 @@ CREATE TABLE capitulos (
   FOREIGN KEY (plano_id) REFERENCES planos(id)
 );
 
-
--- Tópicos do capítulo (os "checkboxes")
+-- -------------------------
+-- Tabela: topicos (tópicos/checkboxes de cada capítulo)
+-- -------------------------
 CREATE TABLE topicos (
   id INT AUTO_INCREMENT PRIMARY KEY,
   capitulo_id INT NOT NULL,
@@ -102,19 +82,25 @@ CREATE TABLE topicos (
   FOREIGN KEY (capitulo_id) REFERENCES capitulos(id)
 );
 
--- Registro de aulas realizadas
+-- -------------------------
+-- Tabela: aulas (registro de aula por turma e disciplina)
+-- -------------------------
 CREATE TABLE aulas (
   id INT AUTO_INCREMENT PRIMARY KEY,
   professor_id INT NOT NULL,
   disciplina_id INT NOT NULL,
+  turma_id INT NOT NULL,
   data DATE NOT NULL,
   comentario TEXT,
   criado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (professor_id) REFERENCES usuarios(id),
-  FOREIGN KEY (disciplina_id) REFERENCES disciplinas(id)
+  FOREIGN KEY (disciplina_id) REFERENCES disciplinas(id),
+  FOREIGN KEY (turma_id) REFERENCES turmas(id)
 );
 
--- Tópicos ministrados em cada aula
+-- -------------------------
+-- Tabela: topicos_ministrados (o que foi dado em aula)
+-- -------------------------
 CREATE TABLE topicos_ministrados (
   id INT AUTO_INCREMENT PRIMARY KEY,
   aula_id INT NOT NULL,
@@ -122,7 +108,8 @@ CREATE TABLE topicos_ministrados (
   FOREIGN KEY (aula_id) REFERENCES aulas(id),
   FOREIGN KEY (topico_id) REFERENCES topicos(id)
 );
-
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+-- Usuários
+INSERT INTO usuarios (nome, email, senha, tipo) VALUES
+('marco', 'marcobubola@hotmail.com', '12345', 'admin'),
+('professor', 'professor@gmail.com', '12345', 'professor'),
+('coordenador', 'coordenador@gmail.com', '12345', 'coordenador');
