@@ -108,8 +108,17 @@ CREATE TABLE topicos_ministrados (
   FOREIGN KEY (aula_id) REFERENCES aulas(id),
   FOREIGN KEY (topico_id) REFERENCES topicos(id)
 );
+
+CREATE TABLE topicos_personalizados (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  aula_id INT NOT NULL,
+  descricao TEXT NOT NULL,
+  criado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (aula_id) REFERENCES aulas(id)
+);
 -- Usuários
 INSERT INTO usuarios (nome, email, senha, tipo) VALUES
 ('marco', 'marcobubola@hotmail.com', '12345', 'admin'),
 ('professor', 'professor@gmail.com', '12345', 'professor'),
 ('coordenador', 'coordenador@gmail.com', '12345', 'coordenador');
+
