@@ -58,15 +58,67 @@ ALTER TABLE `usuarios`
   ADD UNIQUE KEY `email` (`email`);
 
 --
--- AUTO_INCREMENT para tabelas despejadas
---
-
---
--- AUTO_INCREMENT de tabela `usuarios`
---
 ALTER TABLE `usuarios`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 COMMIT;
+USE `pi_page`;
+
+-- Tabela de Disciplinas (Matérias)
+CREATE TABLE disciplinas (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nome VARCHAR(100) NOT NULL UNIQUE
+);
+
+-- Plano de aula por disciplina
+CREATE TABLE planos (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  disciplina_id INT NOT NULL,
+  titulo VARCHAR(255) NOT NULL,
+  descricao TEXT,
+  criado_por INT NOT NULL,
+  criado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (disciplina_id) REFERENCES disciplinas(id),
+  FOREIGN KEY (criado_por) REFERENCES usuarios(id)
+);
+
+-- Capítulos do plano de aula
+CREATE TABLE capitulos (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  plano_id INT NOT NULL,
+  titulo VARCHAR(255) NOT NULL,
+  ordem INT,
+  FOREIGN KEY (plano_id) REFERENCES planos(id)
+);
+
+-- Tópicos do capítulo (os "checkboxes")
+CREATE TABLE topicos (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  capitulo_id INT NOT NULL,
+  descricao TEXT NOT NULL,
+  ordem INT,
+  FOREIGN KEY (capitulo_id) REFERENCES capitulos(id)
+);
+
+-- Registro de aulas realizadas
+CREATE TABLE aulas (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  professor_id INT NOT NULL,
+  disciplina_id INT NOT NULL,
+  data DATE NOT NULL,
+  comentario TEXT,
+  criado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (professor_id) REFERENCES usuarios(id),
+  FOREIGN KEY (disciplina_id) REFERENCES disciplinas(id)
+);
+
+-- Tópicos ministrados em cada aula
+CREATE TABLE topicos_ministrados (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  aula_id INT NOT NULL,
+  topico_id INT NOT NULL,
+  FOREIGN KEY (aula_id) REFERENCES aulas(id),
+  FOREIGN KEY (topico_id) REFERENCES topicos(id)
+);
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
