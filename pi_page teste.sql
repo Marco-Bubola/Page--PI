@@ -75,20 +75,23 @@ CREATE TABLE planos (
   disciplina_id INT NOT NULL,
   titulo VARCHAR(255) NOT NULL,
   descricao TEXT,
+  status ENUM('em_andamento', 'concluido') DEFAULT 'em_andamento',
   criado_por INT NOT NULL,
   criado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (disciplina_id) REFERENCES disciplinas(id),
   FOREIGN KEY (criado_por) REFERENCES usuarios(id)
 );
 
--- Capítulos do plano de aula
+
 CREATE TABLE capitulos (
   id INT AUTO_INCREMENT PRIMARY KEY,
   plano_id INT NOT NULL,
   titulo VARCHAR(255) NOT NULL,
   ordem INT,
+  status ENUM('em_andamento', 'concluido') DEFAULT 'em_andamento',
   FOREIGN KEY (plano_id) REFERENCES planos(id)
 );
+
 
 -- Tópicos do capítulo (os "checkboxes")
 CREATE TABLE topicos (
