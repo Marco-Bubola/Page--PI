@@ -24,6 +24,9 @@ include 'navbar.php';
     <div class="home-container">
         <h2>Bem-vindo Coordenador/Admin!</h2>
         <div class="user">Olá, <strong><?php echo htmlspecialchars($nome); ?></strong>!</div>
+        <?php if (isset($_SESSION['usuario_tipo']) && $_SESSION['usuario_tipo'] === 'admin'): ?>
+            <a href="gerenciar_usuarios.php" class="btn-admin" style="display:inline-block;margin-top:25px;padding:10px 20px;background:#007bff;color:#fff;border-radius:5px;text-decoration:none;">Gerenciar Usuários</a>
+        <?php endif; ?>
     </div>
 </body>
 </html> 

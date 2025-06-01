@@ -1,0 +1,5 @@
+# Ignora todos os arquivos da pasta
+*
+# Mas não ignora o .gitignore nem a logo
+!.gitignore
+!LOGO_PAGE.png 
