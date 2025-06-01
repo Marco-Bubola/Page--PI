@@ -64,6 +64,10 @@ if (
             $foto_perfil = $destino;
         }
     }
+    // Se não enviou imagem, usa o placeholder
+    if (empty($foto_perfil)) {
+        $foto_perfil = 'https://via.placeholder.com/70x70?text=Usuário';
+    }
     $stmt = $conn->prepare('SELECT id FROM usuarios WHERE email = ? OR cpf = ?');
     $stmt->bind_param('ss', $email, $cpf);
     $stmt->execute();
@@ -125,14 +129,27 @@ if (
     }
     $editar_complemento = $_POST['editar_complemento'] ?? '';
     $editar_observacoes = $_POST['editar_observacoes'] ?? '';
+    // Corrigir foto_perfil: só atualizar se uma nova imagem for enviada
     $foto_perfil = null;
+    $atualizar_foto = false;
     if (isset($_FILES['editar_foto_perfil']) && $_FILES['editar_foto_perfil']['error'] === UPLOAD_ERR_OK) {
         $ext = pathinfo($_FILES['editar_foto_perfil']['name'], PATHINFO_EXTENSION);
         $foto_nome = uniqid('foto_', true) . '.' . $ext;
         $destino = '../assets/img/' . $foto_nome;
         if (move_uploaded_file($_FILES['editar_foto_perfil']['tmp_name'], $destino)) {
             $foto_perfil = $destino;
+            $atualizar_foto = true;
         }
+    }
+    // Se não enviou imagem, busca a foto atual do banco
+    if (!$atualizar_foto) {
+        $stmt_foto = $conn->prepare('SELECT foto_perfil FROM usuarios WHERE id = ?');
+        $stmt_foto->bind_param('i', $editar_id);
+        $stmt_foto->execute();
+        $stmt_foto->bind_result($foto_perfil);
+        $stmt_foto->fetch();
+        $stmt_foto->close();
+        $atualizar_foto = true;
     }
     $editar_senha = $_POST['editar_senha'] ?? '';
     // Verifica se já existe outro usuário com o mesmo email ou CPF
@@ -146,6 +163,7 @@ if (
         exit();
     }
     $stmt_check->close();
+    // Monta a query de atualização do usuário
     if (!empty($editar_senha)) {
         $senha_hash = password_hash($editar_senha, PASSWORD_DEFAULT);
         $sql = 'UPDATE usuarios SET nome=?, sobrenome=?, email=?, senha=?, tipo=?, cpf=?, telefone=?, data_nascimento=?, foto_perfil=?, matricula=?, data_admissao=?, status=?, genero=?, observacoes=? WHERE id=?';
@@ -157,10 +175,25 @@ if (
         $stmt->bind_param('sssssssssssssi', $editar_nome, $editar_sobrenome, $editar_email, $editar_tipo, $editar_cpf, $editar_telefone, $editar_data_nascimento, $foto_perfil, $editar_matricula, $editar_data_admissao, $editar_status, $editar_genero, $editar_observacoes, $editar_id);
     }
     if ($stmt->execute()) {
-        $stmt_end = $conn->prepare('UPDATE enderecos SET cep=?, rua=?, numero=?, complemento=?, bairro=?, cidade=?, estado=? WHERE usuario_id=?');
-        $stmt_end->bind_param('sssssssi', $editar_cep, $editar_rua, $editar_numero, $editar_complemento, $editar_bairro, $editar_cidade, $editar_estado, $editar_id);
-        $stmt_end->execute();
-        $stmt_end->close();
+        // Corrigir endereço: se não existir, faz INSERT, senão faz UPDATE
+        $stmt_end_check = $conn->prepare('SELECT id FROM enderecos WHERE usuario_id = ?');
+        $stmt_end_check->bind_param('i', $editar_id);
+        $stmt_end_check->execute();
+        $stmt_end_check->store_result();
+        if ($stmt_end_check->num_rows > 0) {
+            // Já existe, faz UPDATE
+            $stmt_end = $conn->prepare('UPDATE enderecos SET cep=?, rua=?, numero=?, complemento=?, bairro=?, cidade=?, estado=? WHERE usuario_id=?');
+            $stmt_end->bind_param('sssssssi', $editar_cep, $editar_rua, $editar_numero, $editar_complemento, $editar_bairro, $editar_cidade, $editar_estado, $editar_id);
+            $stmt_end->execute();
+            $stmt_end->close();
+        } else {
+            // Não existe, faz INSERT
+            $stmt_end = $conn->prepare('INSERT INTO enderecos (usuario_id, cep, rua, numero, complemento, bairro, cidade, estado) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
+            $stmt_end->bind_param('isssssss', $editar_id, $editar_cep, $editar_rua, $editar_numero, $editar_complemento, $editar_bairro, $editar_cidade, $editar_estado);
+            $stmt_end->execute();
+            $stmt_end->close();
+        }
+        $stmt_end_check->close();
         echo json_encode(['status' => 'success', 'mensagem' => 'Usuário atualizado com sucesso!']);
     } else {
         echo json_encode(['status' => 'danger', 'mensagem' => 'Erro ao atualizar usuário.']);
@@ -241,21 +274,9 @@ $erro = isset($_GET['erro']) ? $_GET['erro'] : '';
             </form>
             <button class="btn btn-success ms-2" data-bs-toggle="modal" data-bs-target="#criarUsuarioModal">Criar Novo Usuário</button>
         </div>
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Foto</th>
-                <th>Nome</th>
-                <th>Email</th>
-                    <th>CPF</th>
-                <th>Tipo</th>
-                    <th>Status</th>
-                    <th>Telefone</th>
-                <th>Ação</th>
-            </tr>
-            </thead>
-            <tbody>
-            <?php while ($usuario = $result->fetch_assoc()): ?>
+        <!-- Grid de Cards de Usuários -->
+        <div class="row g-4">
+        <?php while ($usuario = $result->fetch_assoc()): ?>
             <?php
             // Buscar endereço do usuário
             $endereco = [
@@ -276,28 +297,27 @@ $erro = isset($_GET['erro']) ? $_GET['erro'] : '';
             }
             $stmt_end->close();
             ?>
-            <tr>
-                <td>
-                    <?php if (!empty($usuario['foto_perfil'])): ?>
-                        <img src="<?php echo $usuario['foto_perfil']; ?>" alt="Foto de Perfil" style="max-width:50px;max-height:50px;border-radius:50%;">
-                    <?php else: ?>
-                        <img src="https://via.placeholder.com/50x50?text=Usuário" alt="Sem Foto" style="max-width:50px;max-height:50px;border-radius:50%;">
-                    <?php endif; ?>
-                </td>
-                <td><?php echo htmlspecialchars($usuario['nome'] . ' ' . ($usuario['sobrenome'] ?? '')); ?></td>
-                    <td><?php echo htmlspecialchars($usuario['email']); ?></td>
-                <td><?php echo htmlspecialchars($usuario['cpf'] ?? ''); ?></td>
-                <td><?php echo htmlspecialchars($usuario['tipo']); ?></td>
-                <td><?php echo isset($usuario['status']) ? htmlspecialchars($usuario['status']) : ''; ?></td>
-                <td><?php echo htmlspecialchars($usuario['telefone'] ?? ''); ?></td>
-                <td>
-                    <!-- Botão Editar -->
-                    <button type="button" class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editarModal<?php echo $usuario['id']; ?>">Editar</button>
-                    <!-- Botão Excluir -->
-                    <button type="button" class="btn btn-danger btn-sm js-excluir-usuario" data-id="<?php echo $usuario['id']; ?>" data-bs-toggle="modal" data-bs-target="#excluirModal<?php echo $usuario['id']; ?>">Excluir</button>
-                </td>
-            </tr>
-
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body text-center">
+                        <?php if (!empty($usuario['foto_perfil'])): ?>
+                            <img src="<?php echo $usuario['foto_perfil']; ?>" alt="Foto de Perfil" class="rounded-circle mb-3" style="width:70px;height:70px;object-fit:cover;">
+                        <?php else: ?>
+                            <img src="https://via.placeholder.com/70x70?text=Usuário" alt="Sem Foto" class="rounded-circle mb-3" style="width:70px;height:70px;object-fit:cover;">
+                        <?php endif; ?>
+                        <h5 class="card-title mb-1"><?php echo htmlspecialchars($usuario['nome'] . ' ' . ($usuario['sobrenome'] ?? '')); ?></h5>
+                        <p class="mb-1"><strong>Email:</strong> <?php echo htmlspecialchars($usuario['email']); ?></p>
+                        <p class="mb-1"><strong>CPF:</strong> <?php echo htmlspecialchars($usuario['cpf'] ?? ''); ?></p>
+                        <p class="mb-1"><strong>Tipo:</strong> <?php echo htmlspecialchars($usuario['tipo']); ?></p>
+                        <p class="mb-1"><strong>Status:</strong> <?php echo isset($usuario['status']) ? htmlspecialchars($usuario['status']) : ''; ?></p>
+                        <p class="mb-2"><strong>Telefone:</strong> <?php echo htmlspecialchars($usuario['telefone'] ?? ''); ?></p>
+                        <div class="d-flex justify-content-center gap-2">
+                            <button type="button" class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editarModal<?php echo $usuario['id']; ?>">Editar</button>
+                            <button type="button" class="btn btn-danger btn-sm js-excluir-usuario" data-id="<?php echo $usuario['id']; ?>" data-bs-toggle="modal" data-bs-target="#excluirModal<?php echo $usuario['id']; ?>">Excluir</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <!-- Modal de Exclusão -->
             <div class="modal fade" id="excluirModal<?php echo $usuario['id']; ?>" tabindex="-1" aria-labelledby="excluirModalLabel<?php echo $usuario['id']; ?>" aria-hidden="true">
               <div class="modal-dialog">
@@ -319,7 +339,6 @@ $erro = isset($_GET['erro']) ? $_GET['erro'] : '';
                 </div>
               </div>
             </div>
-
             <!-- Modal de Edição XL -->
             <div class="modal fade" id="editarModal<?php echo $usuario['id']; ?>" tabindex="-1" aria-labelledby="editarModalLabel<?php echo $usuario['id']; ?>" aria-hidden="true">
               <div class="modal-dialog modal-xl">
@@ -445,10 +464,8 @@ $erro = isset($_GET['erro']) ? $_GET['erro'] : '';
                 </div>
               </div>
             </div>
-
-            <?php endwhile; ?>
-            </tbody>
-        </table>
+        <?php endwhile; ?>
+        </div>
     </div>
 
     <!-- Modal Criar Novo Usuário XL -->
