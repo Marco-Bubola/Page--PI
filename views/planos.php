@@ -162,7 +162,7 @@ if (!empty($planos)) {
                                             <?php endif; ?>
                                         </ul>
                                         <div class="d-flex gap-2 mt-auto">
-                                            <button class="btn btn-primary btn-sm" onclick="abrirModalEditarPlano(<?= $plano['id'] ?>, '<?= htmlspecialchars(addslashes($plano['titulo'])) ?>', <?= $plano['disciplina_id'] ?>, '<?= htmlspecialchars(addslashes($plano['descricao'])) ?>', '<?= $plano['status'] ?>', <?= $turma_id ?>)">Editar</button>
+                                            <button class="btn btn-primary btn-sm" onclick="abrirModalEditarPlano(<?= $plano['id'] ?>, '<?= htmlspecialchars(addslashes($plano['titulo'])) ?>', <?= $plano['disciplina_id'] ?>, '<?= htmlspecialchars(addslashes($plano['descricao'])) ?>', '<?= $plano['status'] ?>', <?= $turma_id ?>, '<?= isset($plano['data_inicio']) ? date('Y-m-d', strtotime($plano['data_inicio'])) : '' ?>', '<?= isset($plano['data_fim']) ? date('Y-m-d', strtotime($plano['data_fim'])) : '' ?>', '<?= htmlspecialchars($plano['objetivo_geral']) ?>')">Editar</button>
                                             <button class="btn btn-danger btn-sm" onclick="abrirModalExcluirPlano(<?= $plano['id'] ?>, '<?= htmlspecialchars(addslashes($plano['titulo'])) ?>')">Excluir</button>
                                             <a href="plano_detalhe.php?id=<?= $plano['id'] ?>" class="btn btn-secondary btn-sm">Gerenciar capítulos/tópicos</a>
                                         </div>
@@ -196,7 +196,7 @@ if (!empty($planos)) {
                                         <?php endif; ?>
                                     </ul>
                                     <div class="d-flex gap-2 mt-auto">
-                                        <button class="btn btn-primary btn-sm" onclick="abrirModalEditarPlano(<?= $plano['id'] ?>, '<?= htmlspecialchars(addslashes($plano['titulo'])) ?>', <?= $plano['disciplina_id'] ?>, '<?= htmlspecialchars(addslashes($plano['descricao'])) ?>', '<?= $plano['status'] ?>')">Editar</button>
+                                        <button class="btn btn-primary btn-sm" onclick="abrirModalEditarPlano(<?= $plano['id'] ?>, '<?= htmlspecialchars(addslashes($plano['titulo'])) ?>', <?= $plano['disciplina_id'] ?>, '<?= htmlspecialchars(addslashes($plano['descricao'])) ?>', '<?= $plano['status'] ?>', <?= $turma_id ?>, '<?= isset($plano['data_inicio']) ? date('Y-m-d', strtotime($plano['data_inicio'])) : '' ?>', '<?= isset($plano['data_fim']) ? date('Y-m-d', strtotime($plano['data_fim'])) : '' ?>', '<?= htmlspecialchars($plano['objetivo_geral']) ?>')">Editar</button>
                                         <button class="btn btn-danger btn-sm" onclick="abrirModalExcluirPlano(<?= $plano['id'] ?>, '<?= htmlspecialchars(addslashes($plano['titulo'])) ?>')">Excluir</button>
                                         <a href="plano_detalhe.php?id=<?= $plano['id'] ?>" class="btn btn-secondary btn-sm">Gerenciar capítulos/tópicos</a>
                                     </div>
@@ -215,7 +215,8 @@ if (!empty($planos)) {
         <span onclick="fecharModalPlano()" style="position:absolute;top:10px;right:15px;font-size:22px;cursor:pointer;">&times;</span>
         <h3 id="tituloModalPlano">Criar Plano de Aula</h3>
         <form id="formPlano" action="../controllers/criar_plano.php" method="POST">
-            <?php if ($turma_id): ?>
+            <?php if (
+                $turma_id): ?>
                 <input type="hidden" name="turma_id" id="turma_id_plano" value="<?= $turma_id ?>">
                 <div class="mb-2">
                     <label>Disciplina:</label>
@@ -235,6 +236,21 @@ if (!empty($planos)) {
             <?php endif; ?>
             <input type="text" name="titulo" placeholder="Título do plano" required class="form-control mb-2">
             <textarea name="descricao" placeholder="Descrição" class="form-control mb-2"></textarea>
+            <textarea name="objetivo_geral" placeholder="Objetivo Geral" class="form-control mb-2"></textarea>
+            <div class="row mb-2">
+                <div class="col">
+                    <label>Data início:</label>
+                    <input type="date" name="data_inicio" class="form-control">
+                </div>
+                <div class="col">
+                    <label>Data fim:</label>
+                    <input type="date" name="data_fim" class="form-control">
+                </div>
+            </div>
+            <select name="status" class="form-select mb-2">
+                <option value="em_andamento">Em andamento</option>
+                <option value="concluido">Concluído</option>
+            </select>
             <input type="hidden" name="redirect" value="planos.php<?= $turma_id ? '?turma_id=' . $turma_id : '' ?>">
             <button type="submit" class="btn btn-primary">Salvar</button>
         </form>
@@ -247,7 +263,8 @@ if (!empty($planos)) {
         <h3>Editar Plano de Aula</h3>
         <form id="formEditarPlano" action="../controllers/editar_plano.php" method="POST">
             <input type="hidden" name="id_plano" id="editar_id_plano">
-            <?php if ($turma_id): ?>
+            <?php if (
+                $turma_id): ?>
                 <input type="hidden" name="turma_id" id="editar_turma_id" value="<?= $turma_id ?>">
             <?php endif; ?>
             <div class="mb-2">
@@ -261,6 +278,17 @@ if (!empty($planos)) {
             </div>
             <input type="text" name="titulo" id="editar_titulo" placeholder="Título do plano" required class="form-control mb-2">
             <textarea name="descricao" id="editar_descricao" placeholder="Descrição" class="form-control mb-2"></textarea>
+            <textarea name="objetivo_geral" id="editar_objetivo_geral" placeholder="Objetivo Geral" class="form-control mb-2"></textarea>
+            <div class="row mb-2">
+                <div class="col">
+                    <label>Data início:</label>
+                    <input type="date" name="data_inicio" id="editar_data_inicio" class="form-control">
+                </div>
+                <div class="col">
+                    <label>Data fim:</label>
+                    <input type="date" name="data_fim" id="editar_data_fim" class="form-control">
+                </div>
+            </div>
             <select name="status" id="editar_status" class="form-select mb-2">
                 <option value="em_andamento">Em andamento</option>
                 <option value="concluido">Concluído</option>
@@ -290,7 +318,7 @@ function abrirModalPlano() {
 function fecharModalPlano() {
     document.getElementById('modalPlano').style.display = 'none';
 }
-function abrirModalEditarPlano(id, titulo, disciplina_id, descricao, status, turma_id) {
+function abrirModalEditarPlano(id, titulo, disciplina_id, descricao, status, turma_id, data_inicio, data_fim, objetivo_geral) {
     document.getElementById('editar_id_plano').value = id;
     document.getElementById('editar_titulo').value = titulo;
     document.getElementById('editar_disciplina_id').value = disciplina_id;
@@ -299,6 +327,9 @@ function abrirModalEditarPlano(id, titulo, disciplina_id, descricao, status, tur
     if (typeof turma_id !== 'undefined' && document.getElementById('editar_turma_id')) {
         document.getElementById('editar_turma_id').value = turma_id;
     }
+    document.getElementById('editar_data_inicio').value = data_inicio || '';
+    document.getElementById('editar_data_fim').value = data_fim || '';
+    document.getElementById('editar_objetivo_geral').value = objetivo_geral || '';
     document.getElementById('modalEditarPlano').style.display = 'block';
 }
 function fecharModalEditarPlano() {
