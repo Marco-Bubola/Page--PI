@@ -15,13 +15,15 @@ if (
     $titulo = trim($_POST['titulo']);
     $ordem = intval($_POST['ordem']);
     $status = $_POST['status'];
+    $descricao = isset($_POST['descricao']) ? trim($_POST['descricao']) : '';
+    $duracao = isset($_POST['duracao_estimativa']) && $_POST['duracao_estimativa'] !== '' ? intval($_POST['duracao_estimativa']) : null;
     $redirect = 'planos.php';
     if (isset($_POST['redirect']) && preg_match('/^[a-zA-Z0-9_]+\.php\?id=\d+$/', $_POST['redirect'])) {
         $redirect = $_POST['redirect'];
     }
     require_once '../config/conexao.php';
-    $stmt = $conn->prepare('UPDATE capitulos SET titulo = ?, ordem = ?, status = ? WHERE id = ?');
-    $stmt->bind_param('sisi', $titulo, $ordem, $status, $id);
+    $stmt = $conn->prepare('UPDATE capitulos SET titulo = ?, ordem = ?, status = ?, descricao = ?, duracao_estimativa = ? WHERE id = ?');
+    $stmt->bind_param('sissii', $titulo, $ordem, $status, $descricao, $duracao, $id);
     if ($stmt->execute()) {
         header('Location: ../views/' . $redirect . '&sucesso=capitulo_editado');
         exit();
