@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 01/06/2025 às 23:23
+-- Tempo de geração: 02/06/2025 às 03:29
 -- Versão do servidor: 9.2.0
 -- Versão do PHP: 8.2.12
 
@@ -29,6 +29,7 @@ USE `pi_page`;
 -- Estrutura para tabela `aulas`
 --
 
+DROP TABLE IF EXISTS `aulas`;
 CREATE TABLE `aulas` (
   `id` int NOT NULL,
   `professor_id` int NOT NULL,
@@ -45,6 +46,7 @@ CREATE TABLE `aulas` (
 -- Estrutura para tabela `capitulos`
 --
 
+DROP TABLE IF EXISTS `capitulos`;
 CREATE TABLE `capitulos` (
   `id` int NOT NULL,
   `plano_id` int NOT NULL,
@@ -59,6 +61,7 @@ CREATE TABLE `capitulos` (
 -- Estrutura para tabela `disciplinas`
 --
 
+DROP TABLE IF EXISTS `disciplinas`;
 CREATE TABLE `disciplinas` (
   `id` int NOT NULL,
   `nome` varchar(100) NOT NULL
@@ -70,6 +73,7 @@ CREATE TABLE `disciplinas` (
 -- Estrutura para tabela `enderecos`
 --
 
+DROP TABLE IF EXISTS `enderecos`;
 CREATE TABLE `enderecos` (
   `id` int NOT NULL,
   `usuario_id` int NOT NULL,
@@ -82,21 +86,16 @@ CREATE TABLE `enderecos` (
   `estado` varchar(2) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
---
--- Despejando dados para a tabela `enderecos`
---
-
-INSERT INTO `enderecos` (`id`, `usuario_id`, `cep`, `rua`, `numero`, `complemento`, `bairro`, `cidade`, `estado`) VALUES
-(4, 8, '13973043', 'Rua Nhambiquara de Tupã', '444', '222', 'Jardim Macucos', 'Itapira', 'SP');
-
 -- --------------------------------------------------------
 
 --
 -- Estrutura para tabela `planos`
 --
 
+DROP TABLE IF EXISTS `planos`;
 CREATE TABLE `planos` (
   `id` int NOT NULL,
+  `turma_id` int NOT NULL,
   `disciplina_id` int NOT NULL,
   `titulo` varchar(255) NOT NULL,
   `descricao` text,
@@ -111,6 +110,7 @@ CREATE TABLE `planos` (
 -- Estrutura para tabela `topicos`
 --
 
+DROP TABLE IF EXISTS `topicos`;
 CREATE TABLE `topicos` (
   `id` int NOT NULL,
   `capitulo_id` int NOT NULL,
@@ -124,6 +124,7 @@ CREATE TABLE `topicos` (
 -- Estrutura para tabela `topicos_ministrados`
 --
 
+DROP TABLE IF EXISTS `topicos_ministrados`;
 CREATE TABLE `topicos_ministrados` (
   `id` int NOT NULL,
   `aula_id` int NOT NULL,
@@ -136,6 +137,7 @@ CREATE TABLE `topicos_ministrados` (
 -- Estrutura para tabela `topicos_personalizados`
 --
 
+DROP TABLE IF EXISTS `topicos_personalizados`;
 CREATE TABLE `topicos_personalizados` (
   `id` int NOT NULL,
   `aula_id` int NOT NULL,
@@ -149,6 +151,7 @@ CREATE TABLE `topicos_personalizados` (
 -- Estrutura para tabela `turmas`
 --
 
+DROP TABLE IF EXISTS `turmas`;
 CREATE TABLE `turmas` (
   `id` int NOT NULL,
   `nome` varchar(100) NOT NULL,
@@ -162,6 +165,7 @@ CREATE TABLE `turmas` (
 -- Estrutura para tabela `turma_disciplinas`
 --
 
+DROP TABLE IF EXISTS `turma_disciplinas`;
 CREATE TABLE `turma_disciplinas` (
   `id` int NOT NULL,
   `turma_id` int NOT NULL,
@@ -175,6 +179,7 @@ CREATE TABLE `turma_disciplinas` (
 -- Estrutura para tabela `usuarios`
 --
 
+DROP TABLE IF EXISTS `usuarios`;
 CREATE TABLE `usuarios` (
   `id` int NOT NULL,
   `nome` varchar(100) NOT NULL,
@@ -202,8 +207,8 @@ CREATE TABLE `usuarios` (
 
 INSERT INTO `usuarios` (`id`, `nome`, `sobrenome`, `email`, `senha`, `tipo`, `cpf`, `telefone`, `data_nascimento`, `foto_perfil`, `matricula`, `data_admissao`, `status`, `data_criacao`, `data_ultimo_login`, `endereco`, `genero`, `observacoes`) VALUES
 (1, 'marco', NULL, 'marcobubola@hotmail.com', '12345', 'admin', NULL, NULL, NULL, NULL, NULL, NULL, 'ativo', '2025-06-01 15:11:01', NULL, NULL, NULL, NULL),
-(3, 'professor', 'bubola', 'professor@gmail.com', '12345', 'professor', '444444', '199841221111', '2025-06-02', '../assets/img/foto_683ca8d4ec4a55.59753861.png', '111111', '2025-06-03', 'ativo', '2025-06-01 15:11:01', NULL, NULL, 'Masculino', ''),
-(8, 'coordenador', 'tes', 'coordenador@hotmail.com', '$2y$10$wmoU0Uro1.nIIBUukXJph.jfcx.uG/URYc9FUY45ONPveXrd.tEdm', 'coordenador', '44444444444', '19984122111', '2025-06-01', NULL, '4444444444', '2025-06-01', 'ativo', '2025-06-01 16:09:16', NULL, NULL, 'Masculino', '');
+(3, 'professor', 'teste', 'professor@gmail.com', '12345', 'professor', '444444', '199841221111', '2025-06-02', '../assets/img/foto_683cc7f0aa7bd7.41819667.png', '111111', '2025-06-03', 'ativo', '2025-06-01 15:11:01', NULL, NULL, 'Masculino', ''),
+(8, 'coordenador', 'tes', 'coordenador@hotmail.com', '$2y$10$wmoU0Uro1.nIIBUukXJph.jfcx.uG/URYc9FUY45ONPveXrd.tEdm', 'coordenador', '44444444444', '19984122111', '2025-06-01', 'https://via.placeholder.com/70x70?text=Usuário', '4444444444', '2025-06-01', 'ativo', '2025-06-01 16:09:16', NULL, NULL, 'Masculino', '');
 
 --
 -- Índices para tabelas despejadas
@@ -223,7 +228,7 @@ ALTER TABLE `aulas`
 --
 ALTER TABLE `capitulos`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `plano_id` (`plano_id`);
+  ADD KEY `capitulos_ibfk_1` (`plano_id`);
 
 --
 -- Índices de tabela `disciplinas`
@@ -245,14 +250,15 @@ ALTER TABLE `enderecos`
 ALTER TABLE `planos`
   ADD PRIMARY KEY (`id`),
   ADD KEY `disciplina_id` (`disciplina_id`),
-  ADD KEY `criado_por` (`criado_por`);
+  ADD KEY `criado_por` (`criado_por`),
+  ADD KEY `planos_ibfk_3_idx` (`turma_id`);
 
 --
 -- Índices de tabela `topicos`
 --
 ALTER TABLE `topicos`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `capitulo_id` (`capitulo_id`);
+  ADD KEY `topicos_ibfk_1` (`capitulo_id`);
 
 --
 -- Índices de tabela `topicos_ministrados`
@@ -318,7 +324,7 @@ ALTER TABLE `disciplinas`
 -- AUTO_INCREMENT de tabela `enderecos`
 --
 ALTER TABLE `enderecos`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de tabela `planos`
@@ -378,7 +384,7 @@ ALTER TABLE `aulas`
 -- Restrições para tabelas `capitulos`
 --
 ALTER TABLE `capitulos`
-  ADD CONSTRAINT `capitulos_ibfk_1` FOREIGN KEY (`plano_id`) REFERENCES `planos` (`id`);
+  ADD CONSTRAINT `capitulos_ibfk_1` FOREIGN KEY (`plano_id`) REFERENCES `planos` (`id`) ON DELETE CASCADE;
 
 --
 -- Restrições para tabelas `enderecos`
@@ -397,7 +403,7 @@ ALTER TABLE `planos`
 -- Restrições para tabelas `topicos`
 --
 ALTER TABLE `topicos`
-  ADD CONSTRAINT `topicos_ibfk_1` FOREIGN KEY (`capitulo_id`) REFERENCES `capitulos` (`id`);
+  ADD CONSTRAINT `topicos_ibfk_1` FOREIGN KEY (`capitulo_id`) REFERENCES `capitulos` (`id`) ON DELETE CASCADE;
 
 --
 -- Restrições para tabelas `topicos_ministrados`
@@ -414,7 +420,7 @@ ALTER TABLE `topicos_personalizados`
 
 --
 -- Restrições para tabelas `turma_disciplinas`
---
+-- 
 ALTER TABLE `turma_disciplinas`
   ADD CONSTRAINT `turma_disciplinas_ibfk_1` FOREIGN KEY (`turma_id`) REFERENCES `turmas` (`id`),
   ADD CONSTRAINT `turma_disciplinas_ibfk_2` FOREIGN KEY (`disciplina_id`) REFERENCES `disciplinas` (`id`),
