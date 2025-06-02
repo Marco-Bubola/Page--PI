@@ -99,6 +99,8 @@ if ($capitulos) {
                 <div class="plano-label mb-2">Veja abaixo os capítulos e tópicos deste plano de aula. Você pode adicionar, editar ou excluir capítulos e tópicos conforme necessário.</div>
                 <div class="mb-2"><b>Disciplina:</b> <?= htmlspecialchars($plano['disciplina_nome']) ?> &nbsp;|&nbsp; <b>Status:</b> <span class="badge badge-status <?= $plano['status'] === 'concluido' ? 'bg-success' : 'bg-warning text-dark' ?>"> <?= $plano['status'] === 'concluido' ? 'Concluído' : 'Em andamento' ?> </span></div>
                 <div class="plano-meta mb-2">Criado em: <?= isset($plano['criado_em']) ? date('d/m/Y H:i', strtotime($plano['criado_em'])) : '-' ?></div>
+                <div class="plano-meta mb-2">Data início: <?= isset($plano['data_inicio']) ? date('d/m/Y', strtotime($plano['data_inicio'])) : '-' ?> | Data fim: <?= isset($plano['data_fim']) ? date('d/m/Y', strtotime($plano['data_fim'])) : '-' ?></div>
+                <div class="card-desc mb-2"><b>Objetivo Geral:</b> <?= nl2br(htmlspecialchars($plano['objetivo_geral'])) ?></div>
                 <div class="card-desc mb-2"> <?= nl2br(htmlspecialchars($plano['descricao'])) ?> </div>
             </div>
         </div>
@@ -119,6 +121,8 @@ if ($capitulos) {
                             <button class="btn btn-success btn-sm" onclick="abrirModalTopico(<?= $cap['id'] ?>)">Adicionar Tópico</button>
                         </div>
                     </div>
+                    <div class="mb-2"><b>Descrição:</b> <?= nl2br(htmlspecialchars($cap['descricao'])) ?></div>
+                    <div class="mb-2"><b>Duração estimada:</b> <?= $cap['duracao_estimativa'] ? $cap['duracao_estimativa'] . ' min' : '-' ?></div>
                     <div class="ms-3">
                         <b>Tópicos:</b>
                         <?php if (!empty($topicos[$cap['id']])): foreach ($topicos[$cap['id']] as $top): ?>
@@ -151,6 +155,8 @@ if ($capitulos) {
             <input type="hidden" name="id_capitulo" id="id_capitulo">
             <input type="text" name="titulo" id="titulo_capitulo" placeholder="Título do capítulo" required class="form-control mb-2">
             <input type="number" name="ordem" id="ordem_capitulo" placeholder="Ordem" required class="form-control mb-2">
+            <textarea name="descricao" id="descricao_capitulo" placeholder="Descrição do capítulo" class="form-control mb-2"></textarea>
+            <input type="number" name="duracao_estimativa" id="duracao_capitulo" placeholder="Duração estimada (min)" class="form-control mb-2">
             <select name="status" id="status_capitulo" class="form-select mb-2">
                 <option value="em_andamento">Em andamento</option>
                 <option value="concluido">Concluído</option>
@@ -208,6 +214,8 @@ function abrirModalCapitulo(plano_id) {
     document.getElementById('id_capitulo').value = '';
     document.getElementById('titulo_capitulo').value = '';
     document.getElementById('ordem_capitulo').value = '';
+    document.getElementById('descricao_capitulo').value = '';
+    document.getElementById('duracao_capitulo').value = '';
     document.getElementById('status_capitulo').value = 'em_andamento';
     document.getElementById('modalCapitulo').style.display = 'block';
 }
