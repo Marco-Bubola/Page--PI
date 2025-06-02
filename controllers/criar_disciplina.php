@@ -5,8 +5,11 @@ if (!isset($_SESSION['usuario_nome']) || ($_SESSION['usuario_tipo'] !== 'coorden
     exit();
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['nome_disciplina'])) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['nome_disciplina']) && isset($_POST['codigo_disciplina']) && isset($_POST['descricao_disciplina']) && isset($_POST['ativa_disciplina'])) {
     $nome = trim($_POST['nome_disciplina']);
+    $codigo = trim($_POST['codigo_disciplina']);
+    $descricao = trim($_POST['descricao_disciplina']);
+    $ativa = isset($_POST['ativa_disciplina']) && $_POST['ativa_disciplina'] == '1' ? 1 : 0;
     require_once '../config/conexao.php'; // ajuste o caminho se necessário
     
     // Prevenir duplicidade
@@ -25,8 +28,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['nome_disciplina'])) 
     }
     $stmt->close();
 
-    $stmt = $conn->prepare('INSERT INTO disciplinas (nome) VALUES (?)');
-    $stmt->bind_param('s', $nome);
+    $stmt = $conn->prepare('INSERT INTO disciplinas (nome, codigo, descricao, ativa) VALUES (?, ?, ?, ?)');
+    $stmt->bind_param('sssi', $nome, $codigo, $descricao, $ativa);
     if ($stmt->execute()) {
         $redirect = 'home_coordenador.php';
         if (isset($_POST['redirect']) && preg_match('/^[a-zA-Z0-9_]+\.php$/', $_POST['redirect'])) {
