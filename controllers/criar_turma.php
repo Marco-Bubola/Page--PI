@@ -13,14 +13,17 @@ if (
     $nome = trim($_POST['nome']);
     $ano_letivo = intval($_POST['ano_letivo']);
     $turno = $_POST['turno'];
+    $inicio = !empty($_POST['inicio']) ? $_POST['inicio'] : null;
+    $fim = !empty($_POST['fim']) ? $_POST['fim'] : null;
+    $status = isset($_POST['status']) ? $_POST['status'] : 'ativa';
     $disciplinas = isset($_POST['disciplinas']) ? $_POST['disciplinas'] : [];
     $redirect = 'turmas.php';
     if (isset($_POST['redirect']) && preg_match('/^[a-zA-Z0-9_]+\.php$/', $_POST['redirect'])) {
         $redirect = $_POST['redirect'];
     }
     require_once '../config/conexao.php';
-    $stmt = $conn->prepare('INSERT INTO turmas (nome, ano_letivo, turno) VALUES (?, ?, ?)');
-    $stmt->bind_param('sis', $nome, $ano_letivo, $turno);
+    $stmt = $conn->prepare('INSERT INTO turmas (nome, ano_letivo, turno, inicio, fim, status) VALUES (?, ?, ?, ?, ?, ?)');
+    $stmt->bind_param('sissss', $nome, $ano_letivo, $turno, $inicio, $fim, $status);
     if ($stmt->execute()) {
         $turma_id = $conn->insert_id;
         // Inserir vínculos em turma_disciplinas
