@@ -25,16 +25,18 @@ O **PAGE** é um sistema web desenvolvido como Projeto Integrador do curso de DS
 ### 1. Perfis de Usuário e Permissões
 
 #### Coordenador/Admin
-- Cria e gerencia disciplinas.
-- Cria e gerencia planos de aula (com capítulos e tópicos).
-- Visualiza todos os registros de aula dos professores.
-- Pode editar planos, capítulos e tópicos.
+- Cria, edita e exclui disciplinas.
+- Cria, edita e exclui turmas, vinculando múltiplas disciplinas a cada turma.
+- Cria, edita e exclui planos de aula, vinculando-os a turmas e disciplinas.
+- Gerencia capítulos e tópicos de cada plano de aula.
+- Visualiza todas as turmas, disciplinas, planos, capítulos e tópicos.
+- Visualiza e gerencia usuários (apenas admin).
+- Visualiza últimos planos criados e estatísticas do sistema.
 
 #### Professor
-- Visualiza as disciplinas e planos de aula disponíveis.
+- Visualiza as disciplinas e planos de aula disponíveis para suas turmas.
 - Visualiza capítulos e tópicos dos planos.
-- Registra aulas realizadas, marcando quais tópicos ministrou.
-- Pode adicionar um tópico extra vinculado ao capítulo e àquela aula específica.
+- Registra aulas realizadas, marcando tópicos ministrados e podendo adicionar tópicos extras.
 - Visualiza histórico de aulas ministradas.
 
 ---
@@ -42,55 +44,91 @@ O **PAGE** é um sistema web desenvolvido como Projeto Integrador do curso de DS
 ### 2. Planejamento das Telas (Homes)
 
 #### Home do Coordenador/Admin
-- Botão para criar disciplina.
-- Botão para criar plano de aula (escolhendo disciplina).
-- Listagem de planos de aula (com capítulos e tópicos).
-- Listagem de professores e seus registros de aula.
-- Opção para editar/excluir planos, capítulos e tópicos.
+- Cards de resumo (turmas, disciplinas, planos, usuários).
+- Carrossel de disciplinas em destaque.
+- Listagem de turmas, disciplinas e planos em cards, com status e ações rápidas.
+- Seção de últimos planos de aula criados.
+- Acesso ao gerenciamento de usuários (admin).
 
 #### Home do Professor
-- Lista de disciplinas e planos de aula disponíveis.
+- Cards de disciplinas e planos disponíveis.
 - Visualização dos capítulos e tópicos de cada plano.
-- Botão para registrar aula:
-  - Seleção de disciplina, plano, capítulo e tópicos ministrados.
-  - Campo para adicionar tópico extra (opcional, só para aquela aula).
-- Histórico de aulas ministradas (com tópicos extras destacados).
+- Botão para registrar aula (seleção de disciplina, plano, capítulo, tópicos e tópico extra).
+- Histórico de aulas ministradas.
 
----
-
-### 3. Fluxo de Registro de Aula (Professor)
-
-1. Professor acessa a tela "Registrar Aula".
-2. Seleciona disciplina e plano de aula.
-3. Seleciona capítulo ministrado.
-4. Marca os tópicos ministrados (checkbox).
-5. Adiciona um tópico extra (opcional).
-6. Salva o registro da aula, incluindo o tópico extra (se houver).
+#### Outras Telas
+- **Disciplinas:** CRUD completo em cards.
+- **Turmas:** CRUD completo em cards, seleção múltipla de disciplinas.
+- **Planos de Aula:** Cards detalhados, filtragem por turma, capítulos e status.
+- **Detalhe do Plano:** Visualização e gerenciamento de capítulos e tópicos.
+- **Login/Registro:** Telas modernas, com senha criptografada e opção de mostrar/ocultar senha.
+- **Gerenciar Usuários:** (admin) CRUD de usuários do sistema.
 
 ---
 
 ## Tecnologias Utilizadas
 
-- PHP (backend)
-- MySQL (banco de dados)
-- HTML, CSS, JavaScript (frontend)
-- XAMPP (ambiente de desenvolvimento local)
+- **PHP** (backend)
+- **MySQL** (banco de dados relacional)
+- **HTML5, CSS3, JavaScript** (frontend)
+- **Bootstrap 5** (componentes visuais e responsividade)
+- **Select2** (seleção múltipla de disciplinas)
+- **XAMPP** (ambiente de desenvolvimento local)
 
 ---
 
 ## Estrutura do Projeto
 
 ```
-/assets
-    /img         # Imagens e logo
-    /css         # Arquivos de estilo
-    /js          # Scripts JavaScript
-/config
-    conexao.php  # Conexão com o banco de dados
-/controllers    # Lógica de autenticação, registro, etc
-/views          # Telas do sistema (login, home, registro, etc)
-README.md
+Page--PI/
+│
+├── assets/
+│   ├── img/         # Imagens e logo do sistema
+│   ├── css/         # Arquivos de estilo customizados
+│   └── js/          # Scripts JavaScript customizados
+│
+├── config/
+│   └── conexao.php  # Script de conexão com o banco de dados MySQL
+│
+├── controllers/     # Lógica de backend (CRUD, autenticação, etc)
+│   ├── criar_turma.php           # Criação de turmas
+│   ├── editar_turma.php          # Edição de turmas
+│   ├── excluir_turma.php         # Exclusão de turmas
+│   ├── criar_disciplina.php      # Criação de disciplinas
+│   ├── editar_disciplina.php     # Edição de disciplinas
+│   ├── excluir_disciplina.php    # Exclusão de disciplinas
+│   ├── criar_plano.php           # Criação de planos de aula
+│   ├── editar_plano.php          # Edição de planos de aula
+│   ├── excluir_plano.php         # Exclusão de planos de aula
+│   ├── criar_capitulo.php        # Criação de capítulos
+│   ├── editar_capitulo.php       # Edição de capítulos
+│   ├── excluir_capitulo.php      # Exclusão de capítulos
+│   ├── criar_topico.php          # Criação de tópicos
+│   ├── editar_topico.php         # Edição de tópicos
+│   ├── excluir_topico.php        # Exclusão de tópicos
+│
+├── views/           # Telas do sistema (frontend)
+│   ├── login.php                # Tela de login
+│   ├── registro.php             # Tela de cadastro de usuário
+│   ├── home_coordenador.php     # Dashboard do coordenador/admin
+│   ├── home_professor.php       # Dashboard do professor
+│   ├── disciplinas.php          # CRUD de disciplinas
+│   ├── turmas.php               # CRUD de turmas
+│   ├── planos.php               # Listagem de planos de aula
+│   ├── plano_detalhe.php        # Detalhamento de plano de aula (capítulos/tópicos)
+│   ├── gerenciar_usuarios.php   # Gerenciamento de usuários (admin)
+│   ├── notificacao.php          # Componente de notificações
+│   ├── navbar.php               # Barra de navegação
+│   └── logout.php               # Logout do sistema
+│
+├── README.md        # Documentação do projeto
+└── ... (outros arquivos e pastas auxiliares)
 ```
+
+- **controllers/**: Cada arquivo é responsável por uma ação específica (criar, editar, excluir) de cada entidade do sistema (turma, disciplina, plano, capítulo, tópico).
+- **views/**: Cada arquivo representa uma tela ou componente visual do sistema, seguindo o padrão de responsividade e usabilidade.
+- **assets/**: Recursos estáticos (imagens, CSS, JS).
+- **config/**: Configuração de conexão com o banco de dados.
 
 ---
 
