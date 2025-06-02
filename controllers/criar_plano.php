@@ -16,6 +16,10 @@ if (
     $descricao = isset($_POST['descricao']) ? trim($_POST['descricao']) : '';
     $criado_por = $_SESSION['usuario_id'];
     $turma_id = intval($_POST['turma_id']);
+    $status = isset($_POST['status']) ? $_POST['status'] : 'em_andamento';
+    $data_inicio = !empty($_POST['data_inicio']) ? $_POST['data_inicio'] : null;
+    $data_fim = !empty($_POST['data_fim']) ? $_POST['data_fim'] : null;
+    $objetivo_geral = isset($_POST['objetivo_geral']) ? trim($_POST['objetivo_geral']) : '';
     $redirect = 'planos.php';
     if (isset($_POST['redirect']) && preg_match('/^[a-zA-Z0-9_]+\.php(\?turma_id=\d+)?$/', $_POST['redirect'])) {
         $redirect = $_POST['redirect'];
@@ -31,8 +35,8 @@ if (
         exit();
     }
     $stmt->close();
-    $stmt = $conn->prepare('INSERT INTO planos (turma_id, disciplina_id, titulo, descricao, criado_por) VALUES (?, ?, ?, ?, ?)');
-    $stmt->bind_param('iissi', $turma_id, $disciplina_id, $titulo, $descricao, $criado_por);
+    $stmt = $conn->prepare('INSERT INTO planos (turma_id, disciplina_id, titulo, descricao, status, criado_por, data_inicio, data_fim, objetivo_geral) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
+    $stmt->bind_param('iisssisss', $turma_id, $disciplina_id, $titulo, $descricao, $status, $criado_por, $data_inicio, $data_fim, $objetivo_geral);
     if ($stmt->execute()) {
         header('Location: ../views/' . $redirect . '?sucesso=plano_criado');
         exit();
