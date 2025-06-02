@@ -119,34 +119,47 @@ if ($result && $result->num_rows > 0) {
 </div>
 <!-- Modal de Criar/Editar Turma -->
 <div id="modalTurma" style="display:none;position:fixed;z-index:1000;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.4);">
-    <div style="background:#fff;padding:30px 20px;border-radius:8px;max-width:400px;margin:100px auto;position:relative;">
+    <div style="background:#fff;padding:30px 32px;border-radius:12px;max-width:700px;width:95vw;margin:60px auto;position:relative;">
         <span onclick="fecharModalTurma()" style="position:absolute;top:10px;right:15px;font-size:22px;cursor:pointer;">&times;</span>
         <h4 id="tituloModalTurma">Criar Turma</h4>
         <form id="formTurma" action="../controllers/criar_turma.php" method="POST">
             <input type="hidden" name="id_turma" id="id_turma">
             <input type="text" name="nome" id="nome_turma" placeholder="Nome da turma" required class="form-control mb-2">
-            <input type="number" name="ano_letivo" id="ano_letivo_turma" placeholder="Ano letivo" required class="form-control mb-2" min="2000" max="2100">
-            <select name="turno" id="turno_turma" class="form-select mb-2">
-                <option value="manha">Manhã</option>
-                <option value="tarde">Tarde</option>
-                <option value="noite">Noite</option>
-            </select>
             <div class="row mb-2">
-                <div class="col">
+                <div class="col-md-6 mb-2 mb-md-0">
                     <label>Início:</label>
-                    <input type="date" name="inicio" id="inicio_turma" class="form-control">
+                    <input type="date" name="inicio" id="inicio_turma" class="form-control" onchange="atualizarAnoLetivo()">
                 </div>
-                <div class="col">
+                <div class="col-md-6">
                     <label>Fim:</label>
-                    <input type="date" name="fim" id="fim_turma" class="form-control">
+                    <input type="date" name="fim" id="fim_turma" class="form-control" onchange="atualizarAnoLetivo()">
                 </div>
             </div>
-            <select name="status" id="status_turma" class="form-select mb-2">
-                <option value="ativa">Ativa</option>
-                <option value="concluída">Concluída</option>
-                <option value="cancelada">Cancelada</option>
-            </select>
-            <label><b>Disciplinas da turma:</b></label>
+            <div class="row mb-2">
+                <div class="col-md-6 mb-2 mb-md-0">
+                    <label>Ano letivo:</label>
+                    <input type="number" name="ano_letivo" id="ano_letivo_turma" placeholder="Ano letivo" required class="form-control" min="2000" max="2100">
+                </div>
+                <div class="col-md-6">
+                    <label>Turno:</label>
+                    <select name="turno" id="turno_turma" class="form-select">
+                        <option value="manha">Manhã</option>
+                        <option value="tarde">Tarde</option>
+                        <option value="noite">Noite</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-md-6 mb-2 mb-md-0">
+                    <label>Status:</label>
+                    <select name="status" id="status_turma" class="form-select">
+                        <option value="ativa">Ativa</option>
+                        <option value="concluída">Concluída</option>
+                        <option value="cancelada">Cancelada</option>
+                    </select>
+                </div>
+            </div>
+            <label class="mt-2"><b>Disciplinas da turma:</b></label>
             <select name="disciplinas[]" id="disciplinas_turma" class="form-select mb-2" multiple required>
                 <option></option>
                 <?php foreach ($disciplinas as $disc): ?>
@@ -154,8 +167,11 @@ if ($result && $result->num_rows > 0) {
                 <?php endforeach; ?>
             </select>
             <input type="hidden" name="redirect" value="turmas.php">
-            <button type="submit" class="btn btn-primary" id="btnSalvarTurma">Salvar</button>
         </form>
+        <div class="d-flex justify-content-end gap-2 pt-3 border-top mt-4" style="background:transparent;">
+            <button type="button" class="btn btn-secondary" onclick="fecharModalTurma()">Cancelar</button>
+            <button type="submit" class="btn btn-primary" id="btnSalvarTurma" form="formTurma">Salvar</button>
+        </div>
     </div>
 </div>
 <!-- Modal de Confirmar Exclusão -->
@@ -173,6 +189,17 @@ if ($result && $result->num_rows > 0) {
     </div>
 </div>
 <script>
+function atualizarAnoLetivo() {
+    var inicio = document.getElementById('inicio_turma').value;
+    var fim = document.getElementById('fim_turma').value;
+    var ano = '';
+    if (inicio) {
+        ano = inicio.substring(0, 4);
+    } else if (fim) {
+        ano = fim.substring(0, 4);
+    }
+    document.getElementById('ano_letivo_turma').value = ano;
+}
 function abrirModalTurma() {
     document.getElementById('formTurma').action = '../controllers/criar_turma.php';
     document.getElementById('tituloModalTurma').innerText = 'Criar Turma';
@@ -208,6 +235,7 @@ function abrirModalEditarTurma(id, nome, ano, turno, inicio, fim, status) {
     document.getElementById('inicio_turma').value = inicio || '';
     document.getElementById('fim_turma').value = fim || '';
     document.getElementById('status_turma').value = status || 'ativa';
+    atualizarAnoLetivo();
     let sel = document.getElementById('disciplinas_turma');
     for (let i = 0; i < sel.options.length; i++) sel.options[i].selected = false;
     let turmaDiscs = {};
