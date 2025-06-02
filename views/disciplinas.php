@@ -170,5 +170,6 @@ window.onclick = function(event) {
     if (event.target == modalCriar) fecharModalDisciplina();
 }
 </script>
+<?php include 'footer.php'; ?>
 </body>
 </html> 

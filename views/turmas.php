@@ -278,5 +278,6 @@ window.onclick = function(event) {
     if (event.target == modalExc) fecharModalExcluirTurma();
 }
 </script>
+<?php include 'footer.php'; ?>
 </body>
 </html> 

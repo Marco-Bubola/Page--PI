@@ -370,5 +370,6 @@ function abrirModalPlanoDisciplina(disc_id, disc_nome, turma_id) {
     document.getElementById('modalPlano').style.display = 'block';
 }
 </script>
+<?php include 'footer.php'; ?>
 </body>
 </html> 

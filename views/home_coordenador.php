@@ -253,5 +253,6 @@ if (urlParams.has('erro')) {
     if (msg) mostrarNotificacao(msg, 'danger');
 }
 </script>
+<?php include 'footer.php'; ?>
 </body>
 </html> 
