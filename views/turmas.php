@@ -93,7 +93,11 @@ if ($result && $result->num_rows > 0) {
                         <div class="card card-turma h-100">
                             <div class="card-body d-flex flex-column">
                                 <h5 class="card-title mb-1">Turma: <?= htmlspecialchars($turma['nome']) ?></h5>
-                                <div class="turma-meta mb-1">Ano letivo: <?= htmlspecialchars($turma['ano_letivo']) ?> | Turno: <?= htmlspecialchars($turma['turno']) ?></div>
+                                <div class="turma-meta mb-1">Ano letivo: <?= htmlspecialchars($turma['ano_letivo']) ?> | Turno: <?= htmlspecialchars($turma['turno']) ?>
+                                    | Início: <?= $turma['inicio'] ? date('d/m/Y', strtotime($turma['inicio'])) : '-' ?>
+                                    | Fim: <?= $turma['fim'] ? date('d/m/Y', strtotime($turma['fim'])) : '-' ?>
+                                    | Status: <?= htmlspecialchars($turma['status']) ?>
+                                </div>
                                 <div class="mb-2"><b>Disciplinas:</b> <?php
                                     $ids = isset($turmaDisciplinas[$turma['id']]) ? $turmaDisciplinas[$turma['id']] : [];
                                     $nomes = [];
@@ -101,7 +105,7 @@ if ($result && $result->num_rows > 0) {
                                     echo $nomes ? implode(', ', $nomes) : '<span class="text-muted">Nenhuma</span>';
                                 ?></div>
                                 <div class="d-flex gap-2 mt-auto">
-                                    <button class="btn btn-primary btn-sm" onclick="abrirModalEditarTurma(<?= $turma['id'] ?>, '<?= htmlspecialchars(addslashes($turma['nome'])) ?>', '<?= $turma['ano_letivo'] ?>', '<?= $turma['turno'] ?>')">Editar</button>
+                                    <button class="btn btn-primary btn-sm" onclick="abrirModalEditarTurma(<?= $turma['id'] ?>, '<?= htmlspecialchars(addslashes($turma['nome'])) ?>', '<?= $turma['ano_letivo'] ?>', '<?= $turma['turno'] ?>', '<?= $turma['inicio'] ?>', '<?= $turma['fim'] ?>', '<?= $turma['status'] ?>')">Editar</button>
                                     <button class="btn btn-danger btn-sm" onclick="abrirModalExcluirTurma(<?= $turma['id'] ?>, '<?= htmlspecialchars(addslashes($turma['nome'])) ?>')">Excluir</button>
                                     <a href="planos.php?turma_id=<?= $turma['id'] ?>" class="btn btn-secondary btn-sm">Gerenciar Planos</a>
                                 </div>
@@ -126,6 +130,21 @@ if ($result && $result->num_rows > 0) {
                 <option value="manha">Manhã</option>
                 <option value="tarde">Tarde</option>
                 <option value="noite">Noite</option>
+            </select>
+            <div class="row mb-2">
+                <div class="col">
+                    <label>Início:</label>
+                    <input type="date" name="inicio" id="inicio_turma" class="form-control">
+                </div>
+                <div class="col">
+                    <label>Fim:</label>
+                    <input type="date" name="fim" id="fim_turma" class="form-control">
+                </div>
+            </div>
+            <select name="status" id="status_turma" class="form-select mb-2">
+                <option value="ativa">Ativa</option>
+                <option value="concluída">Concluída</option>
+                <option value="cancelada">Cancelada</option>
             </select>
             <label><b>Disciplinas da turma:</b></label>
             <select name="disciplinas[]" id="disciplinas_turma" class="form-select mb-2" multiple required>
@@ -161,6 +180,9 @@ function abrirModalTurma() {
     document.getElementById('nome_turma').value = '';
     document.getElementById('ano_letivo_turma').value = '';
     document.getElementById('turno_turma').value = 'manha';
+    document.getElementById('inicio_turma').value = '';
+    document.getElementById('fim_turma').value = '';
+    document.getElementById('status_turma').value = 'ativa';
     let sel = document.getElementById('disciplinas_turma');
     for (let i = 0; i < sel.options.length; i++) sel.options[i].selected = false;
     // Destroy and re-initialize Select2
@@ -176,13 +198,16 @@ function abrirModalTurma() {
     });
     document.getElementById('modalTurma').style.display = 'block';
 }
-function abrirModalEditarTurma(id, nome, ano, turno) {
+function abrirModalEditarTurma(id, nome, ano, turno, inicio, fim, status) {
     document.getElementById('formTurma').action = '../controllers/editar_turma.php';
     document.getElementById('tituloModalTurma').innerText = 'Editar Turma';
     document.getElementById('id_turma').value = id;
     document.getElementById('nome_turma').value = nome;
     document.getElementById('ano_letivo_turma').value = ano;
     document.getElementById('turno_turma').value = turno;
+    document.getElementById('inicio_turma').value = inicio || '';
+    document.getElementById('fim_turma').value = fim || '';
+    document.getElementById('status_turma').value = status || 'ativa';
     let sel = document.getElementById('disciplinas_turma');
     for (let i = 0; i < sel.options.length; i++) sel.options[i].selected = false;
     let turmaDiscs = {};
