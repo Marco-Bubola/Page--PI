@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 02/06/2025 às 03:29
+-- Tempo de geração: 02/06/2025 às 14:17
 -- Versão do servidor: 9.2.0
 -- Versão do PHP: 8.2.12
 
@@ -29,7 +29,6 @@ USE `pi_page`;
 -- Estrutura para tabela `aulas`
 --
 
-DROP TABLE IF EXISTS `aulas`;
 CREATE TABLE `aulas` (
   `id` int NOT NULL,
   `professor_id` int NOT NULL,
@@ -46,13 +45,14 @@ CREATE TABLE `aulas` (
 -- Estrutura para tabela `capitulos`
 --
 
-DROP TABLE IF EXISTS `capitulos`;
 CREATE TABLE `capitulos` (
   `id` int NOT NULL,
   `plano_id` int NOT NULL,
   `titulo` varchar(255) NOT NULL,
   `ordem` int DEFAULT NULL,
-  `status` enum('em_andamento','concluido') DEFAULT 'em_andamento'
+  `status` enum('em_andamento','concluido') DEFAULT 'em_andamento',
+  `descricao` text,
+  `duracao_estimativa` int DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -61,10 +61,12 @@ CREATE TABLE `capitulos` (
 -- Estrutura para tabela `disciplinas`
 --
 
-DROP TABLE IF EXISTS `disciplinas`;
 CREATE TABLE `disciplinas` (
   `id` int NOT NULL,
-  `nome` varchar(100) NOT NULL
+  `nome` varchar(100) NOT NULL,
+  `codigo` varchar(20) DEFAULT NULL,
+  `descricao` text,
+  `ativa` tinyint(1) DEFAULT '1'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -73,7 +75,6 @@ CREATE TABLE `disciplinas` (
 -- Estrutura para tabela `enderecos`
 --
 
-DROP TABLE IF EXISTS `enderecos`;
 CREATE TABLE `enderecos` (
   `id` int NOT NULL,
   `usuario_id` int NOT NULL,
@@ -92,7 +93,6 @@ CREATE TABLE `enderecos` (
 -- Estrutura para tabela `planos`
 --
 
-DROP TABLE IF EXISTS `planos`;
 CREATE TABLE `planos` (
   `id` int NOT NULL,
   `turma_id` int NOT NULL,
@@ -101,7 +101,10 @@ CREATE TABLE `planos` (
   `descricao` text,
   `status` enum('em_andamento','concluido') DEFAULT 'em_andamento',
   `criado_por` int NOT NULL,
-  `criado_em` datetime DEFAULT CURRENT_TIMESTAMP
+  `criado_em` datetime DEFAULT CURRENT_TIMESTAMP,
+  `data_inicio` date DEFAULT NULL,
+  `data_fim` date DEFAULT NULL,
+  `objetivo_geral` text
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -110,7 +113,6 @@ CREATE TABLE `planos` (
 -- Estrutura para tabela `topicos`
 --
 
-DROP TABLE IF EXISTS `topicos`;
 CREATE TABLE `topicos` (
   `id` int NOT NULL,
   `capitulo_id` int NOT NULL,
@@ -124,7 +126,6 @@ CREATE TABLE `topicos` (
 -- Estrutura para tabela `topicos_ministrados`
 --
 
-DROP TABLE IF EXISTS `topicos_ministrados`;
 CREATE TABLE `topicos_ministrados` (
   `id` int NOT NULL,
   `aula_id` int NOT NULL,
@@ -137,7 +138,6 @@ CREATE TABLE `topicos_ministrados` (
 -- Estrutura para tabela `topicos_personalizados`
 --
 
-DROP TABLE IF EXISTS `topicos_personalizados`;
 CREATE TABLE `topicos_personalizados` (
   `id` int NOT NULL,
   `aula_id` int NOT NULL,
@@ -151,10 +151,12 @@ CREATE TABLE `topicos_personalizados` (
 -- Estrutura para tabela `turmas`
 --
 
-DROP TABLE IF EXISTS `turmas`;
 CREATE TABLE `turmas` (
   `id` int NOT NULL,
   `nome` varchar(100) NOT NULL,
+  `inicio` date DEFAULT NULL,
+  `fim` date DEFAULT NULL,
+  `status` enum('ativa','concluída','cancelada') DEFAULT 'ativa',
   `ano_letivo` year NOT NULL,
   `turno` enum('manha','tarde','noite') DEFAULT 'manha'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -165,7 +167,6 @@ CREATE TABLE `turmas` (
 -- Estrutura para tabela `turma_disciplinas`
 --
 
-DROP TABLE IF EXISTS `turma_disciplinas`;
 CREATE TABLE `turma_disciplinas` (
   `id` int NOT NULL,
   `turma_id` int NOT NULL,
@@ -179,7 +180,6 @@ CREATE TABLE `turma_disciplinas` (
 -- Estrutura para tabela `usuarios`
 --
 
-DROP TABLE IF EXISTS `usuarios`;
 CREATE TABLE `usuarios` (
   `id` int NOT NULL,
   `nome` varchar(100) NOT NULL,
@@ -206,9 +206,10 @@ CREATE TABLE `usuarios` (
 --
 
 INSERT INTO `usuarios` (`id`, `nome`, `sobrenome`, `email`, `senha`, `tipo`, `cpf`, `telefone`, `data_nascimento`, `foto_perfil`, `matricula`, `data_admissao`, `status`, `data_criacao`, `data_ultimo_login`, `endereco`, `genero`, `observacoes`) VALUES
-(1, 'marco', NULL, 'marcobubola@hotmail.com', '12345', 'admin', NULL, NULL, NULL, NULL, NULL, NULL, 'ativo', '2025-06-01 15:11:01', NULL, NULL, NULL, NULL),
-(3, 'professor', 'teste', 'professor@gmail.com', '12345', 'professor', '444444', '199841221111', '2025-06-02', '../assets/img/foto_683cc7f0aa7bd7.41819667.png', '111111', '2025-06-03', 'ativo', '2025-06-01 15:11:01', NULL, NULL, 'Masculino', ''),
-(8, 'coordenador', 'tes', 'coordenador@hotmail.com', '$2y$10$wmoU0Uro1.nIIBUukXJph.jfcx.uG/URYc9FUY45ONPveXrd.tEdm', 'coordenador', '44444444444', '19984122111', '2025-06-01', 'https://via.placeholder.com/70x70?text=Usuário', '4444444444', '2025-06-01', 'ativo', '2025-06-01 16:09:16', NULL, NULL, 'Masculino', '');
+(1, 'marco', NULL, 'marcobubola@hotmail.com', '$2y$10$w/SlRhAFyvSPEN9q8.qE9.Fvt1kqH/xxeGsXIogPbx7LM95sBfGFa', 'admin', NULL, NULL, NULL, NULL, NULL, NULL, 'ativo', '2025-06-01 15:11:01', NULL, NULL, NULL, NULL),
+(3, 'professor', 'teste', 'professor@gmail.com', '$2y$10$w/SlRhAFyvSPEN9q8.qE9.Fvt1kqH/xxeGsXIogPbx7LM95sBfGFa', 'professor', '444444', '199841221111', '2025-06-02', '../assets/img/foto_683cc7f0aa7bd7.41819667.png', '111111', '2025-06-03', 'ativo', '2025-06-01 15:11:01', NULL, NULL, 'Masculino', ''),
+(8, 'coordenador', 'tes', 'coordenador@hotmail.com', '$2y$10$w/SlRhAFyvSPEN9q8.qE9.Fvt1kqH/xxeGsXIogPbx7LM95sBfGFa', 'coordenador', '44444444444', '19984122111', '2025-06-01', 'https://via.placeholder.com/70x70?text=Usuário', '4444444444', '2025-06-01', 'ativo', '2025-06-01 16:09:16', NULL, NULL, 'Masculino', ''),
+(10, 'teste', NULL, 'teste@hotmail.com', '$2y$10$w/SlRhAFyvSPEN9q8.qE9.Fvt1kqH/xxeGsXIogPbx7LM95sBfGFa', 'professor', NULL, NULL, NULL, NULL, NULL, NULL, 'ativo', '2025-06-01 23:12:37', NULL, NULL, NULL, NULL);
 
 --
 -- Índices para tabelas despejadas
@@ -366,7 +367,7 @@ ALTER TABLE `turma_disciplinas`
 -- AUTO_INCREMENT de tabela `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- Restrições para tabelas despejadas
@@ -420,7 +421,7 @@ ALTER TABLE `topicos_personalizados`
 
 --
 -- Restrições para tabelas `turma_disciplinas`
--- 
+--
 ALTER TABLE `turma_disciplinas`
   ADD CONSTRAINT `turma_disciplinas_ibfk_1` FOREIGN KEY (`turma_id`) REFERENCES `turmas` (`id`),
   ADD CONSTRAINT `turma_disciplinas_ibfk_2` FOREIGN KEY (`disciplina_id`) REFERENCES `disciplinas` (`id`),
