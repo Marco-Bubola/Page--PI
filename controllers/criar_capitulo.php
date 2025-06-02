@@ -15,13 +15,15 @@ if (
     $titulo = trim($_POST['titulo']);
     $ordem = intval($_POST['ordem']);
     $status = $_POST['status'];
+    $descricao = isset($_POST['descricao']) ? trim($_POST['descricao']) : '';
+    $duracao = isset($_POST['duracao_estimativa']) && $_POST['duracao_estimativa'] !== '' ? intval($_POST['duracao_estimativa']) : null;
     $redirect = 'planos.php';
     if (isset($_POST['redirect']) && preg_match('/^[a-zA-Z0-9_]+\.php\?id=\d+$/', $_POST['redirect'])) {
         $redirect = $_POST['redirect'];
     }
     require_once '../config/conexao.php';
-    $stmt = $conn->prepare('INSERT INTO capitulos (plano_id, titulo, ordem, status) VALUES (?, ?, ?, ?)');
-    $stmt->bind_param('isis', $plano_id, $titulo, $ordem, $status);
+    $stmt = $conn->prepare('INSERT INTO capitulos (plano_id, titulo, ordem, status, descricao, duracao_estimativa) VALUES (?, ?, ?, ?, ?, ?)');
+    $stmt->bind_param('issssi', $plano_id, $titulo, $ordem, $status, $descricao, $duracao);
     if ($stmt->execute()) {
         header('Location: ../views/' . $redirect . '&sucesso=capitulo_criado');
         exit();
