@@ -15,14 +15,17 @@ if (
     $nome = trim($_POST['nome']);
     $ano_letivo = intval($_POST['ano_letivo']);
     $turno = $_POST['turno'];
+    $inicio = !empty($_POST['inicio']) ? $_POST['inicio'] : null;
+    $fim = !empty($_POST['fim']) ? $_POST['fim'] : null;
+    $status = isset($_POST['status']) ? $_POST['status'] : 'ativa';
     $disciplinas = isset($_POST['disciplinas']) ? $_POST['disciplinas'] : [];
     $redirect = 'turmas.php';
     if (isset($_POST['redirect']) && preg_match('/^[a-zA-Z0-9_]+\.php$/', $_POST['redirect'])) {
         $redirect = $_POST['redirect'];
     }
     require_once '../config/conexao.php';
-    $stmt = $conn->prepare('UPDATE turmas SET nome = ?, ano_letivo = ?, turno = ? WHERE id = ?');
-    $stmt->bind_param('sisi', $nome, $ano_letivo, $turno, $id);
+    $stmt = $conn->prepare('UPDATE turmas SET nome = ?, ano_letivo = ?, turno = ?, inicio = ?, fim = ?, status = ? WHERE id = ?');
+    $stmt->bind_param('sissssi', $nome, $ano_letivo, $turno, $inicio, $fim, $status, $id);
     if ($stmt->execute()) {
         // Remover vínculos antigos
         $conn->query('DELETE FROM turma_disciplinas WHERE turma_id = ' . $id);
