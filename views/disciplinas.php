@@ -71,8 +71,11 @@ if ($result && $result->num_rows > 0) {
                         <div class="card card-disciplina h-100">
                             <div class="card-body d-flex flex-column">
                                 <h5 class="card-title mb-2">Disciplina: <?= htmlspecialchars($disciplina['nome']) ?></h5>
+                                <div class="mb-1"><b>Código:</b> <?= htmlspecialchars($disciplina['codigo']) ?></div>
+                                <div class="mb-1"><b>Descrição:</b> <?= nl2br(htmlspecialchars($disciplina['descricao'])) ?></div>
+                                <div class="mb-2"><b>Ativa:</b> <?= $disciplina['ativa'] ? 'Sim' : 'Não' ?></div>
                                 <div class="d-flex gap-2 mt-auto">
-                                    <button class="btn btn-primary btn-sm" onclick="abrirModalEditarDisciplina(<?= $disciplina['id'] ?>, '<?= htmlspecialchars(addslashes($disciplina['nome'])) ?>')">Editar</button>
+                                    <button class="btn btn-primary btn-sm" onclick="abrirModalEditarDisciplina(<?= $disciplina['id'] ?>, '<?= htmlspecialchars(addslashes($disciplina['nome'])) ?>', '<?= htmlspecialchars(addslashes($disciplina['codigo'])) ?>', '<?= htmlspecialchars(addslashes($disciplina['descricao'])) ?>', <?= $disciplina['ativa'] ?>)">Editar</button>
                                     <button class="btn btn-danger btn-sm" onclick="abrirModalExcluirDisciplina(<?= $disciplina['id'] ?>, '<?= htmlspecialchars(addslashes($disciplina['nome'])) ?>')">Excluir</button>
                                 </div>
                             </div>
@@ -83,26 +86,38 @@ if ($result && $result->num_rows > 0) {
         </div>
     </div>
 </div>
-<!-- Modal de Criar Disciplina (igual ao da home) -->
+<!-- Modal de Criar Disciplina (atualizado) -->
 <div id="modalDisciplina" style="display:none;position:fixed;z-index:1000;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.4);">
     <div style="background:#fff;padding:30px 20px;border-radius:8px;max-width:350px;margin:100px auto;position:relative;">
         <span onclick="fecharModalDisciplina()" style="position:absolute;top:10px;right:15px;font-size:22px;cursor:pointer;">&times;</span>
         <h3>Criar Nova Disciplina</h3>
         <form action="../controllers/criar_disciplina.php" method="POST">
-            <input type="text" name="nome_disciplina" placeholder="Nome da disciplina" required style="width:100%;padding:8px;margin:15px 0;border:1px solid #ccc;border-radius:4px;">
+            <input type="text" name="nome_disciplina" placeholder="Nome da disciplina" required style="width:100%;padding:8px;margin:10px 0;border:1px solid #ccc;border-radius:4px;">
+            <input type="text" name="codigo_disciplina" placeholder="Código da disciplina" style="width:100%;padding:8px;margin:10px 0;border:1px solid #ccc;border-radius:4px;">
+            <textarea name="descricao_disciplina" placeholder="Descrição" style="width:100%;padding:8px;margin:10px 0;border:1px solid #ccc;border-radius:4px;"></textarea>
+            <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" name="ativa_disciplina" id="criar_ativa_disciplina" value="1" checked>
+                <label class="form-check-label" for="criar_ativa_disciplina">Ativa</label>
+            </div>
             <input type="hidden" name="redirect" value="disciplinas.php">
             <button type="submit" class="btn btn-primary">Salvar</button>
         </form>
     </div>
 </div>
-<!-- Modal de Editar Disciplina -->
+<!-- Modal de Editar Disciplina (atualizado) -->
 <div id="modalEditarDisciplina" style="display:none;position:fixed;z-index:1000;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.4);">
     <div style="background:#fff;padding:30px 20px;border-radius:8px;max-width:350px;margin:100px auto;position:relative;">
         <span onclick="fecharModalEditarDisciplina()" style="position:absolute;top:10px;right:15px;font-size:22px;cursor:pointer;">&times;</span>
         <h3>Editar Disciplina</h3>
         <form id="formEditarDisciplina" action="../controllers/editar_disciplina.php" method="POST">
             <input type="hidden" name="id_disciplina" id="editar_id_disciplina">
-            <input type="text" name="nome_disciplina" id="editar_nome_disciplina" placeholder="Nome da disciplina" required style="width:100%;padding:8px;margin:15px 0;border:1px solid #ccc;border-radius:4px;">
+            <input type="text" name="nome_disciplina" id="editar_nome_disciplina" placeholder="Nome da disciplina" required style="width:100%;padding:8px;margin:10px 0;border:1px solid #ccc;border-radius:4px;">
+            <input type="text" name="codigo_disciplina" id="editar_codigo_disciplina" placeholder="Código da disciplina" style="width:100%;padding:8px;margin:10px 0;border:1px solid #ccc;border-radius:4px;">
+            <textarea name="descricao_disciplina" id="editar_descricao_disciplina" placeholder="Descrição" style="width:100%;padding:8px;margin:10px 0;border:1px solid #ccc;border-radius:4px;"></textarea>
+            <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" name="ativa_disciplina" id="editar_ativa_disciplina" value="1">
+                <label class="form-check-label" for="editar_ativa_disciplina">Ativa</label>
+            </div>
             <button type="submit" class="btn btn-primary">Salvar Alterações</button>
         </form>
     </div>
@@ -127,9 +142,12 @@ function abrirModalDisciplina() {
 function fecharModalDisciplina() {
     document.getElementById('modalDisciplina').style.display = 'none';
 }
-function abrirModalEditarDisciplina(id, nome) {
+function abrirModalEditarDisciplina(id, nome, codigo, descricao, ativa) {
     document.getElementById('editar_id_disciplina').value = id;
     document.getElementById('editar_nome_disciplina').value = nome;
+    document.getElementById('editar_codigo_disciplina').value = codigo;
+    document.getElementById('editar_descricao_disciplina').value = descricao;
+    document.getElementById('editar_ativa_disciplina').checked = (ativa == 1);
     document.getElementById('modalEditarDisciplina').style.display = 'block';
 }
 function fecharModalEditarDisciplina() {
