@@ -280,16 +280,7 @@ if ($capitulos) {
   </div>
 </div>
 <script>
-// Função para mostrar mensagem dinâmica
-function mostrarNotificacao(msg, tipo = 'success') {
-    let notif = document.createElement('div');
-    notif.className = 'alert alert-' + (tipo === 'success' ? 'success' : 'danger') + ' position-fixed top-0 start-50 translate-middle-x mt-3 shadow';
-    notif.style.zIndex = 2000;
-    notif.style.minWidth = '300px';
-    notif.innerHTML = msg;
-    document.body.appendChild(notif);
-    setTimeout(() => notif.remove(), 3000);
-}
+
 // CAPÍTULO
 function abrirModalCapitulo(plano_id) {
     document.getElementById('formCapitulo').reset();

@@ -146,68 +146,61 @@ if (!empty($planos)) {
                 <?php if ($turma_id): ?>
                     <?php foreach ($disciplinas as $disc): ?>
                         <div class="col-12 col-md-6 col-xl-4">
-                            <div class="card card-plano h-100">
+                            <div class="card card-plano h-100 shadow-sm border-0">
                                 <div class="card-body d-flex flex-column">
-                                    <h6 class="text-primary mb-1">Disciplina: <?= htmlspecialchars($disc['nome']) ?></h6>
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h6 class="text-primary mb-0"><i class="bi bi-journal-bookmark"></i> <?= htmlspecialchars($disc['nome']) ?></h6>
+                                        <?php if (isset($planos[$disc['id']])): $plano = $planos[$disc['id']]; ?>
+                                            <span class="badge badge-status <?= $plano['status'] === 'concluido' ? 'bg-success' : 'bg-warning text-dark' ?>">
+                                                <?= $plano['status'] === 'concluido' ? 'Concluído' : 'Em andamento' ?>
+                                            </span>
+                                        <?php endif; ?>
+                                    </div>
                                     <?php if (isset($planos[$disc['id']])): $plano = $planos[$disc['id']]; ?>
                                         <h5 class="card-title mb-1">Plano: <?= htmlspecialchars($plano['titulo']) ?></h5>
-                                        <div class="card-desc mb-2"> <?= nl2br(htmlspecialchars($plano['descricao'])) ?> </div>
-                                        <span class="badge badge-status <?= $plano['status'] === 'concluido' ? 'bg-success' : 'bg-warning text-dark' ?> mb-2"><?= $plano['status'] === 'concluido' ? 'Concluído' : 'Em andamento' ?></span>
-                                        <div class="plano-meta mb-2">Criado em: <?= isset($plano['criado_em']) ? date('d/m/Y H:i', strtotime($plano['criado_em'])) : '-' ?></div>
+                                        <div class="mb-1 text-muted" style="font-size:0.95em;">
+                                            <i class="bi bi-calendar"></i> <b>Criado em:</b> <?= isset($plano['criado_em']) ? date('d/m/Y H:i', strtotime($plano['criado_em'])) : '-' ?>
+                                        </div>
+                                        <div class="mb-2" style="font-size:0.97em;">
+                                            <i class="bi bi-info-circle"></i>
+                                            <b>Descrição:</b>
+                                            <?= strlen($plano['descricao']) > 80 ? nl2br(htmlspecialchars(substr($plano['descricao'],0,80))) . '... <span class=\"text-primary ver-mais\" style=\"cursor:pointer;\" data-desc=\"' . htmlspecialchars($plano['descricao']) . '\">ver mais</span>' : nl2br(htmlspecialchars($plano['descricao'])) ?>
+                                        </div>
                                         <div class="mb-2"><b>Capítulos:</b></div>
                                         <ul class="list-group mb-2">
                                             <?php if (!empty($capitulosPorPlano[$plano['id']])): foreach ($capitulosPorPlano[$plano['id']] as $cap): ?>
                                                 <li class="list-group-item d-flex justify-content-between align-items-center py-1 px-2">
                                                     <span><?= htmlspecialchars($cap['titulo']) ?></span>
-                                                    <span class="badge <?= $cap['status'] === 'concluido' ? 'bg-success' : 'bg-secondary' ?> ms-2"><?= $cap['status'] ?></span>
+                                                    <span class="badge <?= $cap['status'] === 'concluido' ? 'bg-success' : 'bg-secondary' ?> ms-2"> <?= $cap['status'] ?> </span>
                                                 </li>
                                             <?php endforeach; else: ?>
                                                 <li class="list-group-item text-muted py-1 px-2">Nenhum capítulo cadastrado</li>
                                             <?php endif; ?>
                                         </ul>
-                                        <div class="d-flex gap-2 mt-auto">
-                                            <button class="btn btn-primary btn-sm" onclick="abrirModalEditarPlano(<?= $plano['id'] ?>, '<?= htmlspecialchars(addslashes($plano['titulo'])) ?>', <?= $plano['disciplina_id'] ?>, '<?= htmlspecialchars(addslashes($plano['descricao'])) ?>', '<?= $plano['status'] ?>', <?= $turma_id ?>, '<?= isset($plano['data_inicio']) ? date('Y-m-d', strtotime($plano['data_inicio'])) : '' ?>', '<?= isset($plano['data_fim']) ? date('Y-m-d', strtotime($plano['data_fim'])) : '' ?>', '<?= htmlspecialchars($plano['objetivo_geral']) ?>')">Editar</button>
-                                            <button class="btn btn-danger btn-sm" onclick="abrirModalExcluirPlano(<?= $plano['id'] ?>, '<?= htmlspecialchars(addslashes($plano['titulo'])) ?>')">Excluir</button>
-                                            <a href="plano_detalhe.php?id=<?= $plano['id'] ?>" class="btn btn-secondary btn-sm">Gerenciar capítulos/tópicos</a>
+                                        <div class="d-flex gap-2 mt-auto justify-content-center">
+                                            <button class="btn btn-primary btn-sm" title="Editar" onclick="abrirModalEditarPlano(
+                                                <?= $plano['id'] ?>,
+                                                '<?= htmlspecialchars(addslashes($plano['titulo'])) ?>',
+                                                '<?= isset($plano['disciplina_id']) ? $plano['disciplina_id'] : '' ?>',
+                                                '<?= htmlspecialchars(addslashes($plano['descricao'])) ?>',
+                                                '<?= $plano['status'] ?>',
+                                                <?= $turma_id !== null ? $turma_id : "''" ?>,
+                                                '<?= isset($plano['data_inicio']) ? date('Y-m-d', strtotime($plano['data_inicio'])) : '' ?>',
+                                                '<?= isset($plano['data_fim']) ? date('Y-m-d', strtotime($plano['data_fim'])) : '' ?>',
+                                                '<?= htmlspecialchars(addslashes($plano['objetivo_geral'])) ?>'
+                                            )"><i class="bi bi-pencil"></i> Editar</button>
+                                            <button class="btn btn-danger btn-sm" title="Excluir" onclick="abrirModalExcluirPlano(<?= $plano['id'] ?>, '<?= htmlspecialchars(addslashes($plano['titulo'])) ?>')"><i class="bi bi-trash"></i> Excluir</button>
+                                            <a href="plano_detalhe.php?id=<?= $plano['id'] ?>" class="btn btn-secondary btn-sm" title="Gerenciar capítulos/tópicos"><i class="bi bi-list-task"></i> Gerenciar</a>
                                         </div>
                                     <?php else: ?>
                                         <div class="text-muted mb-2">Nenhum plano cadastrado para esta disciplina.</div>
-                                        <button class="btn btn-success btn-sm" onclick="abrirModalPlanoDisciplina(<?= $disc['id'] ?>, '<?= htmlspecialchars(addslashes($disc['nome'])) ?>', <?= $turma_id ?>)">Criar Plano</button>
+                                        <button class="btn btn-success btn-sm w-100" onclick="abrirModalPlanoDisciplina(<?= $disc['id'] ?>, '<?= htmlspecialchars(addslashes($disc['nome'])) ?>', <?= $turma_id ?>)"><i class="bi bi-plus-circle"></i> Criar Plano</button>
                                     <?php endif; ?>
                                 </div>
                             </div>
                         </div>
                     <?php endforeach; ?>
-                <?php else: ?>
-                    <?php foreach ($planos as $plano): ?>
-                        <div class="col-12 col-md-6 col-xl-4">
-                            <div class="card card-plano h-100">
-                                <div class="card-body d-flex flex-column">
-                                    <h6 class="text-primary mb-1">Disciplina: <?= htmlspecialchars($plano['disciplina_nome']) ?></h6>
-                                    <h5 class="card-title mb-1">Plano: <?= htmlspecialchars($plano['titulo']) ?></h5>
-                                    <div class="card-desc mb-2"> <?= nl2br(htmlspecialchars($plano['descricao'])) ?> </div>
-                                    <span class="badge badge-status <?= $plano['status'] === 'concluido' ? 'bg-success' : 'bg-warning text-dark' ?> mb-2"><?= $plano['status'] === 'concluido' ? 'Concluído' : 'Em andamento' ?></span>
-                                    <div class="plano-meta mb-2">Criado em: <?= isset($plano['criado_em']) ? date('d/m/Y H:i', strtotime($plano['criado_em'])) : '-' ?></div>
-                                    <div class="mb-2"><b>Capítulos:</b></div>
-                                    <ul class="list-group mb-2">
-                                        <?php if (!empty($capitulosPorPlano[$plano['id']])): foreach ($capitulosPorPlano[$plano['id']] as $cap): ?>
-                                            <li class="list-group-item d-flex justify-content-between align-items-center py-1 px-2">
-                                                <span><?= htmlspecialchars($cap['titulo']) ?></span>
-                                                <span class="badge <?= $cap['status'] === 'concluido' ? 'bg-success' : 'bg-secondary' ?> ms-2"><?= $cap['status'] ?></span>
-                                            </li>
-                                        <?php endforeach; else: ?>
-                                            <li class="list-group-item text-muted py-1 px-2">Nenhum capítulo cadastrado</li>
-                                        <?php endif; ?>
-                                    </ul>
-                                    <div class="d-flex gap-2 mt-auto">
-                                        <button class="btn btn-primary btn-sm" onclick="abrirModalEditarPlano(<?= $plano['id'] ?>, '<?= htmlspecialchars(addslashes($plano['titulo'])) ?>', <?= $plano['disciplina_id'] ?>, '<?= htmlspecialchars(addslashes($plano['descricao'])) ?>', '<?= $plano['status'] ?>', <?= $turma_id ?>, '<?= isset($plano['data_inicio']) ? date('Y-m-d', strtotime($plano['data_inicio'])) : '' ?>', '<?= isset($plano['data_fim']) ? date('Y-m-d', strtotime($plano['data_fim'])) : '' ?>', '<?= htmlspecialchars($plano['objetivo_geral']) ?>')">Editar</button>
-                                        <button class="btn btn-danger btn-sm" onclick="abrirModalExcluirPlano(<?= $plano['id'] ?>, '<?= htmlspecialchars(addslashes($plano['titulo'])) ?>')">Excluir</button>
-                                        <a href="plano_detalhe.php?id=<?= $plano['id'] ?>" class="btn btn-secondary btn-sm">Gerenciar capítulos/tópicos</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
+            
                 <?php endif; ?>
             </div>
         </div>
@@ -464,6 +457,53 @@ function abrirModalPlanoDisciplina(disc_id, disc_nome, turma_id) {
   const modal = new bootstrap.Modal(document.getElementById('modalPlano'));
   modal.show();
 }
+</script>
+<script>
+// --- AJAX para CRIAR PLANO ---
+document.getElementById('formPlano').onsubmit = async function(e) {
+  e.preventDefault();
+  const form = this;
+  const formData = new FormData(form);
+  const resp = await fetch('../controllers/criar_plano_ajax.php', { method: 'POST', body: formData });
+  const data = await resp.json();
+  if (data.success) {
+    fecharModalPlano();
+    mostrarNotificacao('Plano de aula criado com sucesso!', 'success');
+    setTimeout(() => location.reload(), 1200);
+  } else {
+    mostrarNotificacao(data.error || 'Erro ao criar plano', 'danger');
+  }
+};
+// --- AJAX para EDITAR PLANO ---
+document.getElementById('formEditarPlano').onsubmit = async function(e) {
+  e.preventDefault();
+  const form = this;
+  const formData = new FormData(form);
+  const resp = await fetch('../controllers/editar_plano_ajax.php', { method: 'POST', body: formData });
+  const data = await resp.json();
+  if (data.success) {
+    fecharModalEditarPlano();
+    mostrarNotificacao('Plano de aula editado com sucesso!', 'success');
+    setTimeout(() => location.reload(), 1200);
+  } else {
+    mostrarNotificacao(data.error || 'Erro ao editar plano', 'danger');
+  }
+};
+// --- AJAX para EXCLUIR PLANO ---
+document.getElementById('formExcluirPlano').onsubmit = async function(e) {
+  e.preventDefault();
+  const form = this;
+  const formData = new FormData(form);
+  const resp = await fetch('../controllers/excluir_plano_ajax.php', { method: 'POST', body: formData });
+  const data = await resp.json();
+  if (data.success) {
+    fecharModalExcluirPlano();
+    mostrarNotificacao('Plano de aula excluído com sucesso!', 'success');
+    setTimeout(() => location.reload(), 1200);
+  } else {
+    mostrarNotificacao(data.error || 'Erro ao excluir plano', 'danger');
+  }
+};
 </script>
 <?php include 'footer.php'; ?>
 </body>

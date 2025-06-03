@@ -1,7 +1,8 @@
 <?php
 session_start();
+header('Content-Type: application/json');
 if (!isset($_SESSION['usuario_nome']) || ($_SESSION['usuario_tipo'] !== 'coordenador' && $_SESSION['usuario_tipo'] !== 'admin')) {
-    header('Location: ../index.php');
+    echo json_encode(['success' => false, 'error' => 'Acesso negado']);
     exit();
 }
 if (
@@ -20,35 +21,27 @@ if (
     $data_inicio = !empty($_POST['data_inicio']) ? $_POST['data_inicio'] : null;
     $data_fim = !empty($_POST['data_fim']) ? $_POST['data_fim'] : null;
     $objetivo_geral = isset($_POST['objetivo_geral']) ? trim($_POST['objetivo_geral']) : '';
-    $redirect = 'planos.php';
-    if (isset($_POST['redirect']) && preg_match('/^[a-zA-Z0-9_]+\.php(\?turma_id=\d+)?$/', $_POST['redirect'])) {
-        $redirect = $_POST['redirect'];
-    }
     require_once '../config/conexao.php';
-    // Prevenir duplicidade de título por disciplina e turma
     $stmt = $conn->prepare('SELECT id FROM planos WHERE disciplina_id = ? AND turma_id = ? AND titulo = ?');
     $stmt->bind_param('iis', $disciplina_id, $turma_id, $titulo);
     $stmt->execute();
     $stmt->store_result();
     if ($stmt->num_rows > 0) {
-        header('Location: ../views/' . $redirect . '?erro=plano_existente');
+        echo json_encode(['success' => false, 'error' => 'Já existe um plano com esse título para a disciplina!']);
         exit();
     }
     $stmt->close();
     $stmt = $conn->prepare('INSERT INTO planos (turma_id, disciplina_id, titulo, descricao, status, criado_por, data_inicio, data_fim, objetivo_geral) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
     $stmt->bind_param('iisssisss', $turma_id, $disciplina_id, $titulo, $descricao, $status, $criado_por, $data_inicio, $data_fim, $objetivo_geral);
     if ($stmt->execute()) {
-        header('Location: ../views/' . $redirect . '?sucesso=plano_criado');
-        exit();
+        $id = $stmt->insert_id;
+        $plano = $conn->query("SELECT p.*, d.nome AS disciplina_nome FROM planos p JOIN disciplinas d ON p.disciplina_id = d.id WHERE p.id = $id")->fetch_assoc();
+        echo json_encode(['success' => true, 'plano' => $plano]);
     } else {
-        header('Location: ../views/' . $redirect . '?erro=erro_banco');
-        exit();
+        echo json_encode(['success' => false, 'error' => 'Erro ao salvar no banco']);
     }
+    exit();
 } else {
-    $redirect = 'planos.php';
-    if (isset($_POST['redirect']) && preg_match('/^[a-zA-Z0-9_]+\.php(\?turma_id=\d+)?$/', $_POST['redirect'])) {
-        $redirect = $_POST['redirect'];
-    }
-    header('Location: ../views/' . $redirect . '?erro=dados_invalidos');
+    echo json_encode(['success' => false, 'error' => 'Dados inválidos']);
     exit();
 } 
