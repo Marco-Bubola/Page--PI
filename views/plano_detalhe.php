@@ -60,7 +60,6 @@ if ($capitulos) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body { background: #f5f5f5; }
-        .container-fluid { min-height: 100vh; }
         .card-plano { border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
         .card-capitulo { background: #f8f9fa; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); margin-bottom: 18px; padding: 18px 18px 10px 18px; }
         .topico-box { background: #fff; border-radius: 5px; margin-bottom: 8px; padding: 10px 14px; border: 1px solid #eee; }
@@ -92,8 +91,8 @@ if ($capitulos) {
     }
 </script>
 <div class="container-fluid py-4">
-    <div class="row justify-content-center mb-4">
-        <div class="col-12 col-lg-10">
+    <div class="row">
+        <div class="col-12">
             <div class="card card-plano p-4 mb-3">
                 <h2 class="mb-2">Plano: <?= htmlspecialchars($plano['titulo']) ?></h2>
                 <div class="plano-label mb-2">Veja abaixo os capítulos e tópicos deste plano de aula. Você pode adicionar, editar ou excluir capítulos e tópicos conforme necessário.</div>
@@ -105,8 +104,8 @@ if ($capitulos) {
             </div>
         </div>
     </div>
-    <div class="row justify-content-center">
-        <div class="col-12 col-lg-10">
+    <div class="row">
+        <div class="col-12">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h4 class="mb-0">Capítulos</h4>
                 <button class="btn btn-success btn-sm" onclick="abrirModalCapitulo(<?= $plano_id ?>)">Adicionar Capítulo</button>
@@ -116,7 +115,7 @@ if ($capitulos) {
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <div><b><?= htmlspecialchars($cap['titulo']) ?></b> <span class="badge bg-secondary">Ordem: <?= $cap['ordem'] ?></span> <span class="badge badge-status <?= $cap['status'] === 'concluido' ? 'bg-success' : 'bg-info text-dark' ?>">Status: <?= $cap['status'] ?></span></div>
                         <div>
-                            <button class="btn btn-primary btn-sm" onclick="abrirModalEditarCapitulo(<?= $cap['id'] ?>, '<?= htmlspecialchars(addslashes($cap['titulo'])) ?>', <?= $cap['ordem'] ?>, '<?= $cap['status'] ?>')">Editar</button>
+                            <button class="btn btn-primary btn-sm" onclick="abrirModalEditarCapitulo(<?= $cap['id'] ?>, '<?= htmlspecialchars(addslashes($cap['titulo'])) ?>', <?= $cap['ordem'] ?>, '<?= $cap['status'] ?>', '<?= htmlspecialchars(addslashes($cap['descricao'])) ?>', <?= $cap['duracao_estimativa'] ? $cap['duracao_estimativa'] : 'null' ?>)">Editar</button>
                             <button class="btn btn-danger btn-sm" onclick="abrirModalExcluirCapitulo(<?= $cap['id'] ?>, '<?= htmlspecialchars(addslashes($cap['titulo'])) ?>')">Excluir</button>
                             <button class="btn btn-success btn-sm" onclick="abrirModalTopico(<?= $cap['id'] ?>)">Adicionar Tópico</button>
                         </div>
@@ -126,12 +125,21 @@ if ($capitulos) {
                     <div class="ms-3">
                         <b>Tópicos:</b>
                         <?php if (!empty($topicos[$cap['id']])): foreach ($topicos[$cap['id']] as $top): ?>
-                            <div class="topico-box d-flex justify-content-between align-items-center">
-                                <span><?= htmlspecialchars($top['descricao']) ?> <span class="badge bg-secondary">Ordem: <?= $top['ordem'] ?></span></span>
-                                <span>
-                                    <button class="btn btn-primary btn-sm" onclick="abrirModalEditarTopico(<?= $top['id'] ?>, <?= $cap['id'] ?>, '<?= htmlspecialchars(addslashes($top['descricao'])) ?>', <?= $top['ordem'] ?>)">Editar</button>
-                                    <button class="btn btn-danger btn-sm" onclick="abrirModalExcluirTopico(<?= $top['id'] ?>, '<?= htmlspecialchars(addslashes($top['descricao'])) ?>')">Excluir</button>
-                                </span>
+                            <div class="topico-box mb-2">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <b><?= htmlspecialchars($top['titulo']) ?></b>
+                                        <span class="badge bg-secondary">Ordem: <?= $top['ordem'] ?></span>
+                                        <span class="badge badge-status <?= $top['status'] === 'concluido' ? 'bg-success' : ($top['status'] === 'pendente' ? 'bg-warning text-dark' : 'bg-info text-dark') ?>">Status: <?= $top['status'] ?></span>
+                                    </div>
+                                    <div>
+                                        <button class="btn btn-primary btn-sm" onclick="abrirModalEditarTopico(<?= $top['id'] ?>, <?= $cap['id'] ?>, '<?= htmlspecialchars(addslashes($top['titulo'])) ?>', '<?= htmlspecialchars(addslashes($top['descricao'])) ?>', '<?= $top['status'] ?>', '<?= htmlspecialchars(addslashes($top['observacoes'] ?? '')) ?>')">Editar</button>
+                                        <button class="btn btn-danger btn-sm" onclick="abrirModalExcluirTopico(<?= $top['id'] ?>, '<?= htmlspecialchars(addslashes($top['titulo'])) ?>')">Excluir</button>
+                                    </div>
+                                </div>
+                                <div><b>Descrição:</b> <?= nl2br(htmlspecialchars($top['descricao'])) ?></div>
+                                <?php if (!empty($top['observacoes'])): ?><div><b>Observações:</b> <?= nl2br(htmlspecialchars($top['observacoes'])) ?></div><?php endif; ?>
+                                <div class="text-muted" style="font-size:0.93em;">Criado em: <?= date('d/m/Y H:i', strtotime($top['data_criacao'])) ?> | Atualizado em: <?= date('d/m/Y H:i', strtotime($top['data_atualizacao'])) ?></div>
                             </div>
                         <?php endforeach; else: ?>
                             <div class="text-muted">Nenhum tópico cadastrado.</div>
@@ -144,130 +152,221 @@ if ($capitulos) {
         </div>
     </div>
 </div>
-<!-- Modais de Capítulo e Tópico (criar, editar, excluir) -->
-<?php // Modais: Capítulo criar, editar, excluir; Tópico criar, editar, excluir ?>
-<div id="modalCapitulo" style="display:none;position:fixed;z-index:1000;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.4);">
-    <div style="background:#fff;padding:30px 20px;border-radius:8px;max-width:400px;margin:100px auto;position:relative;">
-        <span onclick="fecharModalCapitulo()" style="position:absolute;top:10px;right:15px;font-size:22px;cursor:pointer;">&times;</span>
-        <h4 id="tituloModalCapitulo">Adicionar Capítulo</h4>
-        <form id="formCapitulo" action="../controllers/criar_capitulo.php" method="POST">
-            <input type="hidden" name="plano_id" value="<?= $plano_id ?>">
-            <input type="hidden" name="id_capitulo" id="id_capitulo">
-            <input type="text" name="titulo" id="titulo_capitulo" placeholder="Título do capítulo" required class="form-control mb-2">
-            <input type="number" name="ordem" id="ordem_capitulo" placeholder="Ordem" required class="form-control mb-2">
-            <textarea name="descricao" id="descricao_capitulo" placeholder="Descrição do capítulo" class="form-control mb-2"></textarea>
-            <input type="number" name="duracao_estimativa" id="duracao_capitulo" placeholder="Duração estimada (min)" class="form-control mb-2">
-            <select name="status" id="status_capitulo" class="form-select mb-2">
+<!-- Modal Capítulo (criar/editar) -->
+<div class="modal fade" id="modalCapitulo" tabindex="-1" aria-labelledby="tituloModalCapitulo" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title" id="tituloModalCapitulo">Adicionar Capítulo</h4>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <form id="formCapitulo">
+        <div class="modal-body">
+          <input type="hidden" name="plano_id" value="<?= $plano_id ?>">
+          <input type="hidden" name="id_capitulo" id="id_capitulo">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label for="titulo_capitulo" class="form-label">Título do capítulo</label>
+              <input type="text" name="titulo" id="titulo_capitulo" placeholder="Título do capítulo" required class="form-control">
+            </div>
+            <div class="col-md-6">
+              <label for="duracao_capitulo" class="form-label">Duração estimada (min)</label>
+              <input type="number" name="duracao_estimativa" id="duracao_capitulo" placeholder="Duração estimada (min)" class="form-control">
+            </div>
+            <div class="col-md-6">
+              <label for="status_capitulo" class="form-label">Status</label>
+              <select name="status" id="status_capitulo" class="form-select">
                 <option value="em_andamento">Em andamento</option>
                 <option value="concluido">Concluído</option>
-            </select>
-            <input type="hidden" name="redirect" value="plano_detalhe.php?id=<?= $plano_id ?>">
-            <button type="submit" class="btn btn-primary" id="btnSalvarCapitulo">Salvar</button>
-        </form>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="descricao_capitulo" class="form-label">Descrição do capítulo</label>
+              <textarea name="descricao" id="descricao_capitulo" placeholder="Descrição do capítulo" class="form-control" rows="2"></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Salvar</button>
+        </div>
+      </form>
     </div>
+  </div>
 </div>
-<div id="modalExcluirCapitulo" style="display:none;position:fixed;z-index:1000;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.4);">
-    <div style="background:#fff;padding:30px 20px;border-radius:8px;max-width:400px;margin:100px auto;position:relative;">
-        <span onclick="fecharModalExcluirCapitulo()" style="position:absolute;top:10px;right:15px;font-size:22px;cursor:pointer;">&times;</span>
-        <h4>Excluir Capítulo</h4>
-        <form action="../controllers/excluir_capitulo.php" method="POST">
-            <input type="hidden" name="id_capitulo" id="excluir_id_capitulo">
-            <input type="hidden" name="redirect" value="plano_detalhe.php?id=<?= $plano_id ?>">
-            <p id="excluir_nome_capitulo" style="margin:15px 0;"></p>
-            <button type="submit" class="btn btn-danger">Confirmar Exclusão</button>
-            <button type="button" class="btn btn-secondary" onclick="fecharModalExcluirCapitulo()">Cancelar</button>
-        </form>
+<!-- Modal Tópico (criar/editar) -->
+<div class="modal fade" id="modalTopico" tabindex="-1" aria-labelledby="tituloModalTopico" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title" id="tituloModalTopico">Adicionar Tópico</h4>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <form id="formTopico">
+        <div class="modal-body">
+          <input type="hidden" name="capitulo_id" id="capitulo_id_topico">
+          <input type="hidden" name="id_topico" id="id_topico">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label for="titulo_topico" class="form-label">Título do tópico</label>
+              <input type="text" name="titulo" id="titulo_topico" placeholder="Título do tópico" required class="form-control">
+            </div>
+            <div class="col-md-6">
+              <label for="status_topico" class="form-label">Status</label>
+              <select name="status" id="status_topico" class="form-select">
+                <option value="em_andamento">Em andamento</option>
+                <option value="concluido">Concluído</option>
+                <option value="pendente">Pendente</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="descricao_topico" class="form-label">Descrição do tópico</label>
+              <textarea name="descricao" id="descricao_topico" placeholder="Descrição do tópico" required class="form-control" rows="2"></textarea>
+            </div>
+            <div class="col-md-6">
+              <label for="observacoes_topico" class="form-label">Observações</label>
+              <textarea name="observacoes" id="observacoes_topico" placeholder="Observações" class="form-control" rows="2"></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Salvar</button>
+        </div>
+      </form>
     </div>
+  </div>
 </div>
-<div id="modalTopico" style="display:none;position:fixed;z-index:1000;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.4);">
-    <div style="background:#fff;padding:30px 20px;border-radius:8px;max-width:400px;margin:100px auto;position:relative;">
-        <span onclick="fecharModalTopico()" style="position:absolute;top:10px;right:15px;font-size:22px;cursor:pointer;">&times;</span>
-        <h4 id="tituloModalTopico">Adicionar Tópico</h4>
-        <form id="formTopico" action="../controllers/criar_topico.php" method="POST">
-            <input type="hidden" name="capitulo_id" id="capitulo_id_topico">
-            <input type="hidden" name="id_topico" id="id_topico">
-            <textarea name="descricao" id="descricao_topico" placeholder="Descrição do tópico" required class="form-control mb-2"></textarea>
-            <input type="number" name="ordem" id="ordem_topico" placeholder="Ordem" required class="form-control mb-2">
-            <input type="hidden" name="redirect" value="plano_detalhe.php?id=<?= $plano_id ?>">
-            <button type="submit" class="btn btn-primary" id="btnSalvarTopico">Salvar</button>
-        </form>
+<!-- Modal Exclusão Capítulo -->
+<div class="modal fade" id="modalExcluirCapitulo" tabindex="-1" aria-labelledby="excluirCapituloLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title" id="excluirCapituloLabel">Excluir Capítulo</h4>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <form id="formExcluirCapitulo">
+        <div class="modal-body">
+          <input type="hidden" name="id_capitulo" id="excluir_id_capitulo">
+          <p id="excluir_nome_capitulo" style="margin:15px 0;"></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-danger">Confirmar Exclusão</button>
+        </div>
+      </form>
     </div>
+  </div>
 </div>
-<div id="modalExcluirTopico" style="display:none;position:fixed;z-index:1000;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.4);">
-    <div style="background:#fff;padding:30px 20px;border-radius:8px;max-width:400px;margin:100px auto;position:relative;">
-        <span onclick="fecharModalExcluirTopico()" style="position:absolute;top:10px;right:15px;font-size:22px;cursor:pointer;">&times;</span>
-        <h4>Excluir Tópico</h4>
-        <form action="../controllers/excluir_topico.php" method="POST">
-            <input type="hidden" name="id_topico" id="excluir_id_topico">
-            <input type="hidden" name="redirect" value="plano_detalhe.php?id=<?= $plano_id ?>">
-            <p id="excluir_nome_topico" style="margin:15px 0;"></p>
-            <button type="submit" class="btn btn-danger">Confirmar Exclusão</button>
-            <button type="button" class="btn btn-secondary" onclick="fecharModalExcluirTopico()">Cancelar</button>
-        </form>
+<!-- Modal Exclusão Tópico -->
+<div class="modal fade" id="modalExcluirTopico" tabindex="-1" aria-labelledby="excluirTopicoLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title" id="excluirTopicoLabel">Excluir Tópico</h4>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <form id="formExcluirTopico">
+        <div class="modal-body">
+          <input type="hidden" name="id_topico" id="excluir_id_topico">
+          <p id="excluir_nome_topico" style="margin:15px 0;"></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-danger">Confirmar Exclusão</button>
+        </div>
+      </form>
     </div>
+  </div>
 </div>
 <script>
+// Função para mostrar mensagem dinâmica
+function mostrarNotificacao(msg, tipo = 'success') {
+    let notif = document.createElement('div');
+    notif.className = 'alert alert-' + (tipo === 'success' ? 'success' : 'danger') + ' position-fixed top-0 start-50 translate-middle-x mt-3 shadow';
+    notif.style.zIndex = 2000;
+    notif.style.minWidth = '300px';
+    notif.innerHTML = msg;
+    document.body.appendChild(notif);
+    setTimeout(() => notif.remove(), 3000);
+}
 // CAPÍTULO
 function abrirModalCapitulo(plano_id) {
-    document.getElementById('formCapitulo').action = '../controllers/criar_capitulo.php';
+    document.getElementById('formCapitulo').reset();
+    document.getElementById('formCapitulo').action = '';
     document.getElementById('tituloModalCapitulo').innerText = 'Adicionar Capítulo';
     document.getElementById('id_capitulo').value = '';
     document.getElementById('titulo_capitulo').value = '';
-    document.getElementById('ordem_capitulo').value = '';
     document.getElementById('descricao_capitulo').value = '';
     document.getElementById('duracao_capitulo').value = '';
     document.getElementById('status_capitulo').value = 'em_andamento';
-    document.getElementById('modalCapitulo').style.display = 'block';
+    const modal = new bootstrap.Modal(document.getElementById('modalCapitulo'));
+    modal.show();
 }
-function abrirModalEditarCapitulo(id, titulo, ordem, status) {
-    document.getElementById('formCapitulo').action = '../controllers/editar_capitulo.php';
+function abrirModalEditarCapitulo(id, titulo, ordem, status, descricao, duracao) {
+    document.getElementById('formCapitulo').action = '';
     document.getElementById('tituloModalCapitulo').innerText = 'Editar Capítulo';
     document.getElementById('id_capitulo').value = id;
     document.getElementById('titulo_capitulo').value = titulo;
-    document.getElementById('ordem_capitulo').value = ordem;
     document.getElementById('status_capitulo').value = status;
-    document.getElementById('modalCapitulo').style.display = 'block';
+    document.getElementById('descricao_capitulo').value = descricao || '';
+    document.getElementById('duracao_capitulo').value = duracao && duracao !== 'null' ? duracao : '';
+    const modal = new bootstrap.Modal(document.getElementById('modalCapitulo'));
+    modal.show();
 }
 function fecharModalCapitulo() {
-    document.getElementById('modalCapitulo').style.display = 'none';
+    const modal = bootstrap.Modal.getInstance(document.getElementById('modalCapitulo'));
+    if (modal) modal.hide();
 }
 function abrirModalExcluirCapitulo(id, titulo) {
     document.getElementById('excluir_id_capitulo').value = id;
     document.getElementById('excluir_nome_capitulo').innerHTML = 'Tem certeza que deseja excluir o capítulo <b>' + titulo + '</b>?';
-    document.getElementById('modalExcluirCapitulo').style.display = 'block';
+    const modal = new bootstrap.Modal(document.getElementById('modalExcluirCapitulo'));
+    modal.show();
 }
 function fecharModalExcluirCapitulo() {
-    document.getElementById('modalExcluirCapitulo').style.display = 'none';
+    const modal = bootstrap.Modal.getInstance(document.getElementById('modalExcluirCapitulo'));
+    if (modal) modal.hide();
 }
 // TÓPICO
 function abrirModalTopico(capitulo_id) {
-    document.getElementById('formTopico').action = '../controllers/criar_topico.php';
+    document.getElementById('formTopico').reset();
+    document.getElementById('formTopico').action = '';
     document.getElementById('tituloModalTopico').innerText = 'Adicionar Tópico';
     document.getElementById('id_topico').value = '';
     document.getElementById('capitulo_id_topico').value = capitulo_id;
+    document.getElementById('titulo_topico').value = '';
     document.getElementById('descricao_topico').value = '';
-    document.getElementById('ordem_topico').value = '';
-    document.getElementById('modalTopico').style.display = 'block';
+    document.getElementById('status_topico').value = 'em_andamento';
+    document.getElementById('observacoes_topico').value = '';
+    const modal = new bootstrap.Modal(document.getElementById('modalTopico'));
+    modal.show();
 }
-function abrirModalEditarTopico(id, capitulo_id, descricao, ordem) {
-    document.getElementById('formTopico').action = '../controllers/editar_topico.php';
+function abrirModalEditarTopico(id, capitulo_id, titulo, descricao, status, observacoes) {
+    document.getElementById('formTopico').action = '';
     document.getElementById('tituloModalTopico').innerText = 'Editar Tópico';
     document.getElementById('id_topico').value = id;
     document.getElementById('capitulo_id_topico').value = capitulo_id;
+    document.getElementById('titulo_topico').value = titulo;
     document.getElementById('descricao_topico').value = descricao;
-    document.getElementById('ordem_topico').value = ordem;
-    document.getElementById('modalTopico').style.display = 'block';
+    document.getElementById('status_topico').value = status;
+    document.getElementById('observacoes_topico').value = observacoes;
+    const modal = new bootstrap.Modal(document.getElementById('modalTopico'));
+    modal.show();
 }
 function fecharModalTopico() {
-    document.getElementById('modalTopico').style.display = 'none';
+    const modal = bootstrap.Modal.getInstance(document.getElementById('modalTopico'));
+    if (modal) modal.hide();
 }
-function abrirModalExcluirTopico(id, descricao) {
+function abrirModalExcluirTopico(id, titulo) {
     document.getElementById('excluir_id_topico').value = id;
-    document.getElementById('excluir_nome_topico').innerHTML = 'Tem certeza que deseja excluir o tópico <b>' + descricao + '</b>?';
-    document.getElementById('modalExcluirTopico').style.display = 'block';
+    document.getElementById('excluir_nome_topico').innerHTML = 'Tem certeza que deseja excluir o tópico <b>' + titulo + '</b>?';
+    const modal = new bootstrap.Modal(document.getElementById('modalExcluirTopico'));
+    modal.show();
 }
 function fecharModalExcluirTopico() {
-    document.getElementById('modalExcluirTopico').style.display = 'none';
+    const modal = bootstrap.Modal.getInstance(document.getElementById('modalExcluirTopico'));
+    if (modal) modal.hide();
 }
 window.onclick = function(event) {
     var modals = [
@@ -280,6 +379,73 @@ window.onclick = function(event) {
         if (event.target == modal) modal.style.display = 'none';
     });
 }
+// Interceptar formulários AJAX
+// CAPÍTULO
+const formCapitulo = document.getElementById('formCapitulo');
+formCapitulo.onsubmit = async function(e) {
+    e.preventDefault();
+    const id = document.getElementById('id_capitulo').value;
+    const url = id ? '../controllers/editar_capitulo_ajax.php' : '../controllers/criar_capitulo_ajax.php';
+    const formData = new FormData(formCapitulo);
+    const resp = await fetch(url, { method: 'POST', body: formData });
+    const data = await resp.json();
+    if (data.success) {
+        fecharModalCapitulo();
+        mostrarNotificacao('Capítulo salvo com sucesso!', 'success');
+        setTimeout(() => location.reload(), 1200);
+    } else {
+        mostrarNotificacao(data.error || 'Erro ao salvar capítulo', 'danger');
+    }
+};
+const formExcluirCapitulo = document.getElementById('formExcluirCapitulo');
+formExcluirCapitulo.onsubmit = async function(e) {
+    e.preventDefault();
+    const id = document.getElementById('excluir_id_capitulo').value;
+    const formData = new FormData();
+    formData.append('id_capitulo', id);
+    const resp = await fetch('../controllers/excluir_capitulo_ajax.php', { method: 'POST', body: formData });
+    const data = await resp.json();
+    if (data.success) {
+        fecharModalExcluirCapitulo();
+        mostrarNotificacao('Capítulo excluído com sucesso!', 'success');
+        setTimeout(() => location.reload(), 1200);
+    } else {
+        mostrarNotificacao(data.error || 'Erro ao excluir capítulo', 'danger');
+    }
+};
+// TÓPICO
+const formTopico = document.getElementById('formTopico');
+formTopico.onsubmit = async function(e) {
+    e.preventDefault();
+    const id = document.getElementById('id_topico').value;
+    const url = id ? '../controllers/editar_topico_ajax.php' : '../controllers/criar_topico_ajax.php';
+    const formData = new FormData(formTopico);
+    const resp = await fetch(url, { method: 'POST', body: formData });
+    const data = await resp.json();
+    if (data.success) {
+        fecharModalTopico();
+        mostrarNotificacao('Tópico salvo com sucesso!', 'success');
+        setTimeout(() => location.reload(), 1200);
+    } else {
+        mostrarNotificacao(data.error || 'Erro ao salvar tópico', 'danger');
+    }
+};
+const formExcluirTopico = document.getElementById('formExcluirTopico');
+formExcluirTopico.onsubmit = async function(e) {
+    e.preventDefault();
+    const id = document.getElementById('excluir_id_topico').value;
+    const formData = new FormData();
+    formData.append('id_topico', id);
+    const resp = await fetch('../controllers/excluir_topico_ajax.php', { method: 'POST', body: formData });
+    const data = await resp.json();
+    if (data.success) {
+        fecharModalExcluirTopico();
+        mostrarNotificacao('Tópico excluído com sucesso!', 'success');
+        setTimeout(() => location.reload(), 1200);
+    } else {
+        mostrarNotificacao(data.error || 'Erro ao excluir tópico', 'danger');
+    }
+};
 </script>
 <?php include 'footer.php'; ?>
 </body>

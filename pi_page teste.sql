@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 02/06/2025 às 14:17
+-- Tempo de geração: 03/06/2025 às 15:13
 -- Versão do servidor: 9.2.0
 -- Versão do PHP: 8.2.12
 
@@ -116,8 +116,13 @@ CREATE TABLE `planos` (
 CREATE TABLE `topicos` (
   `id` int NOT NULL,
   `capitulo_id` int NOT NULL,
+  `titulo` varchar(255) NOT NULL,
   `descricao` text NOT NULL,
-  `ordem` int DEFAULT NULL
+  `ordem` int DEFAULT NULL,
+  `status` enum('em_andamento','concluido','pendente') DEFAULT 'em_andamento',
+  `observacoes` text,
+  `data_criacao` datetime DEFAULT CURRENT_TIMESTAMP,
+  `data_atualizacao` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -202,7 +207,7 @@ CREATE TABLE `usuarios` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Despejando dados para a tabela `usuarios`
+-- Despejando dados para a tabela `usuarios` senha = 12345
 --
 
 INSERT INTO `usuarios` (`id`, `nome`, `sobrenome`, `email`, `senha`, `tipo`, `cpf`, `telefone`, `data_nascimento`, `foto_perfil`, `matricula`, `data_admissao`, `status`, `data_criacao`, `data_ultimo_login`, `endereco`, `genero`, `observacoes`) VALUES

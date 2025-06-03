@@ -91,8 +91,8 @@ if ($res && $res->num_rows > 0) {
 </head>
 <body>
 <div class="container-fluid py-5">
-    <div class="row justify-content-center">
-        <div class="col-12 col-md-10 col-lg-8">
+    <div class="row">
+        <div class="col-12">
             <div class="mb-4">
                 <div class="row g-3">
                     <div class="col-6 col-md-3">
@@ -133,9 +133,9 @@ if ($res && $res->num_rows > 0) {
                 <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-3">
                     <div>
                         <h2 class="mb-1">Bem-vindo, Coordenador</h2>
-        <div class="user">Olá, <strong><?php echo htmlspecialchars($nome); ?></strong>!</div>
+                        <div class="user">Olá, <strong><?php echo htmlspecialchars($nome); ?></strong>!</div>
                     </div>
-        <?php if (isset($_SESSION['usuario_tipo']) && $_SESSION['usuario_tipo'] === 'admin'): ?>
+                    <?php if (isset($_SESSION['usuario_tipo']) && $_SESSION['usuario_tipo'] === 'admin'): ?>
                         <a href="gerenciar_usuarios.php" class="btn btn-primary btn-nav ms-md-3 mt-3 mt-md-0">Gerenciar Usuários</a>
                     <?php endif; ?>
                 </div>
@@ -227,7 +227,7 @@ if ($res && $res->num_rows > 0) {
                         </li>
                     <?php endforeach; else: ?>
                         <li class="list-group-item text-muted">Nenhum plano cadastrado recentemente.</li>
-        <?php endif; ?>
+                    <?php endif; ?>
                 </ul>
             </div>
         </div>

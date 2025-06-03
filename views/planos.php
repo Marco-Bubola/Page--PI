@@ -94,7 +94,7 @@ if (!empty($planos)) {
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <style>
         body { background: #f5f5f5; }
-        .container-fluid { min-height: 100vh; }
+       
         .card-plano { border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); min-height: 340px; }
         .card-title { font-size: 1.25rem; font-weight: 600; }
         .card-desc { color: #555; font-size: 1.05rem; margin-bottom: 10px; }
@@ -127,17 +127,16 @@ if (!empty($planos)) {
     }
 </script>
 <div class="container-fluid py-4">
-    <div class="row justify-content-center mb-4">
-        <div class="col-12 col-lg-10">
+    <div class="row">
+        <div class="col-12">
             <div class="bg-white rounded shadow-sm p-4 mb-3">
                 <h2 class="mb-2">Planos de Aula<?= $turma_id ? ' da Turma: <span class=\"text-primary\">' . htmlspecialchars($turma_nome) . '</span>' : '' ?></h2>
                 <p class="mb-1 plano-label">Aqui você encontra todos os planos de aula cadastrados<?= $turma_id ? ' para esta turma' : '' ?>. Cada card mostra a disciplina, o título, a descrição, status, data de criação e os capítulos do plano. Clique em "Gerenciar capítulos/tópicos" para ver detalhes ou editar cada plano.</p>
-               
             </div>
         </div>
     </div>
-    <div class="row justify-content-center">
-        <div class="col-12 col-lg-10">
+    <div class="row">
+        <div class="col-12">
             <div class="row g-4">
                 <?php if ($turma_id): ?>
                     <?php foreach ($disciplinas as $disc): ?>

@@ -46,7 +46,6 @@ if ($result && $result->num_rows > 0) {
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <style>
         body { background: #f5f5f5; }
-        .container-fluid { min-height: 100vh; }
         .card-turma { border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); min-height: 180px; }
         .card-title { font-size: 1.2rem; font-weight: 600; }
         .turma-meta { font-size: 0.97em; color: #888; }
@@ -76,8 +75,8 @@ if ($result && $result->num_rows > 0) {
     }
 </script>
 <div class="container-fluid py-4">
-    <div class="row justify-content-center mb-4">
-        <div class="col-12 col-lg-9">
+    <div class="row">
+        <div class="col-12">
             <div class="bg-white rounded shadow-sm p-4 mb-3">
                 <h2 class="mb-2">Turmas</h2>
                 <div class="turma-label mb-1">Aqui você encontra todas as turmas cadastradas. Cada card mostra o nome, ano letivo, turno e permite gerenciar as disciplinas e planos da turma.</div>
@@ -85,8 +84,8 @@ if ($result && $result->num_rows > 0) {
             </div>
         </div>
     </div>
-    <div class="row justify-content-center">
-        <div class="col-12 col-lg-9">
+    <div class="row">
+        <div class="col-12">
             <div class="row g-4">
                 <?php foreach ($turmas as $turma): ?>
                     <div class="col-12 col-md-6 col-xl-4">

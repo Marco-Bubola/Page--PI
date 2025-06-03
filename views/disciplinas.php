@@ -27,7 +27,6 @@ if ($result && $result->num_rows > 0) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body { background: #f5f5f5; }
-        .container-fluid { min-height: 100vh; }
         .card-disciplina { border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); min-height: 120px; }
         .card-title { font-size: 1.2rem; font-weight: 600; }
         .disciplina-label { font-size: 1em; color: #666; }
@@ -54,8 +53,8 @@ if ($result && $result->num_rows > 0) {
     }
 </script>
 <div class="container-fluid py-4">
-    <div class="row justify-content-center mb-4">
-        <div class="col-12 col-lg-8">
+    <div class="row">
+        <div class="col-12">
             <div class="bg-white rounded shadow-sm p-4 mb-3">
                 <h2 class="mb-2">Disciplinas</h2>
                 <div class="disciplina-label mb-1">Aqui você encontra todas as disciplinas cadastradas. Cada card mostra o nome da disciplina e permite editar ou excluir.</div>
@@ -63,8 +62,8 @@ if ($result && $result->num_rows > 0) {
             </div>
         </div>
     </div>
-    <div class="row justify-content-center">
-        <div class="col-12 col-lg-8">
+    <div class="row">
+        <div class="col-12">
             <div class="row g-4">
                 <?php foreach ($disciplinas as $disciplina): ?>
                     <div class="col-12 col-md-6 col-xl-4">
