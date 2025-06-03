@@ -129,9 +129,14 @@ if (!empty($planos)) {
 <div class="container-fluid py-4">
     <div class="row">
         <div class="col-12">
-            <div class="bg-white rounded shadow-sm p-4 mb-3">
-                <h2 class="mb-2">Planos de Aula<?= $turma_id ? ' da Turma: <span class=\"text-primary\">' . htmlspecialchars($turma_nome) . '</span>' : '' ?></h2>
-                <p class="mb-1 plano-label">Aqui você encontra todos os planos de aula cadastrados<?= $turma_id ? ' para esta turma' : '' ?>. Cada card mostra a disciplina, o título, a descrição, status, data de criação e os capítulos do plano. Clique em "Gerenciar capítulos/tópicos" para ver detalhes ou editar cada plano.</p>
+            <div class="bg-white rounded shadow-sm p-4 mb-3 d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-2">Planos de Aula<?= $turma_id ? ' da Turma: <span class=\"text-primary\">' . htmlspecialchars($turma_nome) . '</span>' : '' ?></h2>
+                    <p class="mb-1 plano-label">Aqui você encontra todos os planos de aula cadastrados<?= $turma_id ? ' para esta turma' : '' ?>. Cada card mostra a disciplina, o título, a descrição, status, data de criação e os capítulos do plano. Clique em "Gerenciar capítulos/tópicos" para ver detalhes ou editar cada plano.</p>
+                </div>
+                <?php if (!$turma_id): ?>
+                <button class="btn btn-success" onclick="abrirModalPlano()">Criar Plano</button>
+                <?php endif; ?>
             </div>
         </div>
     </div>
@@ -209,146 +214,229 @@ if (!empty($planos)) {
     </div>
 </div>
 <!-- Modal de Criar Plano -->
-<div id="modalPlano" style="display:none;position:fixed;z-index:1000;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.4);">
-    <div style="background:#fff;padding:30px 20px;border-radius:8px;max-width:400px;margin:100px auto;position:relative;">
-        <span onclick="fecharModalPlano()" style="position:absolute;top:10px;right:15px;font-size:22px;cursor:pointer;">&times;</span>
-        <h3 id="tituloModalPlano">Criar Plano de Aula</h3>
-        <form id="formPlano" action="../controllers/criar_plano.php" method="POST">
-            <?php if (
-                $turma_id): ?>
-                <input type="hidden" name="turma_id" id="turma_id_plano" value="<?= $turma_id ?>">
-                <div class="mb-2">
-                    <label>Disciplina:</label>
-                    <input type="text" id="disciplina_nome_plano" class="form-control mb-2" value="" readonly>
-                    <input type="hidden" name="disciplina_id" id="disciplina_id_plano" value="">
-                </div>
-            <?php else: ?>
-                <div class="mb-2">
-                    <label>Disciplina:</label>
-                    <select name="disciplina_id" class="form-select" required>
-                        <option value="">Selecione</option>
-                        <?php foreach ($disciplinas as $disc): ?>
-                            <option value="<?= $disc['id'] ?>"><?= htmlspecialchars($disc['nome']) ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-            <?php endif; ?>
-            <input type="text" name="titulo" placeholder="Título do plano" required class="form-control mb-2">
-            <textarea name="descricao" placeholder="Descrição" class="form-control mb-2"></textarea>
-            <textarea name="objetivo_geral" placeholder="Objetivo Geral" class="form-control mb-2"></textarea>
-            <div class="row mb-2">
-                <div class="col">
-                    <label>Data início:</label>
-                    <input type="date" name="data_inicio" class="form-control">
-                </div>
-                <div class="col">
-                    <label>Data fim:</label>
-                    <input type="date" name="data_fim" class="form-control">
-                </div>
+<div class="modal fade" id="modalPlano" tabindex="-1" aria-labelledby="tituloModalPlano" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="tituloModalPlano">Criar Plano de Aula</h3>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <form id="formPlano" action="../controllers/criar_plano.php" method="POST">
+        <div class="modal-body">
+          <?php if ($turma_id): ?>
+            <input type="hidden" name="turma_id" id="turma_id_plano" value="<?= $turma_id ?>">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label>Disciplina:</label>
+                <input type="text" id="disciplina_nome_plano" class="form-control" value="" readonly>
+                <input type="hidden" name="disciplina_id" id="disciplina_id_plano" value="">
+              </div>
+              <div class="col-md-6"></div>
             </div>
-            <select name="status" class="form-select mb-2">
+          <?php else: ?>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label>Disciplina:</label>
+                <select name="disciplina_id" class="form-select" required>
+                  <option value="">Selecione</option>
+                  <?php foreach ($disciplinas as $disc): ?>
+                    <option value="<?= $disc['id'] ?>"><?= htmlspecialchars($disc['nome']) ?></option>
+                  <?php endforeach; ?>
+                </select>
+              </div>
+              <div class="col-md-6"></div>
+            </div>
+          <?php endif; ?>
+          <div class="row g-3 mt-1">
+            <div class="col-md-6">
+              <label for="titulo_plano" class="form-label">Título do plano</label>
+              <input type="text" name="titulo" id="titulo_plano" placeholder="Título do plano" required class="form-control">
+            </div>
+            <div class="col-md-6">
+              <label for="status_plano" class="form-label">Status</label>
+              <select name="status" id="status_plano" class="form-select">
                 <option value="em_andamento">Em andamento</option>
                 <option value="concluido">Concluído</option>
-            </select>
-            <input type="hidden" name="redirect" value="planos.php<?= $turma_id ? '?turma_id=' . $turma_id : '' ?>">
-            <button type="submit" class="btn btn-primary">Salvar</button>
-        </form>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="data_inicio_plano" class="form-label">Data início</label>
+              <input type="date" name="data_inicio" id="data_inicio_plano" class="form-control">
+            </div>
+            <div class="col-md-6">
+              <label for="data_fim_plano" class="form-label">Data fim</label>
+              <input type="date" name="data_fim" id="data_fim_plano" class="form-control">
+            </div>
+            <div class="col-md-6">
+              <label for="objetivo_geral_plano" class="form-label">Objetivo Geral</label>
+              <textarea name="objetivo_geral" id="objetivo_geral_plano" placeholder="Objetivo Geral" class="form-control" rows="2"></textarea>
+            </div>
+            <div class="col-md-6">
+              <label for="descricao_plano" class="form-label">Descrição</label>
+              <textarea name="descricao" id="descricao_plano" placeholder="Descrição" class="form-control" rows="2"></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Salvar</button>
+        </div>
+        <input type="hidden" name="redirect" value="planos.php<?= $turma_id ? '?turma_id=' . $turma_id : '' ?>">
+      </form>
     </div>
+  </div>
 </div>
 <!-- Modal de Editar Plano -->
-<div id="modalEditarPlano" style="display:none;position:fixed;z-index:1000;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.4);">
-    <div style="background:#fff;padding:30px 20px;border-radius:8px;max-width:400px;margin:100px auto;position:relative;">
-        <span onclick="fecharModalEditarPlano()" style="position:absolute;top:10px;right:15px;font-size:22px;cursor:pointer;">&times;</span>
-        <h3>Editar Plano de Aula</h3>
-        <form id="formEditarPlano" action="../controllers/editar_plano.php" method="POST">
-            <input type="hidden" name="id_plano" id="editar_id_plano">
-            <?php if (
-                $turma_id): ?>
-                <input type="hidden" name="turma_id" id="editar_turma_id" value="<?= $turma_id ?>">
-            <?php endif; ?>
-            <div class="mb-2">
+<div class="modal fade" id="modalEditarPlano" tabindex="-1" aria-labelledby="editarTituloModalPlano" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="editarTituloModalPlano">Editar Plano de Aula</h3>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <form id="formEditarPlano" action="../controllers/editar_plano.php" method="POST">
+        <div class="modal-body">
+          <input type="hidden" name="id_plano" id="editar_id_plano">
+          <?php if ($turma_id): ?>
+            <input type="hidden" name="turma_id" id="editar_turma_id" value="<?= $turma_id ?>">
+            <div class="row g-3">
+              <div class="col-md-6">
                 <label>Disciplina:</label>
                 <select name="disciplina_id" id="editar_disciplina_id" class="form-select" required>
-                    <option value="">Selecione</option>
-                    <?php foreach ($disciplinas as $disc): ?>
-                        <option value="<?= $disc['id'] ?>"><?= htmlspecialchars($disc['nome']) ?></option>
-                    <?php endforeach; ?>
+                  <option value="">Selecione</option>
+                  <?php foreach ($disciplinas as $disc): ?>
+                    <option value="<?= $disc['id'] ?>"><?= htmlspecialchars($disc['nome']) ?></option>
+                  <?php endforeach; ?>
                 </select>
+              </div>
+              <div class="col-md-6"></div>
             </div>
-            <input type="text" name="titulo" id="editar_titulo" placeholder="Título do plano" required class="form-control mb-2">
-            <textarea name="descricao" id="editar_descricao" placeholder="Descrição" class="form-control mb-2"></textarea>
-            <textarea name="objetivo_geral" id="editar_objetivo_geral" placeholder="Objetivo Geral" class="form-control mb-2"></textarea>
-            <div class="row mb-2">
-                <div class="col">
-                    <label>Data início:</label>
-                    <input type="date" name="data_inicio" id="editar_data_inicio" class="form-control">
-                </div>
-                <div class="col">
-                    <label>Data fim:</label>
-                    <input type="date" name="data_fim" id="editar_data_fim" class="form-control">
-                </div>
+          <?php else: ?>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label>Disciplina:</label>
+                <select name="disciplina_id" id="editar_disciplina_id" class="form-select" required>
+                  <option value="">Selecione</option>
+                  <?php foreach ($disciplinas as $disc): ?>
+                    <option value="<?= $disc['id'] ?>"><?= htmlspecialchars($disc['nome']) ?></option>
+                  <?php endforeach; ?>
+                </select>
+              </div>
+              <div class="col-md-6"></div>
             </div>
-            <select name="status" id="editar_status" class="form-select mb-2">
+          <?php endif; ?>
+          <div class="row g-3 mt-1">
+            <div class="col-md-6">
+              <label for="editar_titulo" class="form-label">Título do plano</label>
+              <input type="text" name="titulo" id="editar_titulo" placeholder="Título do plano" required class="form-control">
+            </div>
+            <div class="col-md-6">
+              <label for="editar_status" class="form-label">Status</label>
+              <select name="status" id="editar_status" class="form-select">
                 <option value="em_andamento">Em andamento</option>
                 <option value="concluido">Concluído</option>
-            </select>
-            <input type="hidden" name="redirect" value="planos.php<?= $turma_id ? '?turma_id=' . $turma_id : '' ?>">
-            <button type="submit" class="btn btn-primary">Salvar Alterações</button>
-        </form>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="editar_data_inicio" class="form-label">Data início</label>
+              <input type="date" name="data_inicio" id="editar_data_inicio" class="form-control">
+            </div>
+            <div class="col-md-6">
+              <label for="editar_data_fim" class="form-label">Data fim</label>
+              <input type="date" name="data_fim" id="editar_data_fim" class="form-control">
+            </div>
+            <div class="col-md-6">
+              <label for="editar_objetivo_geral" class="form-label">Objetivo Geral</label>
+              <textarea name="objetivo_geral" id="editar_objetivo_geral" placeholder="Objetivo Geral" class="form-control" rows="2"></textarea>
+            </div>
+            <div class="col-md-6">
+              <label for="editar_descricao" class="form-label">Descrição</label>
+              <textarea name="descricao" id="editar_descricao" placeholder="Descrição" class="form-control" rows="2"></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+        </div>
+        <input type="hidden" name="redirect" value="planos.php<?= $turma_id ? '?turma_id=' . $turma_id : '' ?>">
+      </form>
     </div>
+  </div>
 </div>
 <!-- Modal de Confirmar Exclusão -->
-<div id="modalExcluirPlano" style="display:none;position:fixed;z-index:1000;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.4);">
-    <div style="background:#fff;padding:30px 20px;border-radius:8px;max-width:400px;margin:100px auto;position:relative;">
-        <span onclick="fecharModalExcluirPlano()" style="position:absolute;top:10px;right:15px;font-size:22px;cursor:pointer;">&times;</span>
-        <h3>Excluir Plano de Aula</h3>
-        <form id="formExcluirPlano" action="../controllers/excluir_plano.php" method="POST">
-            <input type="hidden" name="id_plano" id="excluir_id_plano">
-            <p id="excluir_nome_plano" style="margin:15px 0;"></p>
-            <button type="submit" class="btn btn-danger">Confirmar Exclusão</button>
-            <button type="button" class="btn btn-secondary" onclick="fecharModalExcluirPlano()">Cancelar</button>
-        </form>
+<div class="modal fade" id="modalExcluirPlano" tabindex="-1" aria-labelledby="excluirPlanoLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="excluirPlanoLabel">Excluir Plano de Aula</h3>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <form id="formExcluirPlano" action="../controllers/excluir_plano.php" method="POST">
+        <div class="modal-body">
+          <input type="hidden" name="id_plano" id="excluir_id_plano">
+          <p id="excluir_nome_plano" style="margin:15px 0;"></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-danger">Confirmar Exclusão</button>
+        </div>
+      </form>
     </div>
+  </div>
 </div>
 <script>
 function abrirModalPlano() {
-    document.getElementById('modalPlano').style.display = 'block';
+  // Limpar o formulário
+  document.getElementById('formPlano').reset();
+  if (document.getElementById('disciplina_id_plano')) document.getElementById('disciplina_id_plano').value = '';
+  if (document.getElementById('disciplina_nome_plano')) document.getElementById('disciplina_nome_plano').value = '';
+  if (document.getElementById('titulo_plano')) document.getElementById('titulo_plano').value = '';
+  if (document.getElementById('descricao_plano')) document.getElementById('descricao_plano').value = '';
+  if (document.getElementById('objetivo_geral_plano')) document.getElementById('objetivo_geral_plano').value = '';
+  if (document.getElementById('data_inicio_plano')) document.getElementById('data_inicio_plano').value = '';
+  if (document.getElementById('data_fim_plano')) document.getElementById('data_fim_plano').value = '';
+  if (document.getElementById('status_plano')) document.getElementById('status_plano').value = 'em_andamento';
+  const modal = new bootstrap.Modal(document.getElementById('modalPlano'));
+  modal.show();
 }
 function fecharModalPlano() {
-    document.getElementById('modalPlano').style.display = 'none';
+  const modal = bootstrap.Modal.getInstance(document.getElementById('modalPlano'));
+  if (modal) modal.hide();
 }
 function abrirModalEditarPlano(id, titulo, disciplina_id, descricao, status, turma_id, data_inicio, data_fim, objetivo_geral) {
-    document.getElementById('editar_id_plano').value = id;
-    document.getElementById('editar_titulo').value = titulo;
-    document.getElementById('editar_disciplina_id').value = disciplina_id;
-    document.getElementById('editar_descricao').value = descricao;
-    document.getElementById('editar_status').value = status;
-    if (typeof turma_id !== 'undefined' && document.getElementById('editar_turma_id')) {
-        document.getElementById('editar_turma_id').value = turma_id;
-    }
-    document.getElementById('editar_data_inicio').value = data_inicio || '';
-    document.getElementById('editar_data_fim').value = data_fim || '';
-    document.getElementById('editar_objetivo_geral').value = objetivo_geral || '';
-    document.getElementById('modalEditarPlano').style.display = 'block';
+  document.getElementById('editar_id_plano').value = id;
+  document.getElementById('editar_titulo').value = titulo;
+  if (document.getElementById('editar_disciplina_id')) {
+    document.getElementById('editar_disciplina_id').value = disciplina_id || '';
+  }
+  document.getElementById('editar_descricao').value = descricao || '';
+  document.getElementById('editar_status').value = status || 'em_andamento';
+  if (typeof turma_id !== 'undefined' && document.getElementById('editar_turma_id')) {
+    document.getElementById('editar_turma_id').value = turma_id;
+  }
+  document.getElementById('editar_data_inicio').value = data_inicio || '';
+  document.getElementById('editar_data_fim').value = data_fim || '';
+  document.getElementById('editar_objetivo_geral').value = objetivo_geral || '';
+  const modal = new bootstrap.Modal(document.getElementById('modalEditarPlano'));
+  modal.show();
 }
 function fecharModalEditarPlano() {
-    document.getElementById('modalEditarPlano').style.display = 'none';
+  const modal = bootstrap.Modal.getInstance(document.getElementById('modalEditarPlano'));
+  if (modal) modal.hide();
 }
 function abrirModalExcluirPlano(id, titulo) {
-    document.getElementById('excluir_id_plano').value = id;
-    document.getElementById('excluir_nome_plano').innerHTML = 'Tem certeza que deseja excluir o plano <b>' + titulo + '</b>?';
-    document.getElementById('modalExcluirPlano').style.display = 'block';
+  document.getElementById('excluir_id_plano').value = id;
+  document.getElementById('excluir_nome_plano').innerHTML = 'Tem certeza que deseja excluir o plano <b>' + titulo + '</b>?';
+  const modal = new bootstrap.Modal(document.getElementById('modalExcluirPlano'));
+  modal.show();
 }
 function fecharModalExcluirPlano() {
-    document.getElementById('modalExcluirPlano').style.display = 'none';
+  const modal = bootstrap.Modal.getInstance(document.getElementById('modalExcluirPlano'));
+  if (modal) modal.hide();
 }
 window.onclick = function(event) {
-    var modalCriar = document.getElementById('modalPlano');
-    var modalEdit = document.getElementById('modalEditarPlano');
-    var modalExc = document.getElementById('modalExcluirPlano');
-    if (event.target == modalCriar) fecharModalPlano();
-    if (event.target == modalEdit) fecharModalEditarPlano();
-    if (event.target == modalExc) fecharModalExcluirPlano();
+  // Não é mais necessário fechar modais manualmente, Bootstrap faz isso
 }
 </script>
 <script>
@@ -362,11 +450,19 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 <script>
 function abrirModalPlanoDisciplina(disc_id, disc_nome, turma_id) {
-    document.getElementById('formPlano').action = '../controllers/criar_plano.php';
-    document.getElementById('tituloModalPlano').innerText = 'Criar Plano de Aula';
-    document.getElementById('disciplina_id_plano').value = disc_id;
-    document.getElementById('disciplina_nome_plano').value = disc_nome;
-    document.getElementById('modalPlano').style.display = 'block';
+  document.getElementById('formPlano').reset();
+  document.getElementById('formPlano').action = '../controllers/criar_plano.php';
+  document.getElementById('tituloModalPlano').innerText = 'Criar Plano de Aula';
+  document.getElementById('disciplina_id_plano').value = disc_id;
+  document.getElementById('disciplina_nome_plano').value = disc_nome;
+  if (document.getElementById('titulo_plano')) document.getElementById('titulo_plano').value = '';
+  if (document.getElementById('descricao_plano')) document.getElementById('descricao_plano').value = '';
+  if (document.getElementById('objetivo_geral_plano')) document.getElementById('objetivo_geral_plano').value = '';
+  if (document.getElementById('data_inicio_plano')) document.getElementById('data_inicio_plano').value = '';
+  if (document.getElementById('data_fim_plano')) document.getElementById('data_fim_plano').value = '';
+  if (document.getElementById('status_plano')) document.getElementById('status_plano').value = 'em_andamento';
+  const modal = new bootstrap.Modal(document.getElementById('modalPlano'));
+  modal.show();
 }
 </script>
 <?php include 'footer.php'; ?>
