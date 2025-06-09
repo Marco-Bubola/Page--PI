@@ -1,5 +1,6 @@
 <?php
 session_start();
+header('Content-Type: application/json');
 if (!isset($_SESSION['usuario_nome']) || ($_SESSION['usuario_tipo'] !== 'coordenador' && $_SESSION['usuario_tipo'] !== 'admin')) {
     header('Location: ../index.php');
     exit();
@@ -36,17 +37,32 @@ if (
             }
             $stmtDisc->close();
         }
-        header('Location: ../views/' . $redirect . '?sucesso=turma_criada');
+        // Buscar nomes das disciplinas
+        $nomes = [];
+        if (!empty($disciplinas)) {
+            $ids = implode(',', array_map('intval', $disciplinas));
+            $res = $conn->query("SELECT nome FROM disciplinas WHERE id IN ($ids)");
+            while ($row = $res->fetch_assoc()) $nomes[] = $row['nome'];
+        }
+        $turma = [
+            'id' => $turma_id,
+            'nome' => $nome,
+            'ano_letivo' => $ano_letivo,
+            'turno' => $turno,
+            'inicio' => $inicio,
+            'fim' => $fim,
+            'status' => $status,
+            'disciplinas_nomes' => $nomes,
+            'inicio_br' => $inicio ? date('d/m/Y', strtotime($inicio)) : '',
+            'fim_br' => $fim ? date('d/m/Y', strtotime($fim)) : ''
+        ];
+        echo json_encode(['success' => true, 'turma' => $turma]);
         exit();
     } else {
-        header('Location: ../views/' . $redirect . '?erro=erro_banco');
+        echo json_encode(['success' => false, 'error' => 'Erro ao salvar no banco']);
         exit();
     }
 } else {
-    $redirect = 'turmas.php';
-    if (isset($_POST['redirect']) && preg_match('/^[a-zA-Z0-9_]+\.php$/', $_POST['redirect'])) {
-        $redirect = $_POST['redirect'];
-    }
-    header('Location: ../views/' . $redirect . '?erro=dados_invalidos');
+    echo json_encode(['success' => false, 'error' => 'Dados inválidos']);
     exit();
-} 
+}

@@ -276,7 +276,84 @@ window.onclick = function(event) {
     if (event.target == modalCriar) fecharModalTurma();
     if (event.target == modalExc) fecharModalExcluirTurma();
 }
+// Função para renderizar uma turma no DOM
+function renderTurmaCard(turma) {
+    let disciplinas = turma.disciplinas_nomes && turma.disciplinas_nomes.length
+        ? turma.disciplinas_nomes.join(', ')
+        : '<span class="text-muted">Nenhuma</span>';
+    return `
+    <div class="col-12 col-md-6 col-xl-4" id="turma-card-${turma.id}">
+        <div class="card card-turma h-100">
+            <div class="card-body d-flex flex-column">
+                <h5 class="card-title mb-1">Turma: ${turma.nome}</h5>
+                <div class="turma-meta mb-1">Ano letivo: ${turma.ano_letivo} | Turno: ${turma.turno}
+                    | Início: ${turma.inicio ? turma.inicio_br : '-'}
+                    | Fim: ${turma.fim ? turma.fim_br : '-'}
+                    | Status: ${turma.status}
+                </div>
+                <div class="mb-2"><b>Disciplinas:</b> ${disciplinas}</div>
+                <div class="d-flex gap-2 mt-auto">
+                    <button class="btn btn-primary btn-sm" onclick="abrirModalEditarTurma(${turma.id}, '${turma.nome.replace(/'/g,"\\'")}', '${turma.ano_letivo}', '${turma.turno}', '${turma.inicio}', '${turma.fim}', '${turma.status}')">Editar</button>
+                    <button class="btn btn-danger btn-sm" onclick="abrirModalExcluirTurma(${turma.id}, '${turma.nome.replace(/'/g,"\\'")}')">Excluir</button>
+                    <a href="planos.php?turma_id=${turma.id}" class="btn btn-secondary btn-sm">Gerenciar Planos</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    `;
+}
+
+// AJAX para criar turma
+document.getElementById('formTurma').onsubmit = function(e) {
+    e.preventDefault();
+    const form = e.target;
+    const dados = new FormData(form);
+    let url = form.action.includes('editar_turma.php') ? '../controllers/editar_turma.php' : '../controllers/criar_turma.php';
+    fetch(url, {
+        method: 'POST',
+        body: dados
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.success) {
+            fecharModalTurma();
+            if (form.action.includes('editar_turma.php')) {
+                // Atualizar card existente
+                let card = document.getElementById('turma-card-' + res.turma.id);
+                if (card) card.outerHTML = renderTurmaCard(res.turma);
+            } else {
+                // Adicionar novo card
+                document.querySelector('.row.g-4').insertAdjacentHTML('afterbegin', renderTurmaCard(res.turma));
+            }
+            mostrarNotificacao(res.message || 'Turma salva com sucesso!', 'success');
+        } else {
+            mostrarNotificacao(res.error || 'Erro ao salvar turma', 'danger');
+        }
+    });
+};
+
+// AJAX para excluir turma
+document.querySelector('#modalExcluirTurma form').onsubmit = function(e) {
+    e.preventDefault();
+    const form = e.target;
+    const dados = new FormData(form);
+    fetch('../controllers/excluir_turma.php', {
+        method: 'POST',
+        body: dados
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.success) {
+            fecharModalExcluirTurma();
+            let card = document.getElementById('turma-card-' + res.id);
+            if (card) card.remove();
+            mostrarNotificacao(res.message || 'Turma excluída com sucesso!', 'success');
+        } else {
+            mostrarNotificacao(res.error || 'Erro ao excluir turma', 'danger');
+        }
+    });
+};
 </script>
 <?php include 'footer.php'; ?>
 </body>
-</html> 
+</html>

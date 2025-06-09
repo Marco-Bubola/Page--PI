@@ -229,7 +229,66 @@ function fecharModalExcluirDisciplina() {
   const modal = bootstrap.Modal.getInstance(document.getElementById('modalExcluirDisciplina'));
   if (modal) modal.hide();
 }
+
+// --- ADICIONE O CÓDIGO ABAIXO PARA AJAX ---
+
+// CRIAR DISCIPLINA AJAX
+document.getElementById('formCriarDisciplina').onsubmit = function(e) {
+  e.preventDefault();
+  const form = e.target;
+  const dados = new FormData(form);
+  fetch('../controllers/criar_disciplina_ajax.php', {
+    method: 'POST',
+    body: dados
+  })
+  .then(r => r.json())
+  .then(res => {
+    if (res.success) {
+      window.location.href = '?sucesso=disciplina_criada';
+    } else {
+      mostrarNotificacao(res.error || 'Erro ao criar disciplina', 'danger');
+    }
+  });
+};
+
+// EDITAR DISCIPLINA AJAX
+document.getElementById('formEditarDisciplina').onsubmit = function(e) {
+  e.preventDefault();
+  const form = e.target;
+  const dados = new FormData(form);
+  fetch('../controllers/editar_disciplina_ajax.php', {
+    method: 'POST',
+    body: dados
+  })
+  .then(r => r.json())
+  .then(res => {
+    if (res.success) {
+      window.location.href = '?sucesso=disciplina_editada';
+    } else {
+      mostrarNotificacao(res.error || 'Erro ao editar disciplina', 'danger');
+    }
+  });
+};
+
+// EXCLUIR DISCIPLINA AJAX
+document.getElementById('formExcluirDisciplina').onsubmit = function(e) {
+  e.preventDefault();
+  const form = e.target;
+  const dados = new FormData(form);
+  fetch('../controllers/excluir_disciplina_ajax.php', {
+    method: 'POST',
+    body: dados
+  })
+  .then(r => r.json())
+  .then(res => {
+    if (res.success) {
+      window.location.href = '?sucesso=disciplina_excluida';
+    } else {
+      mostrarNotificacao(res.error || 'Erro ao excluir disciplina', 'danger');
+    }
+  });
+};
 </script>
 <?php include 'footer.php'; ?>
 </body>
-</html> 
+</html>
