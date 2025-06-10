@@ -44,15 +44,7 @@ $sql_professor_data = "
     ORDER BY
         t.nome, d.nome, p.criado_em DESC
 ";
-// Buscar turmas
-$turmas = [];
-$sql = 'SELECT * FROM turmas ORDER BY ano_letivo DESC, nome';
-$result = $conn->query($sql);
-if ($result && $result->num_rows > 0) {
-    while ($row = $result->fetch_assoc()) {
-        $turmas[] = $row;
-    }
-}
+
 $stmt = $conn->prepare($sql_professor_data);
 $stmt->bind_param('i', $usuario_id);
 $stmt->execute();
