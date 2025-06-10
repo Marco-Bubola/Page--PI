@@ -6,53 +6,46 @@ if (!isset($_SESSION['usuario_nome']) || $_SESSION['usuario_tipo'] !== 'professo
 }
 
 $nome = $_SESSION['usuario_nome'];
-$usuario_id = $_SESSION['usuario_id']; // Assumindo que o ID do usuário está na sessão
+$usuario_id = $_SESSION['usuario_id'];
 
 include 'navbar.php';
-include 'notificacao.php'; // Incluir notificacao.php para que as notificações funcionem
+include 'notificacao.php';
 require_once '../config/conexao.php';
 
 // --- BUSCA DE DADOS PARA O PROFESSOR ---
 
-// 1. Buscar Turmas e Disciplinas vinculadas a planos de aula do professor
 $turmas_professor = [];
 $disciplinas_professor = [];
 $disciplinas_nomes_professor = [];
 $turma_disciplinas_professor = [];
 $planos_turma_disciplina_professor = [];
 
-$sql_professor_data = "
-    SELECT
+// 1. Buscar apenas as turmas e disciplinas realmente vinculadas (usando turma_disciplinas)
+$sql_turmas_disciplinas = "
+    SELECT 
         t.id AS turma_id,
         t.nome AS turma_nome,
         t.ano_letivo,
         t.turno,
         d.id AS disciplina_id,
-        d.nome AS disciplina_nome,
-        p.id AS plano_id,
-        p.titulo AS plano_titulo,
-        p.status AS plano_status,
-        p.criado_em AS plano_criado_em
-    FROM
-        planos p
-    JOIN
-        turmas t ON p.turma_id = t.id
-    JOIN
-        disciplinas d ON p.disciplina_id = d.id
-    WHERE
-        p.criado_por = ?  /* <--- CORRIGIDO AQUI: de p.usuario_id para p.criado_por */
-    ORDER BY
-        t.nome, d.nome, p.criado_em DESC
+        d.nome AS disciplina_nome
+    FROM 
+        turmas t
+    INNER JOIN 
+        turma_disciplinas td ON td.turma_id = t.id
+    INNER JOIN 
+        disciplinas d ON td.disciplina_id = d.id
+    ORDER BY 
+        t.nome, d.nome
 ";
-
-$stmt = $conn->prepare($sql_professor_data);
-$stmt->bind_param('i', $usuario_id);
+$stmt = $conn->prepare($sql_turmas_disciplinas);
+// Não precisa de bind_param pois não há WHERE
 $stmt->execute();
-$result_professor_data = $stmt->get_result();
+$result = $stmt->get_result();
 
-if ($result_professor_data && $result_professor_data->num_rows > 0) {
-    while ($row = $result_professor_data->fetch_assoc()) {
-        // Coleta de turmas únicas
+if ($result && $result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) {
+        // Turmas únicas
         if (!isset($turmas_professor[$row['turma_id']])) {
             $turmas_professor[$row['turma_id']] = [
                 'id' => $row['turma_id'],
@@ -61,8 +54,7 @@ if ($result_professor_data && $result_professor_data->num_rows > 0) {
                 'turno' => $row['turno']
             ];
         }
-
-        // Coleta de disciplinas únicas
+        // Disciplinas únicas
         if (!isset($disciplinas_professor[$row['disciplina_id']])) {
             $disciplinas_professor[$row['disciplina_id']] = [
                 'id' => $row['disciplina_id'],
@@ -70,26 +62,45 @@ if ($result_professor_data && $result_professor_data->num_rows > 0) {
             ];
             $disciplinas_nomes_professor[$row['disciplina_id']] = $row['disciplina_nome'];
         }
-
-        // Vincular disciplinas a turmas (apenas as que têm planos do professor)
+        // Vincular disciplinas a turmas
         if (!in_array($row['disciplina_id'], $turma_disciplinas_professor[$row['turma_id']] ?? [])) {
             $turma_disciplinas_professor[$row['turma_id']][] = $row['disciplina_id'];
         }
+    }
+}
+$stmt->close();
 
-        // Armazenar o último plano de aula para cada combinação turma-disciplina
-        // (assume-se que o plano mais recente é o que queremos exibir na listagem de turmas/disciplinas)
+// 2. Buscar planos de aula do professor para cada turma/disciplina
+$sql_planos = "
+    SELECT 
+        p.id, p.titulo, p.status, p.turma_id, p.disciplina_id
+    FROM 
+        planos p
+    WHERE 
+        p.criado_por = ?
+    ORDER BY 
+        p.criado_em DESC
+";
+$stmt = $conn->prepare($sql_planos);
+$stmt->bind_param('i', $usuario_id);
+$stmt->execute();
+$result = $stmt->get_result();
+
+if ($result && $result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) {
+        // Armazena o plano mais recente para cada turma/disciplina
         if (!isset($planos_turma_disciplina_professor[$row['turma_id']][$row['disciplina_id']])) {
             $planos_turma_disciplina_professor[$row['turma_id']][$row['disciplina_id']] = [
-                'id' => $row['plano_id'],
-                'titulo' => $row['plano_titulo'],
-                'status' => $row['plano_status']
+                'id' => $row['id'],
+                'titulo' => $row['titulo'],
+                'status' => $row['status']
             ];
         }
     }
 }
 $stmt->close();
 
-// 2. Buscar total de planos de aula criados pelo professor
+// 3. Buscar total de planos de aula criados pelo professor
 $total_planos_professor = 0;
 $res_planos = $conn->prepare('SELECT COUNT(*) AS total FROM planos WHERE criado_por = ?');
 $res_planos->bind_param('i', $usuario_id);
@@ -98,7 +109,7 @@ $res_planos->bind_result($total_planos_professor);
 $res_planos->fetch();
 $res_planos->close();
 
-// 3. Buscar últimos 5 planos de aula criados pelo professor
+// 4. Buscar últimos 5 planos de aula criados pelo professor
 $ultimos_planos_professor = [];
 $sql_ultimos_planos = "
     SELECT
@@ -112,7 +123,7 @@ $sql_ultimos_planos = "
     JOIN
         turmas t ON p.turma_id = t.id
     WHERE
-        p.criado_por = ?  /* <--- CORRIGIDO AQUI */
+        p.criado_por = ?
     ORDER BY
         p.criado_em DESC
     LIMIT 5
