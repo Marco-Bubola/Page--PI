@@ -17,6 +17,16 @@ if ($result && $result->num_rows > 0) {
         $disciplinas[] = $row;
     }
 }
+
+// Buscar quantidade de turmas vinculadas a cada disciplina
+$qtdTurmas = [];
+$sqlQtd = "SELECT disciplina_id, COUNT(*) as total FROM turma_disciplinas GROUP BY disciplina_id";
+$resQtd = $conn->query($sqlQtd);
+if ($resQtd && $resQtd->num_rows > 0) {
+    while ($row = $resQtd->fetch_assoc()) {
+        $qtdTurmas[$row['disciplina_id']] = $row['total'];
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -117,8 +127,12 @@ if ($result && $result->num_rows > 0) {
             <input type="text" name="nome_disciplina" id="nome_disciplina" class="form-control" required>
           </div>
           <div class="mb-3">
+            <label for="ano_disciplina" class="form-label">Ano</label>
+            <input type="number" name="ano_disciplina" id="ano_disciplina" class="form-control" min="2000" max="2100" value="<?= date('Y') ?>" required>
+          </div>
+          <div class="mb-3">
             <label for="codigo_disciplina" class="form-label">Código</label>
-            <input type="text" name="codigo_disciplina" id="codigo_disciplina" class="form-control">
+            <input type="text" name="codigo_disciplina" id="codigo_disciplina" class="form-control" readonly>
           </div>
           <div class="mb-3">
             <label for="descricao_disciplina" class="form-label">Descrição</label>
@@ -153,8 +167,12 @@ if ($result && $result->num_rows > 0) {
             <input type="text" name="nome_disciplina" id="editar_nome_disciplina" class="form-control" required>
           </div>
           <div class="mb-3">
+            <label for="editar_ano_disciplina" class="form-label">Ano</label>
+            <input type="number" name="ano_disciplina" id="editar_ano_disciplina" class="form-control" min="2000" max="2100" required>
+          </div>
+          <div class="mb-3">
             <label for="editar_codigo_disciplina" class="form-label">Código</label>
-            <input type="text" name="codigo_disciplina" id="editar_codigo_disciplina" class="form-control">
+            <input type="text" name="codigo_disciplina" id="editar_codigo_disciplina" class="form-control" readonly>
           </div>
           <div class="mb-3">
             <label for="editar_descricao_disciplina" class="form-label">Descrição</label>
@@ -198,6 +216,8 @@ if ($result && $result->num_rows > 0) {
 // Funções para abrir/fechar modais usando Bootstrap 5
 function abrirModalDisciplina() {
   document.getElementById('formCriarDisciplina').reset();
+  document.getElementById('ano_disciplina').value = new Date().getFullYear();
+  atualizarCodigoDisciplina();
   const modal = new bootstrap.Modal(document.getElementById('modalDisciplina'));
   modal.show();
 }
@@ -209,7 +229,15 @@ function abrirModalEditarDisciplina(id, nome, codigo, descricao, ativa) {
   document.getElementById('formEditarDisciplina').reset();
   document.getElementById('editar_id_disciplina').value = id;
   document.getElementById('editar_nome_disciplina').value = nome;
-  document.getElementById('editar_codigo_disciplina').value = codigo;
+  // Extrai ano do código (últimos 4 dígitos)
+  let ano = '';
+  if (codigo && codigo.length >= 7) {
+    ano = codigo.slice(-4);
+  } else {
+    ano = new Date().getFullYear();
+  }
+  document.getElementById('editar_ano_disciplina').value = ano;
+  atualizarCodigoEditarDisciplina();
   document.getElementById('editar_descricao_disciplina').value = descricao;
   document.getElementById('editar_ativa_disciplina').checked = (ativa == 1);
   const modal = new bootstrap.Modal(document.getElementById('modalEditarDisciplina'));
@@ -288,6 +316,57 @@ document.getElementById('formExcluirDisciplina').onsubmit = function(e) {
     }
   });
 };
+
+// Função para remover acentos e caracteres especiais
+function abreviarNome(nome) {
+  nome = nome.normalize("NFD").replace(/[\u0300-\u036f]/g, ""); // remove acentos
+  nome = nome.replace(/[^a-zA-Z]/g, ""); // remove não-letras
+  return nome.substring(0,3).toUpperCase();
+}
+
+// Atualiza o código automaticamente ao digitar nome ou ano
+function atualizarCodigoDisciplina() {
+  const nome = document.getElementById('nome_disciplina').value;
+  const ano = document.getElementById('ano_disciplina').value;
+  let abrev = abreviarNome(nome);
+  if (abrev.length < 3) abrev = abrev.padEnd(3, 'X');
+  document.getElementById('codigo_disciplina').value = abrev + ano;
+}
+
+document.getElementById('nome_disciplina').addEventListener('input', atualizarCodigoDisciplina);
+document.getElementById('ano_disciplina').addEventListener('input', atualizarCodigoDisciplina);
+
+// Atualiza o código automaticamente ao digitar nome ou ano (modal editar)
+function atualizarCodigoEditarDisciplina() {
+  const nome = document.getElementById('editar_nome_disciplina').value;
+  const ano = document.getElementById('editar_ano_disciplina').value;
+  let abrev = abreviarNome(nome);
+  if (abrev.length < 3) abrev = abrev.padEnd(3, 'X');
+  document.getElementById('editar_codigo_disciplina').value = abrev + ano;
+}
+
+document.getElementById('editar_nome_disciplina').addEventListener('input', atualizarCodigoEditarDisciplina);
+document.getElementById('editar_ano_disciplina').addEventListener('input', atualizarCodigoEditarDisciplina);
+
+// Ao abrir o modal de edição, preenche campos e gera código
+function abrirModalEditarDisciplina(id, nome, codigo, descricao, ativa) {
+  document.getElementById('formEditarDisciplina').reset();
+  document.getElementById('editar_id_disciplina').value = id;
+  document.getElementById('editar_nome_disciplina').value = nome;
+  // Extrai ano do código (últimos 4 dígitos)
+  let ano = '';
+  if (codigo && codigo.length >= 7) {
+    ano = codigo.slice(-4);
+  } else {
+    ano = new Date().getFullYear();
+  }
+  document.getElementById('editar_ano_disciplina').value = ano;
+  atualizarCodigoEditarDisciplina();
+  document.getElementById('editar_descricao_disciplina').value = descricao;
+  document.getElementById('editar_ativa_disciplina').checked = (ativa == 1);
+  const modal = new bootstrap.Modal(document.getElementById('modalEditarDisciplina'));
+  modal.show();
+}
 </script>
 <?php include 'footer.php'; ?>
 </body>

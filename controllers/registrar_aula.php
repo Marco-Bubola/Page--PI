@@ -95,7 +95,51 @@ try {
     }
 
     $conn->commit();
-    echo json_encode(['success' => true]);
+
+    // --- NOVO: Verificar se todos os planos/capítulos/tópicos da turma estão concluídos ---
+    // 1. Buscar todos os planos da turma
+    $sql = "SELECT id FROM planos WHERE turma_id = $turma_id";
+    $result = $conn->query($sql);
+    $todos_planos = [];
+    while ($row = $result->fetch_assoc()) {
+        $todos_planos[] = intval($row['id']);
+    }
+
+    $turma_concluida = false;
+    if (!empty($todos_planos)) {
+        $planos_ids_str = implode(',', $todos_planos);
+
+        // 2. Verifica se todos os planos estão concluídos
+        $sql = "SELECT COUNT(*) AS total, SUM(status='concluido') AS concluidos FROM planos WHERE id IN ($planos_ids_str)";
+        $res = $conn->query($sql);
+        $row = $res->fetch_assoc();
+        if ($row && $row['total'] > 0 && $row['total'] == $row['concluidos']) {
+            // 3. Verifica se todos os capítulos dos planos estão concluídos
+            $sql = "SELECT id FROM capitulos WHERE plano_id IN ($planos_ids_str)";
+            $res = $conn->query($sql);
+            $todos_capitulos = [];
+            while ($r = $res->fetch_assoc()) $todos_capitulos[] = intval($r['id']);
+            if (!empty($todos_capitulos)) {
+                $capitulos_ids_str = implode(',', $todos_capitulos);
+                $sql = "SELECT COUNT(*) AS total, SUM(status='concluido') AS concluidos FROM capitulos WHERE id IN ($capitulos_ids_str)";
+                $res2 = $conn->query($sql);
+                $row2 = $res2->fetch_assoc();
+                if ($row2 && $row2['total'] > 0 && $row2['total'] == $row2['concluidos']) {
+                    // 4. Verifica se todos os tópicos dos capítulos estão concluídos
+                    $sql = "SELECT COUNT(*) AS total, SUM(status='concluido') AS concluidos FROM topicos WHERE capitulo_id IN ($capitulos_ids_str)";
+                    $res3 = $conn->query($sql);
+                    $row3 = $res3->fetch_assoc();
+                    if ($row3 && $row3['total'] > 0 && $row3['total'] == $row3['concluidos']) {
+                        // 5. Atualiza status da turma para concluída
+                        $conn->query("UPDATE turmas SET status = 'concluída' WHERE id = $turma_id");
+                        $turma_concluida = true;
+                    }
+                }
+            }
+        }
+    }
+
+    echo json_encode(['success' => true, 'turma_concluida' => $turma_concluida]);
 } catch (Exception $e) {
     $conn->rollback();
     echo json_encode(['success' => false, 'error' => 'Erro ao registrar aula: ' . $e->getMessage()]);
