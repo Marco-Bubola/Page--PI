@@ -98,6 +98,29 @@ if (!empty($planos)) {
         }
     }
 }
+
+// Buscar tópicos personalizados por plano (por disciplina/turma)
+$topicosPersonalizadosPorPlano = [];
+if ($turma_id && !empty($planos)) {
+    foreach ($planos as $disc_id => $plano) {
+        // Buscar aulas desse plano (disciplina/turma)
+        $stmt = $conn->prepare("SELECT id FROM aulas WHERE turma_id = ? AND disciplina_id = ?");
+        $stmt->bind_param('ii', $turma_id, $disc_id);
+        $stmt->execute();
+        $res = $stmt->get_result();
+        $aula_ids = [];
+        while ($row = $res->fetch_assoc()) $aula_ids[] = $row['id'];
+        $stmt->close();
+        if ($aula_ids) {
+            $in_aulas = implode(',', array_map('intval', $aula_ids));
+            $sql = "SELECT descricao FROM topicos_personalizados WHERE aula_id IN ($in_aulas)";
+            $result = $conn->query($sql);
+            while ($row = $result->fetch_assoc()) {
+                $topicosPersonalizadosPorPlano[$plano['id']][] = $row['descricao'];
+            }
+        }
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -108,16 +131,25 @@ if (!empty($planos)) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
         body { background: #f5f5f5; }
-       
-        .card-plano { border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); min-height: 340px; }
-        .card-title { font-size: 1.25rem; font-weight: 600; }
-        .card-desc { color: #555; font-size: 1.05rem; margin-bottom: 10px; }
-        .badge-status { font-size: 1em; }
-        .list-group-item { font-size: 0.98em; }
-        .plano-meta { font-size: 0.95em; color: #888; }
-        .plano-label { font-size: 0.98em; color: #666; }
+        .card-plano { border-radius: 18px; box-shadow: 0 4px 24px rgba(0,0,0,0.10); min-height: 360px; }
+        .card-title { font-size: 1.45rem; font-weight: 700; }
+        .card-desc { color: #555; font-size: 1.15rem; margin-bottom: 14px; }
+        .badge-status { font-size: 1.08em; padding: 7px 12px; border-radius: 8px; }
+        .list-group-item { font-size: 1.13em; border-radius: 10px; margin-bottom: 8px; }
+        .plano-meta { font-size: 1.08em; color: #888; }
+        .plano-label { font-size: 1.13em; color: #666; }
+        .section-title { font-size: 2.1rem; font-weight: 800; color: #222; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 10px; }
+        .btn, .btn-sm { font-size: 1.13rem; padding: 10px 18px; border-radius: 8px; }
+        .mb-3 { margin-bottom: 1.7rem!important; }
+        .mb-2 { margin-bottom: 1.2rem!important; }
+        .shadow-sm { box-shadow: 0 2px 10px rgba(0,0,0,0.07)!important; }
+        @media (max-width: 768px) {
+            .section-title { font-size: 1.3rem; }
+            .card-title { font-size: 1.1rem; }
+        }
     </style>
 </head>
 <body>
@@ -147,11 +179,11 @@ if (!empty($planos)) {
         <div class="col-12">
             <div class="bg-white rounded shadow-sm p-4 mb-3 d-flex justify-content-between align-items-center">
                 <div>
-                    <h2 class="mb-2">Planos de Aula<?= $turma_id ? ' da Turma: <span class=\"text-primary\">' . htmlspecialchars($turma_nome) . '</span>' : '' ?></h2>
-                    <p class="mb-1 plano-label">Aqui você encontra todos os planos de aula cadastrados<?= $turma_id ? ' para esta turma' : '' ?>. Cada card mostra a disciplina, o título, a descrição, status, data de criação e os capítulos do plano. Clique em "Gerenciar capítulos/tópicos" para ver detalhes ou editar cada plano.</p>
+                    <h2 class="mb-2 section-title"><i class="fa-solid fa-clipboard-list me-2"></i>Planos de Aula<?= $turma_id ? ' da Turma: <span class=\"text-primary\">' . htmlspecialchars($turma_nome) . '</span>' : '' ?></h2>
+                    <p class="mb-1 plano-label"><i class="fa-solid fa-circle-info me-1"></i>Aqui você encontra todos os planos de aula cadastrados<?= $turma_id ? ' para esta turma' : '' ?>. Cada card mostra a disciplina, o título, a descrição, status, data de criação e os capítulos do plano. Clique em <b>Gerenciar capítulos/tópicos</b> para ver detalhes ou editar cada plano.</p>
                 </div>
                 <?php if (!$turma_id): ?>
-                <button class="btn btn-success" onclick="abrirModalPlano()">Criar Plano</button>
+                <button class="btn btn-success" onclick="abrirModalPlano()"><i class="fa-solid fa-plus me-2"></i>Criar Plano</button>
                 <?php endif; ?>
             </div>
         </div>
@@ -173,68 +205,80 @@ if (!empty($planos)) {
                                         <?php endif; ?>
                                     </div>
                                     <?php if (isset($planos[$disc['id']])): $plano = $planos[$disc['id']]; ?>
-                                        <h5 class="card-title mb-1">Plano: <?= htmlspecialchars($plano['titulo']) ?></h5>
-                                        <div class="mb-1 text-muted" style="font-size:0.95em;">
-                                            <i class="bi bi-calendar"></i> <b>Criado em:</b> <?= isset($plano['criado_em']) ? date('d/m/Y H:i', strtotime($plano['criado_em'])) : '-' ?>
+                                        <h5 class="card-title mb-1"><i class="fa-solid fa-file-lines me-2"></i>Plano: <?= htmlspecialchars($plano['titulo']) ?></h5>
+                                        <div class="mb-1 text-muted plano-meta">
+                                            <i class="fa-solid fa-calendar-day me-1"></i> <b>Criado em:</b> <?= isset($plano['criado_em']) ? date('d/m/Y H:i', strtotime($plano['criado_em'])) : '-' ?>
                                         </div>
                                         <div class="mb-2" style="font-size:0.97em;">
-                                            <i class="bi bi-info-circle"></i>
+                                            <i class="fa-solid fa-circle-info me-1"></i>
                                             <b>Descrição:</b>
                                             <?= strlen($plano['descricao']) > 80 ? nl2br(htmlspecialchars(substr($plano['descricao'],0,80))) . '... <span class=\"text-primary ver-mais\" style=\"cursor:pointer;\" data-desc=\"' . htmlspecialchars($plano['descricao']) . '\">ver mais</span>' : nl2br(htmlspecialchars($plano['descricao'])) ?>
                                         </div>
-                                        <div class="mb-2"><b>Capítulos:</b>
-                                            <button class="btn btn-success btn-sm ms-2" onclick="abrirModalCapitulo(<?= $plano['id'] ?>)">Adicionar Capítulo</button>
+                                        <div class="mb-2"><b><i class="fa-solid fa-book-open me-1"></i>Capítulos:</b>
+                                            <button class="btn btn-success btn-sm ms-2" onclick="abrirModalCapitulo(<?= $plano['id'] ?>)"><i class="fa-solid fa-plus me-1"></i>Adicionar Capítulo</button>
                                         </div>
                                         <ul class="list-group mb-2">
                                             <?php if (!empty($capitulosPorPlano[$plano['id']])): foreach ($capitulosPorPlano[$plano['id']] as $cap): ?>
                                                 <li class="list-group-item">
                                                     <div class="d-flex justify-content-between align-items-center">
                                                         <div>
-                                                            <b><?= htmlspecialchars($cap['titulo']) ?></b>
-                                                            <span class="badge bg-secondary">Ordem: <?= $cap['ordem'] ?></span>
-                                                            <span class="badge badge-status <?= $cap['status'] === 'concluido' ? 'bg-success' : 'bg-info text-dark' ?>">Status: <?= $cap['status'] ?></span>
+                                                            <b><i class="fa-solid fa-book me-1"></i><?= htmlspecialchars($cap['titulo']) ?></b>
+                                                            <span class="badge bg-secondary"><i class="fa-solid fa-list-ol me-1"></i>Ordem: <?= $cap['ordem'] ?></span>
+                                                            <span class="badge badge-status <?= $cap['status'] === 'concluido' ? 'bg-success' : 'bg-info text-dark' ?>"><i class="fa-solid fa-circle-notch me-1"></i>Status: <?= $cap['status'] ?></span>
                                                         </div>
                                                         <div>
-                                                            <button class="btn btn-primary btn-sm" onclick="abrirModalEditarCapitulo(<?= $cap['id'] ?>, '<?= htmlspecialchars(addslashes($cap['titulo'])) ?>', <?= $cap['ordem'] ?>, '<?= $cap['status'] ?>', '<?= htmlspecialchars(addslashes($cap['descricao'])) ?>', <?= $cap['duracao_estimativa'] ? $cap['duracao_estimativa'] : 'null' ?>)">Editar</button>
-                                                            <button class="btn btn-danger btn-sm" onclick="abrirModalExcluirCapitulo(<?= $cap['id'] ?>, '<?= htmlspecialchars(addslashes($cap['titulo'])) ?>')">Excluir</button>
-                                                            <button class="btn btn-success btn-sm" onclick="abrirModalTopico(<?= $cap['id'] ?>)">Adicionar Tópico</button>
+                                                            <button class="btn btn-primary btn-sm" onclick="abrirModalEditarCapitulo(<?= $cap['id'] ?>, '<?= htmlspecialchars(addslashes($cap['titulo'])) ?>', <?= $cap['ordem'] ?>, '<?= $cap['status'] ?>', '<?= htmlspecialchars(addslashes($cap['descricao'])) ?>', <?= $cap['duracao_estimativa'] ? $cap['duracao_estimativa'] : 'null' ?>)"><i class="fa-solid fa-pen-to-square me-1"></i>Editar</button>
+                                                            <button class="btn btn-danger btn-sm" onclick="abrirModalExcluirCapitulo(<?= $cap['id'] ?>, '<?= htmlspecialchars(addslashes($cap['titulo'])) ?>')"><i class="fa-solid fa-trash me-1"></i>Excluir</button>
+                                                            <button class="btn btn-success btn-sm" onclick="abrirModalTopico(<?= $cap['id'] ?>)"><i class="fa-solid fa-plus me-1"></i>Adicionar Tópico</button>
                                                         </div>
                                                     </div>
-                                                    <div class="mb-1"><b>Descrição:</b> <?= nl2br(htmlspecialchars($cap['descricao'])) ?></div>
-                                                    <div class="mb-1"><b>Duração estimada:</b> <?= $cap['duracao_estimativa'] ? $cap['duracao_estimativa'] . ' min' : '-' ?></div>
+                                                    <div class="mb-1"><b><i class="fa-solid fa-circle-info me-1"></i>Descrição:</b> <?= nl2br(htmlspecialchars($cap['descricao'])) ?></div>
+                                                    <div class="mb-1"><b><i class="fa-solid fa-clock me-1"></i>Duração estimada:</b> <?= $cap['duracao_estimativa'] ? $cap['duracao_estimativa'] . ' min' : '-' ?></div>
                                                     <div class="ms-3">
-                                                        <b>Tópicos:</b>
+                                                        <b><i class="fa-solid fa-list me-1"></i>Tópicos:</b>
                                                         <?php if (!empty($topicosPorCapitulo[$cap['id']])): foreach ($topicosPorCapitulo[$cap['id']] as $top): ?>
                                                             <div class="topico-box mb-2">
                                                                 <div class="d-flex justify-content-between align-items-center">
                                                                     <div>
-                                                                        <b><?= htmlspecialchars($top['titulo']) ?></b>
-                                                                        <span class="badge bg-secondary">Ordem: <?= $top['ordem'] ?></span>
-                                                                        <span class="badge badge-status <?= $top['status'] === 'concluido' ? 'bg-success' : ($top['status'] === 'pendente' ? 'bg-warning text-dark' : 'bg-info text-dark') ?>">Status: <?= $top['status'] ?></span>
+                                                                        <b><i class="fa-solid fa-circle-dot me-1"></i><?= htmlspecialchars($top['titulo']) ?></b>
+                                                                        <span class="badge bg-secondary"><i class="fa-solid fa-list-ol me-1"></i>Ordem: <?= $top['ordem'] ?></span>
+                                                                        <span class="badge badge-status <?= $top['status'] === 'concluido' ? 'bg-success' : ($top['status'] === 'pendente' ? 'bg-warning text-dark' : 'bg-info text-dark') ?>"><i class="fa-solid fa-circle-notch me-1"></i>Status: <?= $top['status'] ?></span>
                                                                     </div>
                                                                     <div>
-                                                                        <button class="btn btn-primary btn-sm" onclick="abrirModalEditarTopico(<?= $top['id'] ?>, <?= $cap['id'] ?>, '<?= htmlspecialchars(addslashes($top['titulo'])) ?>', '<?= htmlspecialchars(addslashes($top['descricao'])) ?>', '<?= $top['status'] ?>', '<?= htmlspecialchars(addslashes($top['observacoes'] ?? '')) ?>')">Editar</button>
-                                                                        <button class="btn btn-danger btn-sm" onclick="abrirModalExcluirTopico(<?= $top['id'] ?>, '<?= htmlspecialchars(addslashes($top['titulo'])) ?>')">Excluir</button>
+                                                                        <button class="btn btn-primary btn-sm" onclick="abrirModalEditarTopico(<?= $top['id'] ?>, <?= $cap['id'] ?>, '<?= htmlspecialchars(addslashes($top['titulo'])) ?>', '<?= htmlspecialchars(addslashes($top['descricao'])) ?>', '<?= $top['status'] ?>', '<?= htmlspecialchars(addslashes($top['observacoes'] ?? '')) ?>')"><i class="fa-solid fa-pen-to-square me-1"></i>Editar</button>
+                                                                        <button class="btn btn-danger btn-sm" onclick="abrirModalExcluirTopico(<?= $top['id'] ?>, '<?= htmlspecialchars(addslashes($top['titulo'])) ?>')"><i class="fa-solid fa-trash me-1"></i>Excluir</button>
                                                                     </div>
                                                                 </div>
-                                                                <div><b>Descrição:</b> <?= nl2br(htmlspecialchars($top['descricao'])) ?></div>
-                                                                <?php if (!empty($top['observacoes'])): ?><div><b>Observações:</b> <?= nl2br(htmlspecialchars($top['observacoes'])) ?></div><?php endif; ?>
-                                                                <div class="text-muted" style="font-size:0.93em;">Criado em: <?= date('d/m/Y H:i', strtotime($top['data_criacao'])) ?> | Atualizado em: <?= date('d/m/Y H:i', strtotime($top['data_atualizacao'])) ?></div>
+                                                                <div><b><i class="fa-solid fa-circle-info me-1"></i>Descrição:</b> <?= nl2br(htmlspecialchars($top['descricao'])) ?></div>
+                                                                <?php if (!empty($top['observacoes'])): ?><div><b><i class="fa-solid fa-pen-nib me-1"></i>Observações:</b> <?= nl2br(htmlspecialchars($top['observacoes'])) ?></div><?php endif; ?>
+                                                                <div class="text-muted" style="font-size:0.93em;"><i class="fa-solid fa-calendar-day me-1"></i>Criado em: <?= date('d/m/Y H:i', strtotime($top['data_criacao'])) ?> | <i class="fa-solid fa-clock-rotate-left me-1"></i>Atualizado em: <?= date('d/m/Y H:i', strtotime($top['data_atualizacao'])) ?></div>
                                                             </div>
                                                         <?php endforeach; else: ?>
-                                                            <div class="text-muted">Nenhum tópico cadastrado.</div>
+                                                            <div class="text-muted"><i class="fa-solid fa-circle-exclamation me-1"></i>Nenhum tópico cadastrado.</div>
                                                         <?php endif; ?>
                                                     </div>
                                                 </li>
                                             <?php endforeach; else: ?>
-                                                <li class="list-group-item text-muted py-1 px-2">Nenhum capítulo cadastrado</li>
+                                                <li class="list-group-item text-muted py-1 px-2"><i class="fa-solid fa-circle-exclamation me-1"></i>Nenhum capítulo cadastrado</li>
                                             <?php endif; ?>
                                         </ul>
+                                        <?php if (!empty($topicosPersonalizadosPorPlano[$plano['id']])): ?>
+                                            <div class="mt-2">
+                                                <b><i class="bi bi-lightbulb"></i> Tópicos personalizados ministrados:</b>
+                                                <ul class="list-group list-group-flush">
+                                                    <?php foreach ($topicosPersonalizadosPorPlano[$plano['id']] as $desc): ?>
+                                                        <li class="list-group-item ps-4 text-primary">
+                                                            <i class="fa-solid fa-lightbulb me-1"></i> <?= htmlspecialchars($desc) ?>
+                                                        </li>
+                                                    <?php endforeach; ?>
+                                                </ul>
+                                            </div>
+                                        <?php endif; ?>
                                         <!-- Remover o botão Gerenciar -->
                                         <!-- <a href="plano_detalhe.php?id=<?= $plano['id'] ?>" ...>Gerenciar</a> -->
                                     <?php else: ?>
                                         <div class="text-muted mb-2">Nenhum plano cadastrado para esta disciplina.</div>
-                                        <button class="btn btn-success btn-sm w-100" onclick="abrirModalPlanoDisciplina(<?= $disc['id'] ?>, '<?= htmlspecialchars(addslashes($disc['nome'])) ?>', <?= $turma_id ?>)"><i class="bi bi-plus-circle"></i> Criar Plano</button>
+                                        <button class="btn btn-success btn-sm w-100" onclick="abrirModalPlanoDisciplina(<?= $disc['id'] ?>, '<?= htmlspecialchars(addslashes($disc['nome'])) ?>', <?= $turma_id ?>)"><i class="fa-solid fa-plus me-1"></i> Criar Plano</button>
                                     <?php endif; ?>
                                 </div>
                             </div>
@@ -599,8 +643,7 @@ function fecharModalExcluirPlano() {
 window.onclick = function(event) {
   // Não é mais necessário fechar modais manualmente, Bootstrap faz isso
 }
-</script>
-<script>
+
 document.addEventListener('DOMContentLoaded', function() {
     $('#disciplinas_turma').select2({
         width: '100%',
@@ -608,8 +651,7 @@ document.addEventListener('DOMContentLoaded', function() {
         language: 'pt-BR'
     });
 });
-</script>
-<script>
+
 function abrirModalPlanoDisciplina(disc_id, disc_nome, turma_id) {
   document.getElementById('formPlano').reset();
   document.getElementById('formPlano').action = '../controllers/criar_plano.php';
@@ -625,8 +667,7 @@ function abrirModalPlanoDisciplina(disc_id, disc_nome, turma_id) {
   const modal = new bootstrap.Modal(document.getElementById('modalPlano'));
   modal.show();
 }
-</script>
-<script>
+
 // --- AJAX para CRIAR PLANO ---
 document.getElementById('formPlano').onsubmit = async function(e) {
   e.preventDefault();
@@ -672,9 +713,7 @@ document.getElementById('formExcluirPlano').onsubmit = async function(e) {
     mostrarNotificacao(data.error || 'Erro ao excluir plano', 'danger');
   }
 };
-</script>
-<!-- Scripts para manipular capítulos e tópicos (copiados/adaptados de plano_detalhe.php) -->
-<script>
+
 function abrirModalCapitulo(plano_id) {
     document.getElementById('formCapitulo').reset();
     document.getElementById('formCapitulo').action = '';
