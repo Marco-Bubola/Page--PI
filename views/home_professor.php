@@ -76,13 +76,10 @@ $sql_planos = "
         p.id, p.titulo, p.status, p.turma_id, p.disciplina_id
     FROM 
         planos p
-    WHERE 
-        p.criado_por = ?
     ORDER BY 
         p.criado_em DESC
 ";
 $stmt = $conn->prepare($sql_planos);
-$stmt->bind_param('i', $usuario_id);
 $stmt->execute();
 $result = $stmt->get_result();
 
@@ -149,17 +146,34 @@ $stmt->close();
     <title>Home Professor - PI Page</title>
     <link rel="icon" type="image/png" href="../assets/img/LOGO_PAGE.png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
         body { background: #f5f5f5; }
-        .user { font-size: 18px; color: #007bff; margin-top: 10px; }
-        .card-home { border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.07); }
-        .btn-nav { min-width: 180px; margin-bottom: 10px; }
-        .turma-card { background: #f8f9fa; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); margin-bottom: 18px; padding: 18px 18px 10px 18px; }
-        .turma-title { font-size: 1.1rem; font-weight: 600; color: #007bff; }
-        .disciplina-badge { background: #e9ecef; color: #333; border-radius: 5px; padding: 2px 8px; margin-right: 6px; font-size: 0.95em; }
-        .plano-badge { margin-left: 8px; }
-        .section-title { font-size: 1.3rem; font-weight: 600; color: #222; margin-bottom: 0.7rem; }
-        .section-desc { color: #666; font-size: 1.01rem; margin-bottom: 1.2rem; }
+        .user { font-size: 1.5rem; color: #007bff; margin-top: 10px; }
+        .card-home { border-radius: 18px; box-shadow: 0 4px 24px rgba(0,0,0,0.10); }
+        .btn-nav { min-width: 220px; margin-bottom: 10px; font-size: 1.2rem; padding: 14px 0; }
+        .turma-card { background: #fff; border-radius: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); margin-bottom: 24px; padding: 24px 24px 16px 24px; }
+        .turma-title { font-size: 1.35rem; font-weight: 700; color: #007bff; }
+        .disciplina-badge { background: #e9ecef; color: #333; border-radius: 7px; padding: 4px 12px; margin-right: 10px; font-size: 1.1em; }
+        .plano-badge { margin-left: 12px; font-size: 1.05em; }
+        .section-title { font-size: 2rem; font-weight: 700; color: #222; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 10px; }
+        .section-desc { color: #666; font-size: 1.15rem; margin-bottom: 1.5rem; }
+        .list-group-item { font-size: 1.15rem; padding: 1.1rem 1.2rem; border-radius: 10px; margin-bottom: 10px; }
+        .badge { font-size: 1em; padding: 7px 12px; }
+        .btn, .btn-sm { font-size: 1.1rem; padding: 10px 18px; border-radius: 8px; }
+        .mb-4 { margin-bottom: 2.5rem!important; }
+        .mb-3 { margin-bottom: 1.7rem!important; }
+        .mb-2 { margin-bottom: 1.2rem!important; }
+        .gap-2 { gap: 1.1rem!important; }
+        .shadow-sm { box-shadow: 0 2px 10px rgba(0,0,0,0.07)!important; }
+        .fs-2 { font-size: 2.7rem!important; }
+        .fw-bold { font-weight: 800!important; }
+        .text-muted { font-size: 1.1rem; }
+        @media (max-width: 768px) {
+            .section-title { font-size: 1.3rem; }
+            .btn-nav { font-size: 1rem; min-width: 100%; }
+            .turma-title { font-size: 1.1rem; }
+        }
     </style>
 </head>
 <body>
@@ -171,7 +185,7 @@ $stmt->close();
                     <div class="col-6 col-md-4">
                         <div class="card text-center shadow-sm">
                             <div class="card-body">
-                                <div class="fs-2 fw-bold text-primary"><?php echo count($turmas_professor); ?></div>
+                                <div class="fs-2 fw-bold text-primary"><i class="fa-solid fa-users me-2"></i><?php echo count($turmas_professor); ?></div>
                                 <div class="text-muted">Minhas Turmas</div>
                             </div>
                         </div>
@@ -179,7 +193,7 @@ $stmt->close();
                     <div class="col-6 col-md-4">
                         <div class="card text-center shadow-sm">
                             <div class="card-body">
-                                <div class="fs-2 fw-bold text-success"><?php echo count($disciplinas_professor); ?></div>
+                                <div class="fs-2 fw-bold text-success"><i class="fa-solid fa-book-open me-2"></i><?php echo count($disciplinas_professor); ?></div>
                                 <div class="text-muted">Minhas Disciplinas</div>
                             </div>
                         </div>
@@ -187,7 +201,7 @@ $stmt->close();
                     <div class="col-12 col-md-4">
                         <div class="card text-center shadow-sm">
                             <div class="card-body">
-                                <div class="fs-2 fw-bold text-warning"><?php echo $total_planos_professor; ?></div>
+                                <div class="fs-2 fw-bold text-warning"><i class="fa-solid fa-clipboard-list me-2"></i><?php echo $total_planos_professor; ?></div>
                                 <div class="text-muted">Meus Planos de Aula</div>
                             </div>
                         </div>
@@ -196,75 +210,133 @@ $stmt->close();
             </div>
 
             <div class="card card-home p-4 mb-4">
-                <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-3">
+                <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4">
                     <div>
-                        <h2 class="mb-1">Bem-vindo, Professor</h2>
+                        <h2 class="mb-2 section-title"><i class="fa-solid fa-chalkboard-user"></i>Bem-vindo, Professor</h2>
                         <div class="user">Olá, <strong><?php echo htmlspecialchars($nome); ?></strong>!</div>
                     </div>
-                    <a href="planos.php" class="btn btn-primary btn-nav ms-md-3 mt-3 mt-md-0">Gerenciar Meus Planos</a>
+                    <div class="d-flex flex-column flex-md-row align-items-center">
+                        <a href="planos.php" class="btn btn-primary btn-nav ms-md-3 mt-3 mt-md-0"><i class="fa-solid fa-clipboard-list me-2"></i>Gerenciar Meus Planos</a>
+                    </div>
                 </div>
-                <hr class="my-3">
+                <hr class="my-4">
 
                 <div class="row g-4">
                     <div class="col-12 col-md-6">
-                        <div class="section-title">Minhas Turmas e Planos de Aula</div>
+                        <div class="section-title"><i class="fa-solid fa-users-viewfinder"></i>Minhas Turmas e Planos de Aula</div>
                         <div class="section-desc">Acompanhe as turmas em que você tem planos de aula e o status dos planos.</div>
-                        <div class="d-flex align-items-center justify-content-between mb-2">
-                            <a href="turmas.php" class="btn btn-outline-success btn-sm ms-2">Ver Todas as Turmas</a>
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <a href="turmas.php" class="btn btn-outline-success btn-sm ms-2"><i class="fa-solid fa-users-viewfinder me-1"></i>Ver Todas as Turmas</a>
                         </div>
                         <?php if (!empty($turmas_professor)): ?>
                             <?php foreach ($turmas_professor as $turma): ?>
                                 <div class="turma-card mb-3">
-                                    <div class="turma-title mb-1">
-                                        <?= htmlspecialchars($turma['nome']) ?> <span class="badge bg-secondary ms-2">Ano: <?= htmlspecialchars($turma['ano_letivo']) ?></span> <span class="badge bg-info text-dark ms-1">Turno: <?= htmlspecialchars($turma['turno']) ?></span>
+                                    <div class="turma-title mb-2">
+                                        <i class="fa-solid fa-users me-2"></i><?= htmlspecialchars($turma['nome']) ?> <span class="badge bg-secondary ms-2"><i class="fa-solid fa-calendar-alt me-1"></i>Ano: <?= htmlspecialchars($turma['ano_letivo']) ?></span> <span class="badge bg-info text-dark ms-1"><i class="fa-solid fa-clock me-1"></i>Turno: <?= htmlspecialchars($turma['turno']) ?></span>
                                     </div>
-                                    <div class="mb-1"><b>Disciplinas:</b></div>
+                                    <div class="mb-2"><b><i class="fa-solid fa-book me-1"></i>Disciplinas:</b></div>
                                     <ul class="mb-2 ps-3">
                                         <?php if (!empty($turma_disciplinas_professor[$turma['id']])): ?>
                                             <?php foreach ($turma_disciplinas_professor[$turma['id']] as $disc_id): ?>
                                                 <li>
-                                                    <span class="disciplina-badge"><?= htmlspecialchars($disciplinas_nomes_professor[$disc_id] ?? '-') ?></span>
+                                                    <span class="disciplina-badge"><i class="fa-solid fa-book-open me-1"></i><?= htmlspecialchars($disciplinas_nomes_professor[$disc_id] ?? '-') ?></span>
                                                     <?php if (isset($planos_turma_disciplina_professor[$turma['id']][$disc_id])):
                                                         $plano = $planos_turma_disciplina_professor[$turma['id']][$disc_id]; ?>
-                                                        <span class="plano-badge badge <?= $plano['status'] === 'concluido' ? 'bg-success' : 'bg-warning text-dark' ?>">Plano: <?= htmlspecialchars($plano['titulo']) ?> (<?= $plano['status'] === 'concluido' ? 'Concluído' : 'Em andamento' ?>)</span>
+                                                        <span class="plano-badge badge <?= $plano['status'] === 'concluido' ? 'bg-success' : 'bg-warning text-dark' ?>"><i class="fa-solid fa-clipboard-list me-1"></i>Plano: <?= htmlspecialchars($plano['titulo']) ?> (<?= $plano['status'] === 'concluido' ? 'Concluído' : 'Em andamento' ?>)</span>
                                                     <?php else: ?>
-                                                        <span class="plano-badge badge bg-light text-dark">Sem plano</span>
+                                                        <span class="plano-badge badge bg-light text-dark"><i class="fa-solid fa-ban me-1"></i>Sem plano</span>
                                                     <?php endif; ?>
                                                 </li>
                                             <?php endforeach; ?>
                                         <?php else: ?>
-                                            <li class="text-muted">Nenhuma disciplina com plano de aula seu nesta turma</li>
+                                            <li class="text-muted"><i class="fa-solid fa-circle-exclamation me-1"></i>Nenhuma disciplina com plano de aula seu nesta turma</li>
                                         <?php endif; ?>
                                     </ul>
-                                    <a href="planos.php?turma_id=<?= $turma['id'] ?>" class="btn btn-outline-secondary btn-sm">Ver Planos da Turma</a>
+                                    <div class="d-flex gap-2 mt-2">
+                                        <a href="planos.php?turma_id=<?= $turma['id'] ?>" class="btn btn-outline-secondary btn-sm"><i class="fa-solid fa-clipboard-list me-1"></i>Ver Planos da Turma</a>
+                                        <a href="registro_aulas.php?turma_id=<?= $turma['id'] ?>" class="btn btn-success btn-sm"><i class="fa-solid fa-chalkboard me-1"></i>Registrar Aulas</a>
+                                    </div>
                                 </div>
                             <?php endforeach; ?>
                         <?php else: ?>
-                            <p class="text-muted">Nenhuma turma com planos de aula associados a você.</p>
+                            <p class="text-muted"><i class="fa-solid fa-circle-exclamation me-1"></i>Nenhuma turma com planos de aula associados a você.</p>
                         <?php endif; ?>
                     </div>
 
                     <div class="col-12 col-md-6">
-                        <div class="mb-2 d-flex align-items-center justify-content-between">
-                            <div class="section-title mb-0">Últimos Planos de Aula Criados por Você</div>
-                            <a href="planos.php?usuario_id=<?= $usuario_id ?>" class="btn btn-outline-secondary btn-sm">Ver Todos os Meus Planos</a>
+                        <div class="mb-3 d-flex align-items-center justify-content-between">
+                            <div class="section-title mb-0"><i class="fa-solid fa-chalkboard"></i>Histórico de Aulas Ministradas</div>
+                            <a href="registro_aulas.php" class="btn btn-outline-secondary btn-sm"><i class="fa-solid fa-chalkboard-user me-1"></i>Ver Todas as Aulas</a>
                         </div>
-                        <div class="section-desc">Acompanhe os planos de aula mais recentes que você criou.</div>
+                        <div class="section-desc">Veja as últimas aulas que você registrou no sistema.</div>
                         <ul class="list-group mb-2">
-                            <?php if ($ultimos_planos_professor): ?>
-                                <?php foreach ($ultimos_planos_professor as $plano): ?>
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <?php
+                            // Buscar últimos 5 registros de aulas do professor
+                            $historico_aulas = [];
+                            $topicos_aula = [];
+                            $topicos_personalizados_aula = [];
+                            $stmt = $conn->prepare("
+                                SELECT a.id, a.data, d.nome AS disciplina_nome, t.nome AS turma_nome, a.comentario
+                                FROM aulas a
+                                JOIN disciplinas d ON a.disciplina_id = d.id
+                                JOIN turmas t ON a.turma_id = t.id
+                                WHERE a.professor_id = ?
+                                ORDER BY a.data DESC, a.id DESC
+                                LIMIT 5
+                            ");
+                            $stmt->bind_param('i', $usuario_id);
+                            $stmt->execute();
+                            $res = $stmt->get_result();
+                            $aula_ids = [];
+                            while ($row = $res->fetch_assoc()) {
+                                $historico_aulas[] = $row;
+                                $aula_ids[] = $row['id'];
+                            }
+                            $stmt->close();
+                            // Buscar tópicos ministrados e personalizados para essas aulas
+                            if ($aula_ids) {
+                                $in_aulas = implode(',', array_map('intval', $aula_ids));
+                                // Tópicos planejados
+                                $sql = "SELECT tm.aula_id, t.titulo FROM topicos_ministrados tm JOIN topicos t ON tm.topico_id = t.id WHERE tm.aula_id IN ($in_aulas)";
+                                $result = $conn->query($sql);
+                                while ($row = $result->fetch_assoc()) {
+                                    $topicos_aula[$row['aula_id']][] = $row['titulo'];
+                                }
+                                // Tópicos personalizados
+                                $sql = "SELECT aula_id, descricao FROM topicos_personalizados WHERE aula_id IN ($in_aulas)";
+                                $result = $conn->query($sql);
+                                while ($row = $result->fetch_assoc()) {
+                                    $topicos_personalizados_aula[$row['aula_id']][] = $row['descricao'];
+                                }
+                            }
+                            ?>
+                            <?php if ($historico_aulas): ?>
+                                <?php foreach ($historico_aulas as $aula): ?>
+                                    <li class="list-group-item">
                                         <div>
-                                            <b><?= htmlspecialchars($plano['titulo']) ?></b>
-                                            <span class="badge bg-primary ms-2">Disciplina: <?= htmlspecialchars($plano['disciplina_nome']) ?></span>
-                                            <span class="badge bg-info text-dark ms-2">Turma: <?= htmlspecialchars($plano['turma_nome']) ?></span>
-                                            <span class="badge <?= $plano['status'] === 'concluido' ? 'bg-success' : 'bg-warning text-dark' ?> ms-2"><?= $plano['status'] === 'concluido' ? 'Concluído' : 'Em andamento' ?></span>
+                                            <b><i class="fa-solid fa-calendar-day me-1"></i><?= date('d/m/Y', strtotime($aula['data'])) ?></b>
+                                            <span class="badge bg-primary ms-2"><i class="fa-solid fa-book me-1"></i>Disciplina: <?= htmlspecialchars($aula['disciplina_nome']) ?></span>
+                                            <span class="badge bg-info text-dark ms-2"><i class="fa-solid fa-users me-1"></i>Turma: <?= htmlspecialchars($aula['turma_nome']) ?></span>
                                         </div>
-                                        <span class="text-muted small"><?= date('d/m/Y H:i', strtotime($plano['criado_em'])) ?></span>
+                                        <?php if (!empty($topicos_aula[$aula['id']])): ?>
+                                            <div>
+                                                <b><i class="fa-solid fa-list-check me-1"></i>Tópicos ministrados:</b>
+                                                <?= implode(', ', array_map('htmlspecialchars', $topicos_aula[$aula['id']])) ?>
+                                            </div>
+                                        <?php endif; ?>
+                                        <?php if (!empty($topicos_personalizados_aula[$aula['id']])): ?>
+                                            <div>
+                                                <b><i class="fa-solid fa-pen-nib me-1"></i>Tópicos personalizados:</b>
+                                                <?= implode(', ', array_map('htmlspecialchars', $topicos_personalizados_aula[$aula['id']])) ?>
+                                            </div>
+                                        <?php endif; ?>
+                                        <?php if (!empty($aula['comentario'])): ?>
+                                            <div class="text-muted mt-1"><b><i class="fa-solid fa-comment-dots me-1"></i>Comentário:</b> <?= nl2br(htmlspecialchars($aula['comentario'])) ?></div>
+                                        <?php endif; ?>
                                     </li>
                                 <?php endforeach; ?>
                             <?php else: ?>
-                                <li class="list-group-item text-muted">Nenhum plano de aula criado recentemente por você.</li>
+                                <li class="list-group-item text-muted"><i class="fa-solid fa-circle-exclamation me-1"></i>Nenhuma aula registrada recentemente por você.</li>
                             <?php endif; ?>
                         </ul>
                     </div>
