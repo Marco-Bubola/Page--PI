@@ -63,10 +63,11 @@ if ($turma_id) {
     }
 }
 
-// Buscar capítulos de todos os planos exibidos
+// Buscar capítulos e tópicos de todos os planos exibidos
 $capitulosPorPlano = [];
+$topicosPorCapitulo = [];
 if (!empty($planos)) {
-    $ids = array();
+    $ids = [];
     if ($turma_id) {
         foreach ($planos as $plano) $ids[] = $plano['id'];
     } else {
@@ -74,11 +75,25 @@ if (!empty($planos)) {
     }
     if ($ids) {
         $in = implode(',', array_map('intval', $ids));
+        // Buscar capítulos
         $sql = "SELECT * FROM capitulos WHERE plano_id IN ($in) ORDER BY plano_id, ordem ASC, id ASC";
         $result = $conn->query($sql);
+        $cap_ids = [];
         if ($result && $result->num_rows > 0) {
             while ($row = $result->fetch_assoc()) {
                 $capitulosPorPlano[$row['plano_id']][] = $row;
+                $cap_ids[] = $row['id'];
+            }
+        }
+        // Buscar tópicos
+        if ($cap_ids) {
+            $in_caps = implode(',', array_map('intval', $cap_ids));
+            $sql = "SELECT * FROM topicos WHERE capitulo_id IN ($in_caps) ORDER BY capitulo_id, ordem ASC, id ASC";
+            $result = $conn->query($sql);
+            if ($result && $result->num_rows > 0) {
+                while ($row = $result->fetch_assoc()) {
+                    $topicosPorCapitulo[$row['capitulo_id']][] = $row;
+                }
             }
         }
     }
@@ -92,6 +107,7 @@ if (!empty($planos)) {
     <link rel="icon" type="image/png" href="../assets/img/LOGO_PAGE.png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <style>
         body { background: #f5f5f5; }
        
@@ -166,32 +182,56 @@ if (!empty($planos)) {
                                             <b>Descrição:</b>
                                             <?= strlen($plano['descricao']) > 80 ? nl2br(htmlspecialchars(substr($plano['descricao'],0,80))) . '... <span class=\"text-primary ver-mais\" style=\"cursor:pointer;\" data-desc=\"' . htmlspecialchars($plano['descricao']) . '\">ver mais</span>' : nl2br(htmlspecialchars($plano['descricao'])) ?>
                                         </div>
-                                        <div class="mb-2"><b>Capítulos:</b></div>
+                                        <div class="mb-2"><b>Capítulos:</b>
+                                            <button class="btn btn-success btn-sm ms-2" onclick="abrirModalCapitulo(<?= $plano['id'] ?>)">Adicionar Capítulo</button>
+                                        </div>
                                         <ul class="list-group mb-2">
                                             <?php if (!empty($capitulosPorPlano[$plano['id']])): foreach ($capitulosPorPlano[$plano['id']] as $cap): ?>
-                                                <li class="list-group-item d-flex justify-content-between align-items-center py-1 px-2">
-                                                    <span><?= htmlspecialchars($cap['titulo']) ?></span>
-                                                    <span class="badge <?= $cap['status'] === 'concluido' ? 'bg-success' : 'bg-secondary' ?> ms-2"> <?= $cap['status'] ?> </span>
+                                                <li class="list-group-item">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <div>
+                                                            <b><?= htmlspecialchars($cap['titulo']) ?></b>
+                                                            <span class="badge bg-secondary">Ordem: <?= $cap['ordem'] ?></span>
+                                                            <span class="badge badge-status <?= $cap['status'] === 'concluido' ? 'bg-success' : 'bg-info text-dark' ?>">Status: <?= $cap['status'] ?></span>
+                                                        </div>
+                                                        <div>
+                                                            <button class="btn btn-primary btn-sm" onclick="abrirModalEditarCapitulo(<?= $cap['id'] ?>, '<?= htmlspecialchars(addslashes($cap['titulo'])) ?>', <?= $cap['ordem'] ?>, '<?= $cap['status'] ?>', '<?= htmlspecialchars(addslashes($cap['descricao'])) ?>', <?= $cap['duracao_estimativa'] ? $cap['duracao_estimativa'] : 'null' ?>)">Editar</button>
+                                                            <button class="btn btn-danger btn-sm" onclick="abrirModalExcluirCapitulo(<?= $cap['id'] ?>, '<?= htmlspecialchars(addslashes($cap['titulo'])) ?>')">Excluir</button>
+                                                            <button class="btn btn-success btn-sm" onclick="abrirModalTopico(<?= $cap['id'] ?>)">Adicionar Tópico</button>
+                                                        </div>
+                                                    </div>
+                                                    <div class="mb-1"><b>Descrição:</b> <?= nl2br(htmlspecialchars($cap['descricao'])) ?></div>
+                                                    <div class="mb-1"><b>Duração estimada:</b> <?= $cap['duracao_estimativa'] ? $cap['duracao_estimativa'] . ' min' : '-' ?></div>
+                                                    <div class="ms-3">
+                                                        <b>Tópicos:</b>
+                                                        <?php if (!empty($topicosPorCapitulo[$cap['id']])): foreach ($topicosPorCapitulo[$cap['id']] as $top): ?>
+                                                            <div class="topico-box mb-2">
+                                                                <div class="d-flex justify-content-between align-items-center">
+                                                                    <div>
+                                                                        <b><?= htmlspecialchars($top['titulo']) ?></b>
+                                                                        <span class="badge bg-secondary">Ordem: <?= $top['ordem'] ?></span>
+                                                                        <span class="badge badge-status <?= $top['status'] === 'concluido' ? 'bg-success' : ($top['status'] === 'pendente' ? 'bg-warning text-dark' : 'bg-info text-dark') ?>">Status: <?= $top['status'] ?></span>
+                                                                    </div>
+                                                                    <div>
+                                                                        <button class="btn btn-primary btn-sm" onclick="abrirModalEditarTopico(<?= $top['id'] ?>, <?= $cap['id'] ?>, '<?= htmlspecialchars(addslashes($top['titulo'])) ?>', '<?= htmlspecialchars(addslashes($top['descricao'])) ?>', '<?= $top['status'] ?>', '<?= htmlspecialchars(addslashes($top['observacoes'] ?? '')) ?>')">Editar</button>
+                                                                        <button class="btn btn-danger btn-sm" onclick="abrirModalExcluirTopico(<?= $top['id'] ?>, '<?= htmlspecialchars(addslashes($top['titulo'])) ?>')">Excluir</button>
+                                                                    </div>
+                                                                </div>
+                                                                <div><b>Descrição:</b> <?= nl2br(htmlspecialchars($top['descricao'])) ?></div>
+                                                                <?php if (!empty($top['observacoes'])): ?><div><b>Observações:</b> <?= nl2br(htmlspecialchars($top['observacoes'])) ?></div><?php endif; ?>
+                                                                <div class="text-muted" style="font-size:0.93em;">Criado em: <?= date('d/m/Y H:i', strtotime($top['data_criacao'])) ?> | Atualizado em: <?= date('d/m/Y H:i', strtotime($top['data_atualizacao'])) ?></div>
+                                                            </div>
+                                                        <?php endforeach; else: ?>
+                                                            <div class="text-muted">Nenhum tópico cadastrado.</div>
+                                                        <?php endif; ?>
+                                                    </div>
                                                 </li>
                                             <?php endforeach; else: ?>
                                                 <li class="list-group-item text-muted py-1 px-2">Nenhum capítulo cadastrado</li>
                                             <?php endif; ?>
                                         </ul>
-                                        <div class="d-flex gap-2 mt-auto justify-content-center">
-                                            <button class="btn btn-primary btn-sm" title="Editar" onclick="abrirModalEditarPlano(
-                                                <?= $plano['id'] ?>,
-                                                '<?= htmlspecialchars(addslashes($plano['titulo'])) ?>',
-                                                '<?= isset($plano['disciplina_id']) ? $plano['disciplina_id'] : '' ?>',
-                                                '<?= htmlspecialchars(addslashes($plano['descricao'])) ?>',
-                                                '<?= $plano['status'] ?>',
-                                                <?= $turma_id !== null ? $turma_id : "''" ?>,
-                                                '<?= isset($plano['data_inicio']) ? date('Y-m-d', strtotime($plano['data_inicio'])) : '' ?>',
-                                                '<?= isset($plano['data_fim']) ? date('Y-m-d', strtotime($plano['data_fim'])) : '' ?>',
-                                                '<?= htmlspecialchars(addslashes($plano['objetivo_geral'])) ?>'
-                                            )"><i class="bi bi-pencil"></i> Editar</button>
-                                            <button class="btn btn-danger btn-sm" title="Excluir" onclick="abrirModalExcluirPlano(<?= $plano['id'] ?>, '<?= htmlspecialchars(addslashes($plano['titulo'])) ?>')"><i class="bi bi-trash"></i> Excluir</button>
-                                            <a href="plano_detalhe.php?id=<?= $plano['id'] ?>" class="btn btn-secondary btn-sm" title="Gerenciar capítulos/tópicos"><i class="bi bi-list-task"></i> Gerenciar</a>
-                                        </div>
+                                        <!-- Remover o botão Gerenciar -->
+                                        <!-- <a href="plano_detalhe.php?id=<?= $plano['id'] ?>" ...>Gerenciar</a> -->
                                     <?php else: ?>
                                         <div class="text-muted mb-2">Nenhum plano cadastrado para esta disciplina.</div>
                                         <button class="btn btn-success btn-sm w-100" onclick="abrirModalPlanoDisciplina(<?= $disc['id'] ?>, '<?= htmlspecialchars(addslashes($disc['nome'])) ?>', <?= $turma_id ?>)"><i class="bi bi-plus-circle"></i> Criar Plano</button>
@@ -378,131 +418,279 @@ if (!empty($planos)) {
     </div>
   </div>
 </div>
+<!-- Modal Capítulo (criar/editar) -->
+<div class="modal fade" id="modalCapitulo" tabindex="-1" aria-labelledby="tituloModalCapitulo" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title" id="tituloModalCapitulo">Adicionar Capítulo</h4>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <form id="formCapitulo">
+        <div class="modal-body">
+          <input type="hidden" name="plano_id" id="plano_id_capitulo">
+          <input type="hidden" name="id_capitulo" id="id_capitulo">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label for="titulo_capitulo" class="form-label">Título do capítulo</label>
+              <input type="text" name="titulo" id="titulo_capitulo" placeholder="Título do capítulo" required class="form-control">
+            </div>
+            <div class="col-md-6">
+              <label for="duracao_capitulo" class="form-label">Duração estimada (min)</label>
+              <input type="number" name="duracao_estimativa" id="duracao_capitulo" placeholder="Duração estimada (min)" class="form-control">
+            </div>
+            <div class="col-md-6">
+              <label for="status_capitulo" class="form-label">Status</label>
+              <select name="status" id="status_capitulo" class="form-select">
+                <option value="em_andamento">Em andamento</option>
+                <option value="concluido">Concluído</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="descricao_capitulo" class="form-label">Descrição do capítulo</label>
+              <textarea name="descricao" id="descricao_capitulo" placeholder="Descrição do capítulo" class="form-control" rows="2"></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<!-- Modal Exclusão Capítulo -->
+<div class="modal fade" id="modalExcluirCapitulo" tabindex="-1" aria-labelledby="excluirCapituloLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title" id="excluirCapituloLabel">Excluir Capítulo</h4>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <form id="formExcluirCapitulo">
+        <div class="modal-body">
+          <input type="hidden" name="id_capitulo" id="excluir_id_capitulo">
+          <p id="excluir_nome_capitulo" style="margin:15px 0;"></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-danger">Confirmar Exclusão</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<!-- Modal Tópico (criar/editar) -->
+<div class="modal fade" id="modalTopico" tabindex="-1" aria-labelledby="tituloModalTopico" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title" id="tituloModalTopico">Adicionar Tópico</h4>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <form id="formTopico">
+        <div class="modal-body">
+          <input type="hidden" name="capitulo_id" id="capitulo_id_topico">
+          <input type="hidden" name="id_topico" id="id_topico">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label for="titulo_topico" class="form-label">Título do tópico</label>
+              <input type="text" name="titulo" id="titulo_topico" placeholder="Título do tópico" required class="form-control">
+            </div>
+            <div class="col-md-6">
+              <label for="status_topico" class="form-label">Status</label>
+              <select name="status" id="status_topico" class="form-select">
+                <option value="em_andamento">Em andamento</option>
+                <option value="concluido">Concluído</option>
+                <option value="pendente">Pendente</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="descricao_topico" class="form-label">Descrição do tópico</label>
+              <textarea name="descricao" id="descricao_topico" placeholder="Descrição do tópico" required class="form-control" rows="2"></textarea>
+            </div>
+            <div class="col-md-6">
+              <label for="observacoes_topico" class="form-label">Observações</label>
+              <textarea name="observacoes" id="observacoes_topico" placeholder="Observações" class="form-control" rows="2"></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<!-- Modal Exclusão Tópico -->
+<div class="modal fade" id="modalExcluirTopico" tabindex="-1" aria-labelledby="excluirTopicoLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title" id="excluirTopicoLabel">Excluir Tópico</h4>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <form id="formExcluirTopico">
+        <div class="modal-body">
+          <input type="hidden" name="id_topico" id="excluir_id_topico">
+          <p id="excluir_nome_topico" style="margin:15px 0;"></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-danger">Confirmar Exclusão</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts para manipular capítulos e tópicos (copiados/adaptados de plano_detalhe.php) -->
 <script>
-function abrirModalPlano() {
-  // Limpar o formulário
-  document.getElementById('formPlano').reset();
-  if (document.getElementById('disciplina_id_plano')) document.getElementById('disciplina_id_plano').value = '';
-  if (document.getElementById('disciplina_nome_plano')) document.getElementById('disciplina_nome_plano').value = '';
-  if (document.getElementById('titulo_plano')) document.getElementById('titulo_plano').value = '';
-  if (document.getElementById('descricao_plano')) document.getElementById('descricao_plano').value = '';
-  if (document.getElementById('objetivo_geral_plano')) document.getElementById('objetivo_geral_plano').value = '';
-  if (document.getElementById('data_inicio_plano')) document.getElementById('data_inicio_plano').value = '';
-  if (document.getElementById('data_fim_plano')) document.getElementById('data_fim_plano').value = '';
-  if (document.getElementById('status_plano')) document.getElementById('status_plano').value = 'em_andamento';
-  const modal = new bootstrap.Modal(document.getElementById('modalPlano'));
-  modal.show();
+function abrirModalCapitulo(plano_id) {
+    document.getElementById('formCapitulo').reset();
+    document.getElementById('formCapitulo').action = '';
+    document.getElementById('tituloModalCapitulo').innerText = 'Adicionar Capítulo';
+    document.getElementById('id_capitulo').value = '';
+    document.getElementById('plano_id_capitulo').value = plano_id;
+    document.getElementById('titulo_capitulo').value = '';
+    document.getElementById('descricao_capitulo').value = '';
+    document.getElementById('duracao_capitulo').value = '';
+    document.getElementById('status_capitulo').value = 'em_andamento';
+    const modal = new bootstrap.Modal(document.getElementById('modalCapitulo'));
+    modal.show();
 }
-function fecharModalPlano() {
-  const modal = bootstrap.Modal.getInstance(document.getElementById('modalPlano'));
-  if (modal) modal.hide();
+function abrirModalEditarCapitulo(id, titulo, ordem, status, descricao, duracao) {
+    document.getElementById('formCapitulo').action = '';
+    document.getElementById('tituloModalCapitulo').innerText = 'Editar Capítulo';
+    document.getElementById('id_capitulo').value = id;
+    document.getElementById('titulo_capitulo').value = titulo;
+    document.getElementById('status_capitulo').value = status;
+    document.getElementById('descricao_capitulo').value = descricao || '';
+    document.getElementById('duracao_capitulo').value = duracao && duracao !== 'null' ? duracao : '';
+    // plano_id não muda ao editar
+    const modal = new bootstrap.Modal(document.getElementById('modalCapitulo'));
+    modal.show();
 }
-function abrirModalEditarPlano(id, titulo, disciplina_id, descricao, status, turma_id, data_inicio, data_fim, objetivo_geral) {
-  document.getElementById('editar_id_plano').value = id;
-  document.getElementById('editar_titulo').value = titulo;
-  if (document.getElementById('editar_disciplina_id')) {
-    document.getElementById('editar_disciplina_id').value = disciplina_id || '';
-  }
-  document.getElementById('editar_descricao').value = descricao || '';
-  document.getElementById('editar_status').value = status || 'em_andamento';
-  if (typeof turma_id !== 'undefined' && document.getElementById('editar_turma_id')) {
-    document.getElementById('editar_turma_id').value = turma_id;
-  }
-  document.getElementById('editar_data_inicio').value = data_inicio || '';
-  document.getElementById('editar_data_fim').value = data_fim || '';
-  document.getElementById('editar_objetivo_geral').value = objetivo_geral || '';
-  const modal = new bootstrap.Modal(document.getElementById('modalEditarPlano'));
-  modal.show();
+function fecharModalCapitulo() {
+    const modal = bootstrap.Modal.getInstance(document.getElementById('modalCapitulo'));
+    if (modal) modal.hide();
 }
-function fecharModalEditarPlano() {
-  const modal = bootstrap.Modal.getInstance(document.getElementById('modalEditarPlano'));
-  if (modal) modal.hide();
+function abrirModalExcluirCapitulo(id, titulo) {
+    document.getElementById('excluir_id_capitulo').value = id;
+    document.getElementById('excluir_nome_capitulo').innerHTML = 'Tem certeza que deseja excluir o capítulo <b>' + titulo + '</b>?';
+    const modal = new bootstrap.Modal(document.getElementById('modalExcluirCapitulo'));
+    modal.show();
 }
-function abrirModalExcluirPlano(id, titulo) {
-  document.getElementById('excluir_id_plano').value = id;
-  document.getElementById('excluir_nome_plano').innerHTML = 'Tem certeza que deseja excluir o plano <b>' + titulo + '</b>?';
-  const modal = new bootstrap.Modal(document.getElementById('modalExcluirPlano'));
-  modal.show();
+function fecharModalExcluirCapitulo() {
+    const modal = bootstrap.Modal.getInstance(document.getElementById('modalExcluirCapitulo'));
+    if (modal) modal.hide();
 }
-function fecharModalExcluirPlano() {
-  const modal = bootstrap.Modal.getInstance(document.getElementById('modalExcluirPlano'));
-  if (modal) modal.hide();
+function abrirModalTopico(capitulo_id) {
+    document.getElementById('formTopico').reset();
+    document.getElementById('formTopico').action = '';
+    document.getElementById('tituloModalTopico').innerText = 'Adicionar Tópico';
+    document.getElementById('id_topico').value = '';
+    document.getElementById('capitulo_id_topico').value = capitulo_id;
+    document.getElementById('titulo_topico').value = '';
+    document.getElementById('descricao_topico').value = '';
+    document.getElementById('status_topico').value = 'em_andamento';
+    document.getElementById('observacoes_topico').value = '';
+    const modal = new bootstrap.Modal(document.getElementById('modalTopico'));
+    modal.show();
 }
-window.onclick = function(event) {
-  // Não é mais necessário fechar modais manualmente, Bootstrap faz isso
+function abrirModalEditarTopico(id, capitulo_id, titulo, descricao, status, observacoes) {
+    document.getElementById('formTopico').action = '';
+    document.getElementById('tituloModalTopico').innerText = 'Editar Tópico';
+    document.getElementById('id_topico').value = id;
+    document.getElementById('capitulo_id_topico').value = capitulo_id;
+    document.getElementById('titulo_topico').value = titulo;
+    document.getElementById('descricao_topico').value = descricao;
+    document.getElementById('status_topico').value = status;
+    document.getElementById('observacoes_topico').value = observacoes;
+    const modal = new bootstrap.Modal(document.getElementById('modalTopico'));
+    modal.show();
 }
-</script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    $('#disciplinas_turma').select2({
-        width: '100%',
-        placeholder: 'Selecione as disciplinas',
-        language: 'pt-BR'
-    });
-});
-</script>
-<script>
-function abrirModalPlanoDisciplina(disc_id, disc_nome, turma_id) {
-  document.getElementById('formPlano').reset();
-  document.getElementById('formPlano').action = '../controllers/criar_plano.php';
-  document.getElementById('tituloModalPlano').innerText = 'Criar Plano de Aula';
-  document.getElementById('disciplina_id_plano').value = disc_id;
-  document.getElementById('disciplina_nome_plano').value = disc_nome;
-  if (document.getElementById('titulo_plano')) document.getElementById('titulo_plano').value = '';
-  if (document.getElementById('descricao_plano')) document.getElementById('descricao_plano').value = '';
-  if (document.getElementById('objetivo_geral_plano')) document.getElementById('objetivo_geral_plano').value = '';
-  if (document.getElementById('data_inicio_plano')) document.getElementById('data_inicio_plano').value = '';
-  if (document.getElementById('data_fim_plano')) document.getElementById('data_fim_plano').value = '';
-  if (document.getElementById('status_plano')) document.getElementById('status_plano').value = 'em_andamento';
-  const modal = new bootstrap.Modal(document.getElementById('modalPlano'));
-  modal.show();
+function fecharModalTopico() {
+    const modal = bootstrap.Modal.getInstance(document.getElementById('modalTopico'));
+    if (modal) modal.hide();
 }
-</script>
-<script>
-// --- AJAX para CRIAR PLANO ---
-document.getElementById('formPlano').onsubmit = async function(e) {
-  e.preventDefault();
-  const form = this;
-  const formData = new FormData(form);
-  const resp = await fetch('../controllers/criar_plano_ajax.php', { method: 'POST', body: formData });
-  const data = await resp.json();
-  if (data.success) {
-    fecharModalPlano();
-    mostrarNotificacao('Plano de aula criado com sucesso!', 'success');
-    setTimeout(() => location.reload(), 1200);
-  } else {
-    mostrarNotificacao(data.error || 'Erro ao criar plano', 'danger');
-  }
+function abrirModalExcluirTopico(id, titulo) {
+    document.getElementById('excluir_id_topico').value = id;
+    document.getElementById('excluir_nome_topico').innerHTML = 'Tem certeza que deseja excluir o tópico <b>' + titulo + '</b>?';
+    const modal = new bootstrap.Modal(document.getElementById('modalExcluirTopico'));
+    modal.show();
+}
+function fecharModalExcluirTopico() {
+    const modal = bootstrap.Modal.getInstance(document.getElementById('modalExcluirTopico'));
+    if (modal) modal.hide();
+}
+// AJAX para capítulos
+const formCapitulo = document.getElementById('formCapitulo');
+formCapitulo.onsubmit = async function(e) {
+    e.preventDefault();
+    const id = document.getElementById('id_capitulo').value;
+    const url = id ? '../controllers/editar_capitulo_ajax.php' : '../controllers/criar_capitulo_ajax.php';
+    const formData = new FormData(formCapitulo);
+    const resp = await fetch(url, { method: 'POST', body: formData });
+    const data = await resp.json();
+    if (data.success) {
+        fecharModalCapitulo();
+        mostrarNotificacao('Capítulo salvo com sucesso!', 'success');
+        setTimeout(() => location.reload(), 1200);
+    } else {
+        mostrarNotificacao(data.error || 'Erro ao salvar capítulo', 'danger');
+    }
 };
-// --- AJAX para EDITAR PLANO ---
-document.getElementById('formEditarPlano').onsubmit = async function(e) {
-  e.preventDefault();
-  const form = this;
-  const formData = new FormData(form);
-  const resp = await fetch('../controllers/editar_plano_ajax.php', { method: 'POST', body: formData });
-  const data = await resp.json();
-  if (data.success) {
-    fecharModalEditarPlano();
-    mostrarNotificacao('Plano de aula editado com sucesso!', 'success');
-    setTimeout(() => location.reload(), 1200);
-  } else {
-    mostrarNotificacao(data.error || 'Erro ao editar plano', 'danger');
-  }
+const formExcluirCapitulo = document.getElementById('formExcluirCapitulo');
+formExcluirCapitulo.onsubmit = async function(e) {
+    e.preventDefault();
+    const id = document.getElementById('excluir_id_capitulo').value;
+    const formData = new FormData();
+    formData.append('id_capitulo', id);
+    const resp = await fetch('../controllers/excluir_capitulo_ajax.php', { method: 'POST', body: formData });
+    const data = await resp.json();
+    if (data.success) {
+        fecharModalExcluirCapitulo();
+        mostrarNotificacao('Capítulo excluído com sucesso!', 'success');
+        setTimeout(() => location.reload(), 1200);
+    } else {
+        mostrarNotificacao(data.error || 'Erro ao excluir capítulo', 'danger');
+    }
 };
-// --- AJAX para EXCLUIR PLANO ---
-document.getElementById('formExcluirPlano').onsubmit = async function(e) {
-  e.preventDefault();
-  const form = this;
-  const formData = new FormData(form);
-  const resp = await fetch('../controllers/excluir_plano_ajax.php', { method: 'POST', body: formData });
-  const data = await resp.json();
-  if (data.success) {
-    fecharModalExcluirPlano();
-    mostrarNotificacao('Plano de aula excluído com sucesso!', 'success');
-    setTimeout(() => location.reload(), 1200);
-  } else {
-    mostrarNotificacao(data.error || 'Erro ao excluir plano', 'danger');
-  }
+// AJAX para tópicos
+const formTopico = document.getElementById('formTopico');
+formTopico.onsubmit = async function(e) {
+    e.preventDefault();
+    const id = document.getElementById('id_topico').value;
+    const url = id ? '../controllers/editar_topico_ajax.php' : '../controllers/criar_topico_ajax.php';
+    const formData = new FormData(formTopico);
+    const resp = await fetch(url, { method: 'POST', body: formData });
+    const data = await resp.json();
+    if (data.success) {
+        fecharModalTopico();
+        mostrarNotificacao('Tópico salvo com sucesso!', 'success');
+        setTimeout(() => location.reload(), 1200);
+    } else {
+        mostrarNotificacao(data.error || 'Erro ao salvar tópico', 'danger');
+    }
+};
+const formExcluirTopico = document.getElementById('formExcluirTopico');
+formExcluirTopico.onsubmit = async function(e) {
+    e.preventDefault();
+    const id = document.getElementById('excluir_id_topico').value;
+    const formData = new FormData();
+    formData.append('id_topico', id);
+    const resp = await fetch('../controllers/excluir_topico_ajax.php', { method: 'POST', body: formData });
+    const data = await resp.json();
+    if (data.success) {
+        fecharModalExcluirTopico();
+        mostrarNotificacao('Tópico excluído com sucesso!', 'success');
+        setTimeout(() => location.reload(), 1200);
+    } else {
+        mostrarNotificacao(data.error || 'Erro ao excluir tópico', 'danger');
+    }
 };
 </script>
 <?php include 'footer.php'; ?>
