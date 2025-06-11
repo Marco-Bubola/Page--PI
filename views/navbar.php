@@ -58,13 +58,11 @@ $pagina_atual = basename($_SERVER['PHP_SELF']);
           <?php elseif ($_SESSION['usuario_tipo'] === 'professor'): ?>
             <?php if ($pagina_atual != 'home_professor.php'): ?>
             <li class="nav-item">
-              <a class="nav-link<?php if ($pagina_atual == 'home_professor.php') echo ' active'; ?>" href="home_professor.php">Home Professor</a>
+              <a class="nav-link<?php if ($pagina_atual == 'home_professor.php') echo ' active'; ?>" href="home_professor.php">Home </a>
             </li>
             <?php endif; ?>
           <?php endif; ?>
-          <li class="nav-item">
-            <a class="nav-link<?php if ($pagina_atual == 'planos.php') echo ' active'; ?>" href="planos.php">Planos</a>
-          </li>
+         
           <li class="nav-item">
             <a class="nav-link<?php if ($pagina_atual == 'disciplinas.php') echo ' active'; ?>" href="disciplinas.php">Disciplinas</a>
           </li>

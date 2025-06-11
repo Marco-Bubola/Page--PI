@@ -1,6 +1,6 @@
 <?php
 session_start();
-if (!isset($_SESSION['usuario_nome']) || ($_SESSION['usuario_tipo'] !== 'coordenador' && $_SESSION['usuario_tipo'] !== 'admin')) {
+if (!isset($_SESSION['usuario_nome']) || !in_array($_SESSION['usuario_tipo'], ['coordenador', 'admin', 'professor'])) {
     header('Location: index.php');
     exit();
 }
@@ -440,4 +440,4 @@ formExcluirTopico.onsubmit = async function(e) {
 </script>
 <?php include 'footer.php'; ?>
 </body>
-</html> 
+</html>
