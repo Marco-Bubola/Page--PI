@@ -546,6 +546,133 @@ if (!empty($planos)) {
   </div>
 </div>
 
+<script>
+function abrirModalPlano() {
+  // Limpar o formulário
+  document.getElementById('formPlano').reset();
+  if (document.getElementById('disciplina_id_plano')) document.getElementById('disciplina_id_plano').value = '';
+  if (document.getElementById('disciplina_nome_plano')) document.getElementById('disciplina_nome_plano').value = '';
+  if (document.getElementById('titulo_plano')) document.getElementById('titulo_plano').value = '';
+  if (document.getElementById('descricao_plano')) document.getElementById('descricao_plano').value = '';
+  if (document.getElementById('objetivo_geral_plano')) document.getElementById('objetivo_geral_plano').value = '';
+  if (document.getElementById('data_inicio_plano')) document.getElementById('data_inicio_plano').value = '';
+  if (document.getElementById('data_fim_plano')) document.getElementById('data_fim_plano').value = '';
+  if (document.getElementById('status_plano')) document.getElementById('status_plano').value = 'em_andamento';
+  const modal = new bootstrap.Modal(document.getElementById('modalPlano'));
+  modal.show();
+}
+function fecharModalPlano() {
+  const modal = bootstrap.Modal.getInstance(document.getElementById('modalPlano'));
+  if (modal) modal.hide();
+}
+function abrirModalEditarPlano(id, titulo, disciplina_id, descricao, status, turma_id, data_inicio, data_fim, objetivo_geral) {
+  document.getElementById('editar_id_plano').value = id;
+  document.getElementById('editar_titulo').value = titulo;
+  if (document.getElementById('editar_disciplina_id')) {
+    document.getElementById('editar_disciplina_id').value = disciplina_id || '';
+  }
+  document.getElementById('editar_descricao').value = descricao || '';
+  document.getElementById('editar_status').value = status || 'em_andamento';
+  if (typeof turma_id !== 'undefined' && document.getElementById('editar_turma_id')) {
+    document.getElementById('editar_turma_id').value = turma_id;
+  }
+  document.getElementById('editar_data_inicio').value = data_inicio || '';
+  document.getElementById('editar_data_fim').value = data_fim || '';
+  document.getElementById('editar_objetivo_geral').value = objetivo_geral || '';
+  const modal = new bootstrap.Modal(document.getElementById('modalEditarPlano'));
+  modal.show();
+}
+function fecharModalEditarPlano() {
+  const modal = bootstrap.Modal.getInstance(document.getElementById('modalEditarPlano'));
+  if (modal) modal.hide();
+}
+function abrirModalExcluirPlano(id, titulo) {
+  document.getElementById('excluir_id_plano').value = id;
+  document.getElementById('excluir_nome_plano').innerHTML = 'Tem certeza que deseja excluir o plano <b>' + titulo + '</b>?';
+  const modal = new bootstrap.Modal(document.getElementById('modalExcluirPlano'));
+  modal.show();
+}
+function fecharModalExcluirPlano() {
+  const modal = bootstrap.Modal.getInstance(document.getElementById('modalExcluirPlano'));
+  if (modal) modal.hide();
+}
+window.onclick = function(event) {
+  // Não é mais necessário fechar modais manualmente, Bootstrap faz isso
+}
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    $('#disciplinas_turma').select2({
+        width: '100%',
+        placeholder: 'Selecione as disciplinas',
+        language: 'pt-BR'
+    });
+});
+</script>
+<script>
+function abrirModalPlanoDisciplina(disc_id, disc_nome, turma_id) {
+  document.getElementById('formPlano').reset();
+  document.getElementById('formPlano').action = '../controllers/criar_plano.php';
+  document.getElementById('tituloModalPlano').innerText = 'Criar Plano de Aula';
+  document.getElementById('disciplina_id_plano').value = disc_id;
+  document.getElementById('disciplina_nome_plano').value = disc_nome;
+  if (document.getElementById('titulo_plano')) document.getElementById('titulo_plano').value = '';
+  if (document.getElementById('descricao_plano')) document.getElementById('descricao_plano').value = '';
+  if (document.getElementById('objetivo_geral_plano')) document.getElementById('objetivo_geral_plano').value = '';
+  if (document.getElementById('data_inicio_plano')) document.getElementById('data_inicio_plano').value = '';
+  if (document.getElementById('data_fim_plano')) document.getElementById('data_fim_plano').value = '';
+  if (document.getElementById('status_plano')) document.getElementById('status_plano').value = 'em_andamento';
+  const modal = new bootstrap.Modal(document.getElementById('modalPlano'));
+  modal.show();
+}
+</script>
+<script>
+// --- AJAX para CRIAR PLANO ---
+document.getElementById('formPlano').onsubmit = async function(e) {
+  e.preventDefault();
+  const form = this;
+  const formData = new FormData(form);
+  const resp = await fetch('../controllers/criar_plano_ajax.php', { method: 'POST', body: formData });
+  const data = await resp.json();
+  if (data.success) {
+    fecharModalPlano();
+    mostrarNotificacao('Plano de aula criado com sucesso!', 'success');
+    setTimeout(() => location.reload(), 1200);
+  } else {
+    mostrarNotificacao(data.error || 'Erro ao criar plano', 'danger');
+  }
+};
+// --- AJAX para EDITAR PLANO ---
+document.getElementById('formEditarPlano').onsubmit = async function(e) {
+  e.preventDefault();
+  const form = this;
+  const formData = new FormData(form);
+  const resp = await fetch('../controllers/editar_plano_ajax.php', { method: 'POST', body: formData });
+  const data = await resp.json();
+  if (data.success) {
+    fecharModalEditarPlano();
+    mostrarNotificacao('Plano de aula editado com sucesso!', 'success');
+    setTimeout(() => location.reload(), 1200);
+  } else {
+    mostrarNotificacao(data.error || 'Erro ao editar plano', 'danger');
+  }
+};
+// --- AJAX para EXCLUIR PLANO ---
+document.getElementById('formExcluirPlano').onsubmit = async function(e) {
+  e.preventDefault();
+  const form = this;
+  const formData = new FormData(form);
+  const resp = await fetch('../controllers/excluir_plano_ajax.php', { method: 'POST', body: formData });
+  const data = await resp.json();
+  if (data.success) {
+    fecharModalExcluirPlano();
+    mostrarNotificacao('Plano de aula excluído com sucesso!', 'success');
+    setTimeout(() => location.reload(), 1200);
+  } else {
+    mostrarNotificacao(data.error || 'Erro ao excluir plano', 'danger');
+  }
+};
+</script>
 <!-- Scripts para manipular capítulos e tópicos (copiados/adaptados de plano_detalhe.php) -->
 <script>
 function abrirModalCapitulo(plano_id) {
@@ -616,16 +743,19 @@ function fecharModalTopico() {
     const modal = bootstrap.Modal.getInstance(document.getElementById('modalTopico'));
     if (modal) modal.hide();
 }
-function abrirModalExcluirTopico(id, titulo) {
-    document.getElementById('excluir_id_topico').value = id;
-    document.getElementById('excluir_nome_topico').innerHTML = 'Tem certeza que deseja excluir o tópico <b>' + titulo + '</b>?';
-    const modal = new bootstrap.Modal(document.getElementById('modalExcluirTopico'));
+function abrirModalPlano() {
+    // Limpa o formulário
+    document.getElementById('formPlano').reset();
+    // Se for por turma, limpa os campos de disciplina
+    <?php if ($turma_id): ?>
+        document.getElementById('disciplina_nome_plano').value = '';
+        document.getElementById('disciplina_id_plano').value = '';
+    <?php endif; ?>
+    // Abre o modal
+    const modal = new bootstrap.Modal(document.getElementById('modalPlano'));
     modal.show();
 }
-function fecharModalExcluirTopico() {
-    const modal = bootstrap.Modal.getInstance(document.getElementById('modalExcluirTopico'));
-    if (modal) modal.hide();
-}
+
 // AJAX para capítulos
 const formCapitulo = document.getElementById('formCapitulo');
 formCapitulo.onsubmit = async function(e) {
