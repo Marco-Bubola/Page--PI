@@ -6,6 +6,9 @@ if (session_status() === PHP_SESSION_NONE) {
 $pagina_atual = basename($_SERVER['PHP_SELF']);
 ?>
 <style>
+.navbar{
+  background-color: #112130 !important;
+}
 .navbar .nav-link {
     font-weight: 600;
     font-size: 1.08em;
@@ -17,7 +20,7 @@ $pagina_atual = basename($_SERVER['PHP_SELF']);
 }
 .navbar .nav-link.active, .navbar .nav-link:hover {
     background: #fff !important;
-    color: #0d6efd !important;
+    color: #112130 !important;
     box-shadow: 0 2px 8px rgba(0,0,0,0.07);
 }
 .navbar .nav-link.text-danger.active, .navbar .nav-link.text-danger:hover {
@@ -25,11 +28,11 @@ $pagina_atual = basename($_SERVER['PHP_SELF']);
     color: #fff !important;
 }
 </style>
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary" style="min-height: 56px;">
+<link rel="icon" type="image/png" href="../assets/img/LOGO_PAGE.png">
+<nav class="navbar navbar-expand-lg navbar-dark" style="min-height: 56px;">
   <div class="container-fluid">
-    <a class="navbar-brand d-flex align-items-center" href="#">
-      <img src="../assets/img/LOGO_PAGE.png" alt="Logo PAGE" style="height:40px; margin-right:10px;">
-      PAGE
+    <a class="navbar-brand d-flex align-items-center">
+      <img src="../assets/img/LOGO_PAGE.png" alt="Logo PAGE" style="height:60px; width:60px;  margin-right:10px;">
     </a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
