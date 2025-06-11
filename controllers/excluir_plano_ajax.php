@@ -1,7 +1,7 @@
 <?php
 session_start();
 header('Content-Type: application/json');
-if (!isset($_SESSION['usuario_nome']) || ($_SESSION['usuario_tipo'] !== 'coordenador' && $_SESSION['usuario_tipo'] !== 'admin')) {
+if (!isset($_SESSION['usuario_nome']) || !in_array($_SESSION['usuario_tipo'], ['coordenador', 'admin', 'professor'])) {
     echo json_encode(['success' => false, 'error' => 'Acesso negado']);
     exit();
 }
@@ -19,4 +19,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['id_plano'])) {
 } else {
     echo json_encode(['success' => false, 'error' => 'Dados inválidos']);
     exit();
-} 
+}
