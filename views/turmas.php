@@ -691,6 +691,57 @@ if ($result && $result->num_rows > 0) {
             </div>
         </div>
     </div>
+    <!-- Modal de Confirmar Toggle de Capítulo -->
+    <div id="modalToggleCapitulo" style="display:none;position:fixed;z-index:1000;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.4);">
+        <div style="background:#fff;padding:0;border-radius:14px;max-width:400px;margin:100px auto;position:relative;box-shadow:0 8px 32px rgba(0,0,0,0.18);overflow:hidden;">
+            <div style="background:linear-gradient(90deg,#0d6efd 60%,#4f8cff 100%);padding:16px 24px 12px 24px;display:flex;align-items:center;gap:10px;">
+                <i class="bi bi-toggle-on text-white" style="font-size:1.7rem;"></i>
+                <h4 class="mb-0 text-white">Ativar/Cancelar Capítulo</h4>
+                <span onclick="fecharModalToggleCapitulo()" style="position:absolute;top:10px;right:18px;font-size:26px;cursor:pointer;color:#fff;opacity:0.8;">&times;</span>
+            </div>
+            <div style="padding:24px 24px 18px 24px;">
+                <div class="alert alert-info d-flex align-items-center gap-2 mb-3" style="font-size:1.1em;">
+                    <i class="bi bi-info-circle-fill" style="font-size:1.5em;"></i>
+                    Confirme a ação para o capítulo.
+                </div>
+                <form action="../controllers/toggle_capitulo_ajax.php" method="POST" id="formToggleCapitulo">
+                    <input type="hidden" name="id_capitulo" id="toggle_id_capitulo">
+                    <input type="hidden" name="status" id="toggle_status_capitulo">
+                    <p id="toggle_nome_capitulo" style="margin:15px 0;"></p>
+                    <div class="d-flex justify-content-end gap-2 pt-2">
+                        <button type="submit" class="btn btn-primary d-flex align-items-center gap-1"><i class="bi bi-check-circle"></i> Confirmar</button>
+                        <button type="button" class="btn btn-secondary d-flex align-items-center gap-1" onclick="fecharModalToggleCapitulo()"><i class="bi bi-x-circle"></i> Cancelar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmar Toggle de Tópico -->
+    <div id="modalToggleTopico" style="display:none;position:fixed;z-index:1000;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.4);">
+        <div style="background:#fff;padding:0;border-radius:14px;max-width:400px;margin:100px auto;position:relative;box-shadow:0 8px 32px rgba(0,0,0,0.18);overflow:hidden;">
+            <div style="background:linear-gradient(90deg,#0d6efd 60%,#4f8cff 100%);padding:16px 24px 12px 24px;display:flex;align-items:center;gap:10px;">
+                <i class="bi bi-toggle-on text-white" style="font-size:1.7rem;"></i>
+                <h4 class="mb-0 text-white">Ativar/Cancelar Tópico</h4>
+                <span onclick="fecharModalToggleTopico()" style="position:absolute;top:10px;right:18px;font-size:26px;cursor:pointer;color:#fff;opacity:0.8;">&times;</span>
+            </div>
+            <div style="padding:24px 24px 18px 24px;">
+                <div class="alert alert-info d-flex align-items-center gap-2 mb-3" style="font-size:1.1em;">
+                    <i class="bi bi-info-circle-fill" style="font-size:1.5em;"></i>
+                    Confirme a ação para o tópico.
+                </div>
+                <form action="../controllers/toggle_topico_ajax.php" method="POST" id="formToggleTopico">
+                    <input type="hidden" name="id_topico" id="toggle_id_topico">
+                    <input type="hidden" name="status" id="toggle_status_topico">
+                    <p id="toggle_nome_topico" style="margin:15px 0;"></p>
+                    <div class="d-flex justify-content-end gap-2 pt-2">
+                        <button type="submit" class="btn btn-primary d-flex align-items-center gap-1"><i class="bi bi-check-circle"></i> Confirmar</button>
+                        <button type="button" class="btn btn-secondary d-flex align-items-center gap-1" onclick="fecharModalToggleTopico()"><i class="bi bi-x-circle"></i> Cancelar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
     <script>
     function atualizarAnoLetivo() {
         var inicio = document.getElementById('inicio_turma').value;
@@ -1113,6 +1164,66 @@ if ($result && $result->num_rows > 0) {
             };
         }
     });
+
+    function abrirModalToggleCapitulo(id, nome, status, btn) {
+        document.getElementById('toggle_id_capitulo').value = id;
+        document.getElementById('toggle_nome_capitulo').innerHTML = '<b>' + nome + '</b>';
+        document.getElementById('toggle_status_capitulo').value = status === 'cancelado' ? 'em_andamento' : 'cancelado';
+        document.getElementById('modalToggleCapitulo').style.display = 'block';
+    }
+
+    function fecharModalToggleCapitulo() {
+        document.getElementById('modalToggleCapitulo').style.display = 'none';
+    }
+
+    function abrirModalToggleTopico(id, nome, status, btn) {
+        document.getElementById('toggle_id_topico').value = id;
+        document.getElementById('toggle_nome_topico').innerHTML = '<b>' + nome + '</b>';
+        document.getElementById('toggle_status_topico').value = status === 'cancelado' ? 'em_andamento' : 'cancelado';
+        document.getElementById('modalToggleTopico').style.display = 'block';
+    }
+
+    function fecharModalToggleTopico() {
+        document.getElementById('modalToggleTopico').style.display = 'none';
+    }
+
+    // Toggle AJAX de Capítulo
+    document.getElementById('formToggleCapitulo').onsubmit = async function(e) {
+        e.preventDefault();
+        const form = this;
+        const formData = new FormData(form);
+        const resp = await fetch(form.action, {
+            method: 'POST',
+            body: formData
+        });
+        const data = await resp.json();
+        if (data.success) {
+            fecharModalToggleCapitulo();
+            mostrarNotificacao('Status do capítulo atualizado com sucesso!', 'success');
+            setTimeout(() => location.reload(), 1200);
+        } else {
+            mostrarNotificacao(data.error || 'Erro ao atualizar status do capítulo', 'danger');
+        }
+    };
+
+    // Toggle AJAX de Tópico
+    document.getElementById('formToggleTopico').onsubmit = async function(e) {
+        e.preventDefault();
+        const form = this;
+        const formData = new FormData(form);
+        const resp = await fetch(form.action, {
+            method: 'POST',
+            body: formData
+        });
+        const data = await resp.json();
+        if (data.success) {
+            fecharModalToggleTopico();
+            mostrarNotificacao('Status do tópico atualizado com sucesso!', 'success');
+            setTimeout(() => location.reload(), 1200);
+        } else {
+            mostrarNotificacao(data.error || 'Erro ao atualizar status do tópico', 'danger');
+        }
+    };
     </script>
     <?php include 'footer.php'; ?>
 </body>
