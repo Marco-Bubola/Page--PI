@@ -87,6 +87,45 @@ if ($res && $res->num_rows > 0) {
         .plano-badge { margin-left: 8px; }
         .section-title { font-size: 1.3rem; font-weight: 600; color: #222; margin-bottom: 0.7rem; }
         .section-desc { color: #666; font-size: 1.01rem; margin-bottom: 1.2rem; }
+        /* --- Adicionado do turmas.php --- */
+        .card-turma {
+            border-radius: 14px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            background: #fff;
+            position: relative;
+            margin-bottom: 24px;
+        }
+        .card-turma.cancelada {
+            opacity: 0.7;
+            filter: grayscale(0.2);
+        }
+        .card-turma.concluida {
+            border: 2px solid #198754;
+        }
+        .status-overlay {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: #e9ecef;
+            color: #333;
+            border-radius: 8px;
+            padding: 4px 14px;
+            font-size: 1.05em;
+            font-weight: 600;
+            z-index: 2;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+        }
+        .turma-status-badge {
+            font-size: 1em;
+            padding: 7px 12px;
+        }
+        .disciplina-status {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 7px 10px;
+            margin-bottom: 6px;
+        }
+        /* Fim do CSS de turmas.php */
     </style>
 </head>
 <body>
@@ -255,4 +294,4 @@ if (urlParams.has('erro')) {
 </script>
 <?php include 'footer.php'; ?>
 </body>
-</html> 
+</html>
