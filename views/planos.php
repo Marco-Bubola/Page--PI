@@ -182,18 +182,26 @@ if ($turma_id && !empty($planos)) {
                     <h2 class="mb-2 section-title"><i class="fa-solid fa-clipboard-list me-2"></i>Planos de Aula<?= $turma_id ? ' da Turma: <span class=\"text-primary\">' . htmlspecialchars($turma_nome) . '</span>' : '' ?></h2>
                     <p class="mb-1 plano-label"><i class="fa-solid fa-circle-info me-1"></i>Aqui você encontra todos os planos de aula cadastrados<?= $turma_id ? ' para esta turma' : '' ?>. Cada card mostra a disciplina, o título, a descrição, status, data de criação e os capítulos do plano. Clique em <b>Gerenciar capítulos/tópicos</b> para ver detalhes ou editar cada plano.</p>
                 </div>
-                <?php if (!$turma_id): ?>
-                <button class="btn btn-success" onclick="abrirModalPlano()"><i class="fa-solid fa-plus me-2"></i>Criar Plano</button>
-                <?php endif; ?>
+              
             </div>
         </div>
     </div>
     <div class="row">
         <div class="col-12">
-            <div class="row g-4">
-                <?php if ($turma_id): ?>
-                    <?php foreach ($disciplinas as $disc): ?>
-                        <div class="col-12 col-md-6 col-xl-4">
+            <?php if ($turma_id): ?>
+                <!-- Abas de disciplinas -->
+                <ul class="nav nav-tabs" id="disciplinasTab" role="tablist">
+                    <?php foreach ($disciplinas as $i => $disc): ?>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link<?= $i === 0 ? ' active' : '' ?>" id="tab-<?= $disc['id'] ?>" data-bs-toggle="tab" data-bs-target="#disciplina-<?= $disc['id'] ?>" type="button" role="tab" aria-controls="disciplina-<?= $disc['id'] ?>" aria-selected="<?= $i === 0 ? 'true' : 'false' ?>">
+                                <?= htmlspecialchars($disc['nome']) ?>
+                            </button>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+                <div class="tab-content p-3 bg-white rounded-bottom shadow-sm border border-top-0" id="disciplinasTabContent">
+                    <?php foreach ($disciplinas as $i => $disc): ?>
+                        <div class="tab-pane fade<?= $i === 0 ? ' show active' : '' ?>" id="disciplina-<?= $disc['id'] ?>" role="tabpanel" aria-labelledby="tab-<?= $disc['id'] ?>">
                             <div class="card card-plano h-100 shadow-sm border-0">
                                 <div class="card-body d-flex flex-column">
                                     <div class="d-flex justify-content-between align-items-center mb-2">
@@ -285,7 +293,7 @@ if ($turma_id && !empty($planos)) {
                         </div>
                     <?php endforeach; ?>
             
-                <?php endif; ?>
+            <?php endif; ?>
             </div>
         </div>
     </div>
