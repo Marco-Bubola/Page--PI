@@ -1,6 +1,6 @@
 <?php
 session_start();
-if (!isset($_SESSION['usuario_nome']) || !in_array($_SESSION['usuario_tipo'], ['coordenador', 'admin', 'professor'])) {
+if (!isset($_SESSION['usuario_nome']) || !in_array($_SESSION['usuario_nome'], ['coordenador', 'admin', 'professor'])) {
     header('Location: index.php');
     exit();
 }
@@ -199,59 +199,106 @@ if ($result && $result->num_rows > 0) {
                     <i class="bi bi-info-circle"></i>
                     Aqui você encontra todas as turmas cadastradas. Cada card mostra o nome, ano letivo, turno, disciplinas e planos.
                 </div>
-                <button class="btn btn-success mt-2" onclick="abrirModalTurma()">
-                    <i class="bi bi-plus-circle"></i> Criar Turma
-                </button>
+                <?php if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'professor'): ?>
+                    <button class="btn btn-success mt-2" onclick="abrirModalTurma()">
+                        <i class="bi bi-plus-circle"></i> Criar Turma
+                    </button>
+                <?php endif; ?>
             </div>
         </div>
     </div>
     <!-- Barra de pesquisa, filtros e contadores -->
     <div class="row mb-3 g-2 align-items-end">
-        <div class="col-12 col-md-4">
-            <form class="d-flex" method="get" action="" style="gap:8px;">
-                <input type="text" class="form-control" name="search" placeholder="Pesquisar turma..." value="<?= htmlspecialchars($search) ?>" style="border-radius:8px;">
-                <button class="btn btn-outline-primary" type="submit" style="border-radius:8px;"><i class="bi bi-search"></i></button>
-                <?php if ($search !== ''): ?>
-                    <a href="turmas.php" class="btn btn-outline-secondary" title="Limpar pesquisa" style="border-radius:8px;"><i class="bi bi-x-circle"></i></a>
-                <?php endif; ?>
-                <!-- Mantém os filtros ao limpar pesquisa -->
-                <?php if (isset($_GET['ordem'])): ?><input type="hidden" name="ordem" value="<?= htmlspecialchars($_GET['ordem']) ?>"><?php endif; ?>
-                <?php if (isset($_GET['per_page'])): ?><input type="hidden" name="per_page" value="<?= htmlspecialchars($_GET['per_page']) ?>"><?php endif; ?>
+        <div class="col-12 col-md-8">
+            <form class="d-flex align-items-end flex-wrap gap-2" id="filtrosForm" method="get" action="">
+                <div class="input-group" style="max-width:360px;">
+                    <span class="input-group-text bg-white border-end-0" style="border-radius:8px 0 0 8px;">
+                        <i class="bi bi-search text-primary"></i>
+                    </span>
+                    <input type="text" class="form-control border-start-0 border-end-0" name="search" placeholder="Pesquisar turma..." value="<?= htmlspecialchars($search) ?>" style="border-radius:0; box-shadow:none;">
+                    <?php if ($search !== ''): ?>
+                        <button type="submit" class="btn btn-outline-secondary border-start-0 border-end-0" style="border-radius:0;" tabindex="-1" onclick="this.form.search.value=''; this.form.submit(); return false;" title="Limpar pesquisa">
+                            <i class="bi bi-x-circle"></i>
+                        </button>
+                    <?php endif; ?>
+                    <button class="btn btn-primary" type="submit" style="border-radius:0 8px 8px 0;">
+                        <i class="bi bi-arrow-right-circle"></i>
+                    </button>
+                </div>
+                <div class="dropdown">
+                    <button class="btn btn-gradient-primary dropdown-toggle px-4 py-2 fw-bold shadow-sm" type="button" id="dropdownFiltros" data-bs-toggle="dropdown" aria-expanded="false" style="border-radius: 12px; background: linear-gradient(90deg,#0d6efd 60%,#4f8cff 100%); color: #fff; border: none;">
+                        <i class="bi bi-funnel-fill me-1"></i> Filtros Avançados
+                    </button>
+                    <div class="dropdown-menu p-4 shadow-lg border-0" style="min-width: 520px; border-radius: 18px; background: #f8faff;" onclick="event.stopPropagation();">
+                        <div class="mb-3">
+                            <label class="form-label mb-2 fw-semibold text-primary">
+                                <i class="bi bi-eye me-1"></i>Mostrar:
+                            </label>
+                            <div class="btn-group w-100" role="group" aria-label="Mostrar por página">
+                                <?php
+                                    $per_page_options = [3, 6, 12, 24, 48];
+                                    $per_page_sel = isset($_GET['per_page']) ? intval($_GET['per_page']) : $per_page;
+                                ?>
+                                <?php foreach ($per_page_options as $opt): ?>
+                                    <input type="radio" class="btn-check" name="per_page" id="per_page_<?= $opt ?>" value="<?= $opt ?>" autocomplete="off" <?= $per_page_sel==$opt?'checked':'' ?>>
+                                    <label class="btn btn-outline-primary" for="per_page_<?= $opt ?>" style="min-width:44px;">
+                                        <i class="bi bi-list-ol"></i> <?= $opt ?>
+                                    </label>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label mb-2 fw-semibold text-primary">
+                                <i class="bi bi-sort-alpha-down me-1"></i>Ordenar:
+                            </label>
+                            <div class="btn-group w-100" role="group" aria-label="Ordenar">
+                                <?php
+                                    $ordem = isset($_GET['ordem']) ? $_GET['ordem'] : 'recentes';
+                                    $ordem_opts = [
+                                        'recentes' => ['icon' => 'bi-clock-history', 'label' => 'Mais recentes'],
+                                        'antigas' => ['icon' => 'bi-clock', 'label' => 'Mais antigas'],
+                                        'az' => ['icon' => 'bi-sort-alpha-down', 'label' => 'A-Z'],
+                                        'za' => ['icon' => 'bi-sort-alpha-up', 'label' => 'Z-A']
+                                    ];
+                                ?>
+                                <?php foreach ($ordem_opts as $key => $info): ?>
+                                    <input type="radio" class="btn-check" name="ordem" id="ordem_<?= $key ?>" value="<?= $key ?>" autocomplete="off" <?= $ordem==$key?'checked':'' ?>>
+                                    <label class="btn btn-outline-primary" for="ordem_<?= $key ?>" style="min-width:90px;">
+                                        <i class="bi <?= $info['icon'] ?>"></i> <?= $info['label'] ?>
+                                    </label>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label mb-2 fw-semibold text-primary">
+                                <i class="bi bi-activity me-1"></i>Status:
+                            </label>
+                            <div class="btn-group w-100" role="group" aria-label="Status">
+                                <?php
+                                    $status_filtro = isset($_GET['status_filtro']) ? $_GET['status_filtro'] : '';
+                                    $status_opts = [
+                                        '' => ['icon' => 'bi-ui-checks', 'label' => 'Todos'],
+                                        'ativa' => ['icon' => 'bi-check-circle-fill text-success', 'label' => 'Ativas'],
+                                        'concluída' => ['icon' => 'bi-check2-square text-primary', 'label' => 'Concluídas'],
+                                        'cancelada' => ['icon' => 'bi-x-circle-fill text-danger', 'label' => 'Canceladas']
+                                    ];
+                                ?>
+                                <?php foreach ($status_opts as $key => $info): ?>
+                                    <input type="radio" class="btn-check" name="status_filtro" id="status_<?= $key ?: 'todos' ?>" value="<?= $key ?>" autocomplete="off" <?= $status_filtro===$key?'checked':'' ?>>
+                                    <label class="btn btn-outline-primary" for="status_<?= $key ?: 'todos' ?>" style="min-width:90px;">
+                                        <i class="bi <?= $info['icon'] ?>"></i> <?= $info['label'] ?>
+                                    </label>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-gradient-primary w-100 mt-2 fw-bold" style="border-radius: 8px; background: linear-gradient(90deg,#0d6efd 60%,#4f8cff 100%); color: #fff; border: none;">
+                            <i class="bi bi-funnel"></i> Salvar Filtros
+                        </button>
+                    </div>
+                </div>
             </form>
         </div>
-        <div class="col-6 col-md-2">
-            <label for="per_page" class="form-label mb-0" style="font-weight:500;">Mostrar:</label>
-            <?php
-                $per_page_options = [3, 6, 12, 24, 48];
-                $per_page_sel = isset($_GET['per_page']) ? intval($_GET['per_page']) : $per_page;
-            ?>
-            <form method="get" action="" id="perPageForm">
-                <select name="per_page" id="per_page" class="form-select form-select-sm" style="width:100%;" onchange="this.form.submit()">
-                    <?php foreach ($per_page_options as $opt): ?>
-                        <option value="<?= $opt ?>" <?= $per_page_sel==$opt?'selected':'' ?>><?= $opt ?></option>
-                    <?php endforeach; ?>
-                </select>
-                <!-- Mantém os filtros ao mudar quantidade -->
-                <?php if ($search !== ''): ?><input type="hidden" name="search" value="<?= htmlspecialchars($search) ?>"><?php endif; ?>
-                <?php if (isset($_GET['ordem'])): ?><input type="hidden" name="ordem" value="<?= htmlspecialchars($_GET['ordem']) ?>"><?php endif; ?>
-            </form>
-        </div>
-        <div class="col-6 col-md-3">
-            <label for="ordem" class="form-label mb-0" style="font-weight:500;">Ordenar:</label>
-            <?php $ordem = isset($_GET['ordem']) ? $_GET['ordem'] : 'recentes'; ?>
-            <form method="get" action="" id="ordemForm">
-                <select name="ordem" id="ordem" class="form-select form-select-sm" style="width:100%;" onchange="this.form.submit()">
-                    <option value="recentes" <?= $ordem=='recentes'?'selected':'' ?>>Mais recentes</option>
-                    <option value="antigas" <?= $ordem=='antigas'?'selected':'' ?>>Mais antigas</option>
-                    <option value="az" <?= $ordem=='az'?'selected':'' ?>>A-Z (alfabética)</option>
-                    <option value="za" <?= $ordem=='za'?'selected':'' ?>>Z-A (alfabética)</option>
-                </select>
-                <!-- Mantém os filtros ao mudar ordem -->
-                <?php if ($search !== ''): ?><input type="hidden" name="search" value="<?= htmlspecialchars($search) ?>"><?php endif; ?>
-                <?php if (isset($_GET['per_page'])): ?><input type="hidden" name="per_page" value="<?= htmlspecialchars($_GET['per_page']) ?>"><?php endif; ?>
-            </form>
-        </div>
-        <div class="col-12 col-md-3 d-flex gap-2 justify-content-md-end mt-md-0">
+        <div class="col-12 col-md-4 d-flex gap-2 justify-content-md-end mt-md-0 mt-2">
             <span class="badge bg-primary text-white" title="Turmas nesta página" style="font-size:1em;  border-radius:8px;">
                 <i class="bi bi-list-ol"></i> Página: <?= count($turmas) ?>
             </span>
@@ -260,6 +307,12 @@ if ($result && $result->num_rows > 0) {
             </span>
         </div>
     </div>
+    <script>
+        // Mantém seleção ao redirecionar (Bootstrap já faz isso, mas garantimos)
+        document.getElementById('filtrosForm').onsubmit = function(e) {
+            // Não faz nada especial, apenas deixa o submit padrão acontecer
+        };
+    </script>
     <?php
     // --- ORDEM SQL ---
     $ordem_sql = "ORDER BY ano_letivo DESC, nome";
@@ -268,6 +321,12 @@ if ($result && $result->num_rows > 0) {
         elseif ($_GET['ordem'] == 'antigas') $ordem_sql = "ORDER BY id ASC";
         elseif ($_GET['ordem'] == 'az') $ordem_sql = "ORDER BY nome ASC";
         elseif ($_GET['ordem'] == 'za') $ordem_sql = "ORDER BY nome DESC";
+    }
+    // --- FILTRO DE STATUS ---
+    if (isset($_GET['status_filtro']) && in_array($_GET['status_filtro'], ['ativa','concluída','cancelada'])) {
+        $where .= ($where ? " AND " : "WHERE ") . "status = ?";
+        $params[] = $_GET['status_filtro'];
+        $types .= 's';
     }
     // --- QUANTIDADE POR PÁGINA ---
     if (isset($_GET['per_page']) && in_array(intval($_GET['per_page']), $per_page_options)) {
@@ -298,58 +357,67 @@ if ($result && $result->num_rows > 0) {
                     </div>
                 <?php endif; ?>
                 <?php foreach ($turmas as $turma): ?>
-    <?php
-        $cardClass = 'card card-turma h-100';
-        $statusOverlay = '';
-        if ($turma['status'] === 'cancelada') {
-            $cardClass .= ' cancelada';
-            $statusOverlay = '<div class="status-overlay">CANCELADA</div>';
-        } else if ($turma['status'] === 'concluída') {
-            $cardClass .= ' concluida';
-            $statusOverlay = '<div class="status-overlay"><i class="bi bi-check-circle-fill"></i> Concluída</div>';
-        }
-    ?>
-    <div class="col-12 col-md-6 col-xl-4">
-        <div class="<?= $cardClass ?>">
-            <?= $statusOverlay ?>
-            <div class="card-body d-flex flex-column" style="position:relative; z-index:3;">
-                                <!-- Cabeçalho: Título + Ações -->
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <div>
-                                        <span class="fw-bold fs-5">
-                                            <i class="bi bi-mortarboard-fill text-primary"></i>
-                                            <?= htmlspecialchars($turma['nome']) ?>
-                            </span>
-                                    </div>
-                                    <div class="turma-actions">
-                                          <a href="planos.php?turma_id=<?= $turma['id'] ?>" class="btn btn-secondary btn-sm" title="Gerenciar Planos">
-                                            <i class="bi bi-journal-text"></i>Gerenciar Planos
-                                        </a>
-                                        <button class="btn btn-primary btn-sm" title="Editar" onclick="abrirModalEditarTurma(<?= $turma['id'] ?>, '<?= htmlspecialchars(addslashes($turma['nome'])) ?>', '<?= $turma['ano_letivo'] ?>', '<?= $turma['turno'] ?>', '<?= $turma['inicio'] ?>', '<?= $turma['fim'] ?>', '<?= $turma['status'] ?>')">
-                                            <i class="bi bi-pencil-square"></i>
-                                        </button>
-                                        <button class="btn btn-danger btn-sm" title="Excluir" onclick="abrirModalExcluirTurma(<?= $turma['id'] ?>, '<?= htmlspecialchars(addslashes($turma['nome'])) ?>')">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                      
-                                        <button 
-                                            class="btn p-0 m-0 border-0 bg-transparent turma-toggle-btn" 
-                                            style="font-size:2.1rem; line-height:1; box-shadow:none;" 
-                                            title="<?= $turma['status']=='ativa'?'Cancelar':'Ativar' ?> turma"
-                                            onclick="toggleStatusTurma(<?= $turma['id'] ?>, this)">
-                                            <i class="bi <?= $turma['status']=='ativa'?'bi-toggle-off':'bi-toggle-on' ?>"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                <hr class="my-2">
-                                <!-- Dados principais -->
-                                <div class="mb-2">
-                                    <div class="d-flex flex-wrap gap-2 align-items-center">
-                                        <span class="badge bg-info-subtle text-dark border border-info"><i class="bi bi-calendar-event"></i> Ano: <?= htmlspecialchars($turma['ano_letivo']) ?></span>
-                                        <span class="badge bg-warning-subtle text-dark border border-warning"><i class="bi bi-clock"></i> Turno: <?= htmlspecialchars($turma['turno']) ?></span>
-                                        <span class="badge bg-light text-dark border border-secondary"><i class="bi bi-calendar2-week"></i> Início: <?= $turma['inicio'] ? date('d/m/Y', strtotime($turma['inicio'])) : '-' ?></span>
-                                        <span class="badge bg-light text-dark border border-secondary"><i class="bi bi-calendar2-week"></i> Fim: <?= $turma['fim'] ? date('d/m/Y', strtotime($turma['fim'])) : '-' ?></span>
-                                        <span class="badge 
+<?php
+    $cardClass = 'card card-turma h-100';
+    $statusOverlay = '';
+    if ($turma['status'] === 'cancelada') {
+        $cardClass .= ' cancelada';
+        $statusOverlay = '<div class="status-overlay">CANCELADA</div>';
+    } else if ($turma['status'] === 'concluída') {
+        $cardClass .= ' concluida';
+        $statusOverlay = '<div class="status-overlay"><i class="bi bi-check-circle-fill"></i> Concluída</div>';
+    }
+    $isProfessor = (isset($_SESSION['usuario_tipo']) && $_SESSION['usuario_tipo'] === 'professor');
+?>
+<div class="col-12 col-md-6 col-xl-4">
+    <div class="<?= $cardClass ?>" 
+    >
+        <?= $statusOverlay ?>
+        <div class="card-body d-flex flex-column" style="position:relative;">
+            <!-- Cabeçalho: Título + Ações -->
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <div>
+                    <span class="fw-bold fs-5">
+                        <i class="bi bi-mortarboard-fill text-primary"></i>
+                        <?= htmlspecialchars($turma['nome']) ?>
+                    </span>
+                </div>
+                <div class="turma-actions">
+                    <?php if ($isProfessor): ?>
+                        <?php if ($turma['status'] === 'ativa'): ?>
+                            <a href="registro_aulas.php?turma_id=<?= $turma['id'] ?>" class="btn btn-outline-primary btn-sm" title="Registrar Aula">
+                                <i class="bi bi-journal-plus"></i> Registrar Aula
+                            </a>
+                        <?php endif; ?>
+                    <?php else: ?>
+                        <a href="planos.php?turma_id=<?= $turma['id'] ?>" class="btn btn-secondary btn-sm" title="Gerenciar Planos">
+                            <i class="bi bi-journal-text"></i>Gerenciar Planos
+                        </a>
+                        <button class="btn btn-primary btn-sm" title="Editar" onclick="abrirModalEditarTurma(<?= $turma['id'] ?>, '<?= htmlspecialchars(addslashes($turma['nome'])) ?>', '<?= $turma['ano_letivo'] ?>', '<?= $turma['turno'] ?>', '<?= $turma['inicio'] ?>', '<?= $turma['fim'] ?>', '<?= $turma['status'] ?>')">
+                            <i class="bi bi-pencil-square"></i>
+                        </button>
+                        <button class="btn btn-danger btn-sm" title="Excluir" onclick="abrirModalExcluirTurma(<?= $turma['id'] ?>, '<?= htmlspecialchars(addslashes($turma['nome'])) ?>')">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                        <button 
+                            class="btn p-0 m-0 border-0 bg-transparent turma-toggle-btn" 
+                            style="font-size:2.1rem; line-height:1; box-shadow:none;" 
+                            title="<?= $turma['status']=='ativa'?'Cancelar':'Ativar' ?> turma"
+                            onclick="toggleStatusTurma(<?= $turma['id'] ?>, this)">
+                            <i class="bi <?= $turma['status']=='ativa'?'bi-toggle-off':'bi-toggle-on' ?>"></i>
+                        </button>
+                    <?php endif; ?>
+                </div>
+            </div>
+            <hr class="my-2">
+            <!-- Dados principais -->
+            <div class="mb-2">
+                <div class="d-flex flex-wrap gap-2 align-items-center">
+                    <span class="badge bg-info-subtle text-dark border border-info"><i class="bi bi-calendar-event"></i> Ano: <?= htmlspecialchars($turma['ano_letivo']) ?></span>
+                    <span class="badge bg-warning-subtle text-dark border border-warning"><i class="bi bi-clock"></i> Turno: <?= htmlspecialchars($turma['turno']) ?></span>
+                    <span class="badge bg-light text-dark border border-secondary"><i class="bi bi-calendar2-week"></i> Início: <?= $turma['inicio'] ? date('d/m/Y', strtotime($turma['inicio'])) : '-' ?></span>
+                    <span class="badge bg-light text-dark border border-secondary"><i class="bi bi-calendar2-week"></i> Fim: <?= $turma['fim'] ? date('d/m/Y', strtotime($turma['fim'])) : '-' ?></span>
+                    <span class="badge 
                     <?php
                         if ($turma['status']=='ativa') echo 'bg-success';
                         else if ($turma['status']=='cancelada') echo 'bg-secondary';
@@ -359,56 +427,132 @@ if ($result && $result->num_rows > 0) {
                     id="turma-status-<?= $turma['id'] ?>">
                     <i class="bi bi-activity"></i> <?= htmlspecialchars($turma['status']) ?>
                 </span>
-                                    </div>
-                                </div>
-                                <hr class="my-2">
-                                <!-- Disciplinas e planos -->
-                                <div class="mb-2 turma-disc-list">
-                                    <b><i class="bi bi-book"></i> Disciplinas:</b>
-                                    <ul class="list-unstyled ms-2 mb-0">
-                                    <?php
-                                        $ids = isset($turmaDisciplinas[$turma['id']]) ? $turmaDisciplinas[$turma['id']] : [];
-                                        $temDisc = false;
-                                        foreach ($disciplinas as $disc) {
-                                            if (in_array($disc['id'], $ids)) {
-                                                $temDisc = true;
-                                                $temPlano = isset($planosPorTurmaDisciplina[$turma['id']][$disc['id']]);
-                                                echo '<li class="disciplina-status d-flex align-items-center gap-2">';
-                                                echo '<i class="bi bi-dot"></i> <span class="fw-semibold">' . htmlspecialchars($disc['nome']) . '</span>';
-                                                // Plano status e ação
-                                                if ($temPlano) {
-                                                    echo '<span class="text-success" title="Plano criado"><i class="bi bi-check-circle-fill"></i></span>';
-                                                    echo '<a href="planos.php?turma_id=' . $turma['id'] . '&disciplina_id=' . $disc['id'] . '" class="btn btn-outline-success btn-sm py-0 px-2 ms-1" title="Ver plano"><i class="bi bi-eye"></i> Plano</a>';
-                                                } else {
-                                                    echo '<span class="text-danger" title="Sem plano"><i class="bi bi-x-circle-fill"></i></span>';
-                                                    echo '<a href="planos.php?turma_id=' . $turma['id'] . '&disciplina_id=' . $disc['id'] . '" class="btn btn-outline-primary btn-sm py-0 px-2 ms-1" title="Criar plano"><i class="bi bi-plus-circle"></i> Plano</a>';
-                                                }
-                                                echo '</li>';
-                                            }
-                                        }
-                                        if (!$temDisc) echo '<li class="text-muted"><i class="bi bi-exclamation-circle"></i> Nenhuma</li>';
-                                    ?>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
+                </div>
+            </div>
+            <hr class="my-2">
+            <!-- Disciplinas e planos -->
+            <div class="mb-2 turma-disc-list">
+                <b><i class="bi bi-book"></i> Disciplinas:</b>
+                <ul class="list-unstyled ms-2 mb-0">
+                <?php
+                    $ids = isset($turmaDisciplinas[$turma['id']]) ? $turmaDisciplinas[$turma['id']] : [];
+                    $temDisc = false;
+                    foreach ($disciplinas as $disc) {
+                        if (in_array($disc['id'], $ids)) {
+                            $temDisc = true;
+                            $temPlano = isset($planosPorTurmaDisciplina[$turma['id']][$disc['id']]);
+                            // Novo bloco estilizado para status do plano
+                            echo '<li class="disciplina-status d-flex align-items-center gap-2" style="background:#f8f9fa; border-radius:8px; padding:7px 10px; margin-bottom:6px;">';
+                            echo '<i class="bi bi-dot"></i> <span class="fw-semibold">' . htmlspecialchars($disc['nome']) . '</span>';
+                            if ($temPlano) {
+                                // Buscar quantidade de capítulos e tópicos
+                                $plano_id = null;
+                                $sqlPlano = "SELECT id, status FROM planos WHERE turma_id = {$turma['id']} AND disciplina_id = {$disc['id']} LIMIT 1";
+                                $resPlano = $conn->query($sqlPlano);
+                                if ($rowPlano = $resPlano->fetch_assoc()) {
+                                    $plano_id = $rowPlano['id'];
+                                    $plano_status = $rowPlano['status'];
+                                    // Capítulos
+                                    $sqlCap = "SELECT id FROM capitulos WHERE plano_id = $plano_id";
+                                    $resCap = $conn->query($sqlCap);
+                                    $capCount = $resCap ? $resCap->num_rows : 0;
+                                    $topCount = 0;
+                                    if ($capCount > 0) {
+                                        $capIds = [];
+                                        while ($rowCap = $resCap->fetch_assoc()) $capIds[] = $rowCap['id'];
+                                        $capIdsStr = implode(',', $capIds);
+                                        $sqlTop = "SELECT COUNT(*) as total FROM topicos WHERE capitulo_id IN ($capIdsStr)";
+                                        $resTop = $conn->query($sqlTop);
+                                        $topCount = $resTop ? intval($resTop->fetch_assoc()['total']) : 0;
+                                    }
+                                    // Status visual
+                                    $icon = $plano_status === 'concluido'
+                                        ? '<i class="bi bi-check-circle-fill text-success" title="Concluído"></i>'
+                                        : '<i class="bi bi-hourglass-split text-warning" title="Em andamento"></i>';
+                                    $badge = $plano_status === 'concluido'
+                                        ? '<span class="badge bg-success ms-1">Concluído</span>'
+                                        : '<span class="badge bg-warning text-dark ms-1">Em andamento</span>';
+                                    echo " <span class='ms-2'>$icon  $badge</span>";
+                                    echo " <span class='ms-3'><i class='bi bi-journal-bookmark-fill text-primary'></i> <b>$capCount</b> capítulo(s)</span>";
+                                    echo " <span class='ms-2'><i class='bi bi-list-task text-info'></i> <b>$topCount</b> tópico(s)</span>";
+                                }
+                            } else {
+                                echo '<span class="text-danger ms-2"><i class="bi bi-x-circle-fill"></i> Sem plano</span>';
+                            }
+                            echo '</li>';
+                        }
+                    }
+                    if (!$temDisc) echo '<li class="text-muted"><i class="bi bi-exclamation-circle"></i> Nenhuma</li>';
+                ?>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+<?php endforeach; ?>
             </div>
             <!-- PAGINAÇÃO -->
             <?php if ($total_pages > 1): ?>
-            <nav>
-                <ul class="pagination mt-4">
+            <style>
+                .pagination .page-link {
+                    border-radius: 50% !important;
+                    width: 42px;
+                    height: 42px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    margin: 0 3px;
+                    font-size: 1.15em;
+                    border: none;
+                    color: #0d6efd;
+                    background: #fff;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+                    transition: background 0.2s, color 0.2s;
+                }
+                .pagination .page-item.active .page-link {
+                    background: #0d6efd;
+                    color: #fff;
+                    font-weight: bold;
+                    border: none;
+                }
+                .pagination .page-link:focus {
+                    box-shadow: 0 0 0 0.15rem #0d6efd33;
+                }
+                .pagination .page-item.disabled .page-link {
+                    background: #f1f1f1;
+                    color: #bbb;
+                }
+            </style>
+            <nav aria-label="Navegação de páginas">
+                <ul class="pagination justify-content-center mt-4">
                     <li class="page-item <?= $page <= 1 ? 'disabled' : '' ?>">
-                        <a class="page-link" href="?<?= http_build_query(array_merge($_GET, ['page' => $page-1])) ?>"><i class="bi bi-chevron-left"></i></a>
+                        <a class="page-link" href="?<?= http_build_query(array_merge($_GET, ['page' => $page-1])) ?>" tabindex="-1" aria-label="Anterior">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
                     </li>
-                    <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+                    <?php
+                        $max_links = 2;
+                        $start = max(1, $page - $max_links);
+                        $end = min($total_pages, $page + $max_links);
+                        if ($start > 1) {
+                            echo '<li class="page-item"><a class="page-link" href="?'.http_build_query(array_merge($_GET, ['page'=>1])).'">1</a></li>';
+                            if ($start > 2) echo '<li class="page-item disabled"><span class="page-link">...</span></li>';
+                        }
+                        for ($i = $start; $i <= $end; $i++):
+                    ?>
                         <li class="page-item <?= $i == $page ? 'active' : '' ?>">
                             <a class="page-link" href="?<?= http_build_query(array_merge($_GET, ['page' => $i])) ?>"><?= $i ?></a>
                         </li>
-                    <?php endfor; ?>
+                    <?php endfor;
+                        if ($end < $total_pages) {
+                            if ($end < $total_pages - 1) echo '<li class="page-item disabled"><span class="page-link">...</span></li>';
+                            echo '<li class="page-item"><a class="page-link" href="?'.http_build_query(array_merge($_GET, ['page'=>$total_pages])).'">'.$total_pages.'</a></li>';
+                        }
+                    ?>
                     <li class="page-item <?= $page >= $total_pages ? 'disabled' : '' ?>">
-                        <a class="page-link" href="?<?= http_build_query(array_merge($_GET, ['page' => $page+1])) ?>"><i class="bi bi-chevron-right"></i></a>
+                        <a class="page-link" href="?<?= http_build_query(array_merge($_GET, ['page' => $page+1])) ?>" aria-label="Próxima">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
                     </li>
                 </ul>
             </nav>
@@ -578,20 +722,54 @@ window.onclick = function(event) {
 }
 // Função para renderizar uma turma no DOM
 function renderTurmaCard(turma) {
-    let disciplinas = turma.disciplinas_nomes && turma.disciplinas_nomes.length
-        ? turma.disciplinas_nomes.join(', ')
-        : '<span class="text-muted">Nenhuma</span>';
+    // Gera o mesmo HTML dos cards do PHP, incluindo status, badges, disciplinas e planos
+    let statusOverlay = '';
+    let cardClass = 'card card-turma h-100';
+    if (turma.status === 'cancelada') {
+        cardClass += ' cancelada';
+        statusOverlay = '<div class="status-overlay">CANCELADA</div>';
+    } else if (turma.status === 'concluída') {
+        cardClass += ' concluida';
+        statusOverlay = '<div class="status-overlay"><i class="bi bi-check-circle-fill"></i> Concluída</div>';
+    }
+    // Disciplinas
+    let disciplinasHtml = '';
+    if (turma.disciplinas_nomes && turma.disciplinas_nomes.length) {
+        disciplinasHtml = turma.disciplinas_nomes.map(nome =>
+            `<li class="disciplina-status d-flex align-items-center gap-2" style="background:#f8f9fa; border-radius:8px; padding:7px 10px; margin-bottom:6px;">
+                <i class="bi bi-dot"></i> <span class="fw-semibold">${nome}</span>
+            </li>`
+        ).join('');
+    } else {
+        disciplinasHtml = '<li class="text-muted"><i class="bi bi-exclamation-circle"></i> Nenhuma</li>';
+    }
+    // Status badge
+    let badgeClass = 'bg-success', borderClass = 'success';
+    if (turma.status === 'cancelada') {
+        badgeClass = 'bg-secondary'; borderClass = 'secondary';
+    } else if (turma.status === 'concluída') {
+        badgeClass = 'bg-success'; borderClass = 'success';
+    }
+    // Turno label
+    let turnoLabel = turma.turno ? turma.turno : '';
+    // Datas formatadas
+    let inicio_br = turma.inicio_br || '-';
+    let fim_br = turma.fim_br || '-';
+
     return `
     <div class="col-12 col-md-6 col-xl-4" id="turma-card-${turma.id}">
-        <div class="card card-turma h-100">
-            <div class="card-body d-flex flex-column">
-                <div class="card-title mb-1">
-                    <span>
-                        <i class="bi bi-mortarboard-fill text-primary"></i>
-                        Turma: ${turma.nome}
-                    </span>
-                    <span class="turma-actions">
-                     <a href="planos.php?turma_id=${turma.id}" class="btn btn-secondary btn-sm" title="Gerenciar Planos">
+        <div class="${cardClass}">
+            ${statusOverlay}
+            <div class="card-body d-flex flex-column" style="position:relative;">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div>
+                        <span class="fw-bold fs-5">
+                            <i class="bi bi-mortarboard-fill text-primary"></i>
+                            ${turma.nome}
+                        </span>
+                    </div>
+                    <div class="turma-actions">
+                        <a href="planos.php?turma_id=${turma.id}" class="btn btn-secondary btn-sm" title="Gerenciar Planos">
                             <i class="bi bi-journal-text"></i>Gerenciar Planos
                         </a>
                         <button class="btn btn-primary btn-sm" title="Editar" onclick="abrirModalEditarTurma(${turma.id}, '${turma.nome.replace(/'/g,"\\'")}', '${turma.ano_letivo}', '${turma.turno}', '${turma.inicio}', '${turma.fim}', '${turma.status}')">
@@ -600,30 +778,31 @@ function renderTurmaCard(turma) {
                         <button class="btn btn-danger btn-sm" title="Excluir" onclick="abrirModalExcluirTurma(${turma.id}, '${turma.nome.replace(/'/g,"\\'")}')">
                             <i class="bi bi-trash"></i>
                         </button>
-                       
-                        <button class="btn btn-outline-${turma.status=='ativa'?'secondary':'success'} btn-sm" 
-                            title="${turma.status=='ativa'?'Desativar':'Ativar'} turma"
+                        <button class="btn p-0 m-0 border-0 bg-transparent turma-toggle-btn"
+                            style="font-size:2.1rem; line-height:1; box-shadow:none;"
+                            title="${turma.status=='ativa'?'Cancelar':'Ativar'} turma"
                             onclick="toggleStatusTurma(${turma.id}, this)">
                             <i class="bi ${turma.status=='ativa'?'bi-toggle-off':'bi-toggle-on'}"></i>
                         </button>
-                    </span>
+                    </div>
                 </div>
-                <div class="turma-meta mb-2">
-                    <i class="bi bi-calendar-event"></i> Ano letivo: ${turma.ano_letivo} |
-                    <i class="bi bi-clock"></i> Turno: ${turma.turno} |
-                    <i class="bi bi-calendar2-week"></i> Início: ${turma.inicio ? turma.inicio_br : '-'}
-                    | <i class="bi bi-calendar2-week"></i> Fim: ${turma.fim ? turma.fim_br : '-'}
-                    | <i class="bi bi-activity"></i> Status: ${turma.status}
+                <hr class="my-2">
+                <div class="mb-2">
+                    <div class="d-flex flex-wrap gap-2 align-items-center">
+                        <span class="badge bg-info-subtle text-dark border border-info"><i class="bi bi-calendar-event"></i> Ano: ${turma.ano_letivo}</span>
+                        <span class="badge bg-warning-subtle text-dark border border-warning"><i class="bi bi-clock"></i> Turno: ${turnoLabel}</span>
+                        <span class="badge bg-light text-dark border border-secondary"><i class="bi bi-calendar2-week"></i> Início: ${inicio_br}</span>
+                        <span class="badge bg-light text-dark border border-secondary"><i class="bi bi-calendar2-week"></i> Fim: ${fim_br}</span>
+                        <span class="badge ${badgeClass} text-dark border border-${borderClass} turma-status-badge" id="turma-status-${turma.id}">
+                            <i class="bi bi-activity"></i> ${turma.status}
+                        </span>
+                    </div>
                 </div>
+                <hr class="my-2">
                 <div class="mb-2 turma-disc-list">
                     <b><i class="bi bi-book"></i> Disciplinas:</b>
                     <ul class="list-unstyled ms-2 mb-0">
-                    ${turma.disciplinas.map(disc => `
-                        <li class="disciplina-status">
-                            <i class="bi bi-dot"></i> ${disc.nome} 
-                            ${disc.tem_plano ? '<span class="text-success" title="Plano criado"><i class="bi bi-check-circle-fill"></i></span>' : '<span class="text-danger" title="Sem plano"><i class="bi bi-x-circle-fill"></i></span>'}
-                        </li>
-                    `).join('')}
+                        ${disciplinasHtml}
                     </ul>
                 </div>
             </div>
@@ -649,7 +828,10 @@ document.getElementById('formTurma').onsubmit = function(e) {
             if (form.action.includes('editar_turma.php')) {
                 // Atualizar card existente
                 let card = document.getElementById('turma-card-' + res.turma.id);
-                if (card) card.outerHTML = renderTurmaCard(res.turma);
+                if (card) {
+                    // Substitui o card inteiro pelo novo HTML
+                    card.outerHTML = renderTurmaCard(res.turma);
+                }
             } else {
                 // Adicionar novo card
                 document.querySelector('.row.g-4').insertAdjacentHTML('afterbegin', renderTurmaCard(res.turma));
