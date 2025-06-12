@@ -312,10 +312,24 @@ if ($turma_id && !empty($planos)) {
                                                     $capMsg = '<div class="cap-status-msg text-center fw-bold py-2" style="background:#adb5bd;color:#222;border-radius:10px 10px 0 0;">Concluído</div>';
                                                 }
                                                 ?>
-                                                <div class="card card-turma h-100 <?= $capClass ?>" style="border-radius:18px; position:relative;">
+                                                <div class="card card-turma h-100 <?= $capClass ?>"
+                                                    style="border-radius:18px; position:relative;
+                                                    <?php if ($capStatus === 'cancelado'): ?>
+                                                        border: 3px solid #6c757d;
+                                                    <?php elseif ($capStatus === 'concluido'): ?>
+                                                        border: 3px solid #28a745;
+                                                    <?php endif; ?>
+                                                    ">
                                                     <?php if ($capStatus === 'cancelado' || $capStatus === 'concluido'): ?>
-                                                        <div class="status-overlay d-flex flex-column justify-content-center align-items-center" style="position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(108,117,125,0.85);z-index:10;border-radius:18px;color:#fff;font-size:1.5em;font-weight:bold;text-shadow:0 2px 8px #000;">
-                                                            <i class="bi <?= $capStatus === 'cancelado' ? 'bi-x-circle-fill' : 'bi-check-circle-fill' ?> mb-2" style="font-size:2.5em;"></i>
+                                                        <div class="status-overlay d-flex flex-column justify-content-center align-items-center"
+                                                            style="position:absolute;top:0;left:0;width:100%;height:100%;
+                                                            background:<?= $capStatus === 'cancelado' ? 'rgba(108,117,125,0.13)' : 'rgba(40,167,69,0.10)' ?>;
+                                                            z-index:10;border-radius:18px;
+                                                            color:<?= $capStatus === 'cancelado' ? '#444' : '#155724' ?>;
+                                                            font-size:1.5em;font-weight:bold;text-shadow:0 2px 8px #fff;
+                                                            pointer-events:none;">
+                                                            <i class="bi <?= $capStatus === 'cancelado' ? 'bi-x-circle-fill' : 'bi-check-circle-fill' ?> mb-2"
+                                                                style="font-size:2.5em;"></i>
                                                             <?= $capStatus === 'cancelado' ? 'Capítulo Cancelado' : 'Capítulo Concluído' ?>
                                                         </div>
                                                     <?php endif; ?>
@@ -340,7 +354,8 @@ if ($turma_id && !empty($planos)) {
                                                                 ?>" style="font-size:1.13rem;">
                                                                 <i class="bi bi-activity"></i> <?= $cap['status'] ?>
                                                             </span>
-                                                            <div class="ms-auto d-flex gap-2" style="position:relative;z-index:20;<?= ($capStatus === 'cancelado' || $capStatus === 'concluido') ? 'pointer-events:auto;' : '' ?>">
+                                                            <div class="ms-auto d-flex gap-2 action-btns-on-top"
+                                                                style="position:absolute;top:10px;right:10px;z-index:50;">
                                                                 <button class="btn btn-primary btn-sm"
                                                                     title="Editar Capítulo" style="font-size:1.15rem;"
                                                                     onclick="abrirModalEditarCapitulo(<?= $cap['id'] ?>, '<?= htmlspecialchars(addslashes($cap['titulo'])) ?>', <?= $cap['ordem'] ?>, '<?= $cap['status'] ?>', '<?= htmlspecialchars(addslashes($cap['descricao'])) ?>', <?= $cap['duracao_estimativa'] ? $cap['duracao_estimativa'] : 'null' ?>)">
@@ -356,21 +371,24 @@ if ($turma_id && !empty($planos)) {
                                                                     onclick="abrirModalTopico(<?= $cap['id'] ?>)">
                                                                     <i class="bi bi-plus-circle"></i>Adicionar Tópico
                                                                 </button>
-                                                                <?php if ($cap['status'] !== 'concluido'): ?>
-                                                                <button class="btn btn-outline-secondary btn-sm"
-                                                                    title="Ativar/Cancelar Capítulo"
-                                                                    style="font-size:1.15rem;"
-                                                                    onclick="abrirModalToggleCapitulo(<?= $cap['id'] ?>, '<?= addslashes($cap['titulo']) ?>', '<?= $cap['status'] ?>', this)">
-                                                                    <i class="bi <?= $cap['status'] === 'cancelado' ? 'bi-toggle-on' : 'bi-toggle-off' ?>"></i>
-                                                                </button>
-                                                                <?php endif; ?>
-                                                                <?php if ($cap['status'] === 'cancelado'): ?>
-                                                                <button class="btn btn-outline-secondary btn-sm"
-                                                                    title="Ativar Capítulo"
-                                                                    style="font-size:1.15rem;"
-                                                                    onclick="abrirModalToggleCapitulo(<?= $cap['id'] ?>, '<?= addslashes($cap['titulo']) ?>', '<?= $cap['status'] ?>', this)">
-                                                                    <i class="bi bi-toggle-on"></i>
-                                                                </button>
+                                                                <?php if ($cap['status'] !== 'concluido' && $cap['status'] !== 'pendente'): ?>
+                                                                <span style="display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;background:rgba(255,255,255,0.7);border-radius:50%;box-shadow:0 2px 8px #0002;z-index:51;">
+                                                                    <button class="btn btn-toggle-no-border btn-outline-secondary btn-sm"
+                                                                        title="Ativar/Cancelar Capítulo"
+                                                                        style="font-size:2.2rem;background:none;border:none;box-shadow:none;outline:none;padding:0;margin:0;z-index:52;"
+                                                                        onclick="abrirModalToggleCapitulo(<?= $cap['id'] ?>, '<?= addslashes($cap['titulo']) ?>', '<?= $cap['status'] ?>', this)">
+                                                                        <i class="bi <?= $cap['status'] === 'cancelado' ? 'bi-toggle-on' : 'bi-toggle-off' ?>"></i>
+                                                                    </button>
+                                                                </span>
+                                                                <?php elseif ($cap['status'] === 'cancelado'): ?>
+                                                                <span style="display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;background:rgba(255,255,255,0.7);border-radius:50%;box-shadow:0 2px 8px #0002;z-index:51;">
+                                                                    <button class="btn btn-toggle-no-border btn-outline-secondary btn-sm"
+                                                                        title="Ativar Capítulo"
+                                                                        style="font-size:2.2rem;background:none;border:none;box-shadow:none;outline:none;padding:0;margin:0;z-index:52;"
+                                                                        onclick="abrirModalToggleCapitulo(<?= $cap['id'] ?>, '<?= addslashes($cap['titulo']) ?>', '<?= $cap['status'] ?>', this)">
+                                                                        <i class="bi bi-toggle-on"></i>
+                                                                    </button>
+                                                                </span>
                                                                 <?php endif; ?>
                                                             </div>
                                                         </div>
@@ -390,14 +408,27 @@ if ($turma_id && !empty($planos)) {
                                                             <?php
                                                             $topStatus = $top['status'];
                                                             $topClass = '';
-                                                            if ($topStatus === 'cancelado' || $topStatus === 'concluido') {
+                                                            $topBorder = '';
+                                                            if ($topStatus === 'cancelado') {
                                                                 $topClass = 'position-relative';
+                                                                $topBorder = 'border: 3px solid #6c757d;';
+                                                            } elseif ($topStatus === 'concluido') {
+                                                                $topClass = 'position-relative';
+                                                                $topBorder = 'border: 3px solid #28a745;';
                                                             }
                                                             ?>
-                                                            <div class="mb-3 p-3 rounded shadow-sm <?= $topClass ?>" style="background:linear-gradient(90deg,#f8fafc 80%,#e3f0ff 100%);border:1.5px solid #e3e6ea;position:relative;font-size:1.13rem;">
+                                                            <div class="mb-3 p-3 rounded shadow-sm <?= $topClass ?>"
+                                                                style="background:linear-gradient(90deg,#f8fafc 80%,#e3f0ff 100%);border-radius:12px;position:relative;font-size:1.13rem;<?= $topBorder ?>">
                                                                 <?php if ($topStatus === 'cancelado' || $topStatus === 'concluido'): ?>
-                                                                    <div class="status-overlay d-flex flex-column justify-content-center align-items-center" style="position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(108,117,125,0.85);z-index:10;border-radius:12px;color:#fff;font-size:1.2em;font-weight:bold;text-shadow:0 2px 8px #000;">
-                                                                        <i class="bi <?= $topStatus === 'cancelado' ? 'bi-x-circle-fill' : 'bi-check-circle-fill' ?> mb-2" style="font-size:2em;"></i>
+                                                                    <div class="status-overlay d-flex flex-column justify-content-center align-items-center"
+                                                                        style="position:absolute;top:0;left:0;width:100%;height:100%;
+                                                                        background:<?= $topStatus === 'cancelado' ? 'rgba(108,117,125,0.13)' : 'rgba(40,167,69,0.10)' ?>;
+                                                                        z-index:10;border-radius:12px;
+                                                                        color:<?= $topStatus === 'cancelado' ? '#444' : '#155724' ?>;
+                                                                        font-size:1.2em;font-weight:bold;text-shadow:0 2px 8px #fff;
+                                                                        pointer-events:none;">
+                                                                        <i class="bi <?= $topStatus === 'cancelado' ? 'bi-x-circle-fill' : 'bi-check-circle-fill' ?> mb-2"
+                                                                            style="font-size:2em;"></i>
                                                                         <?= $topStatus === 'cancelado' ? 'Tópico Cancelado' : 'Tópico Concluído' ?>
                                                                     </div>
                                                                 <?php endif; ?>
@@ -431,7 +462,7 @@ if ($turma_id && !empty($planos)) {
                                                                             <i class="bi bi-calendar-event"></i>
                                                                             <?= date('d/m/Y', strtotime($top['data_criacao'])) ?>
                                                                         </span>
-                                                                        <div class="ms-auto d-flex gap-2" style="position:relative;z-index:20;<?= ($topStatus === 'cancelado' || $topStatus === 'concluido') ? 'pointer-events:auto;' : '' ?>">
+                                                                        <div class="ms-auto d-flex gap-2 action-btns-on-top" style="position:absolute;top:10px;right:10px;z-index:50;">
                                                                             <button class="btn btn-primary btn-sm"
                                                                                 title="Editar Tópico"
                                                                                 style="font-size:1.08rem;"
@@ -444,21 +475,24 @@ if ($turma_id && !empty($planos)) {
                                                                                 onclick="abrirModalExcluirTopico(<?= $top['id'] ?>, '<?= htmlspecialchars(addslashes($top['titulo'])) ?>')">
                                                                                 <i class="bi bi-trash"></i>
                                                                             </button>
-                                                                            <?php if ($top['status'] !== 'concluido'): ?>
-                                                                            <button class="btn btn-outline-secondary btn-sm"
-                                                                                title="Ativar/Cancelar Tópico"
-                                                                                style="font-size:1.08rem;"
-                                                                                onclick="abrirModalToggleTopico(<?= $top['id'] ?>, '<?= addslashes($top['titulo']) ?>', '<?= $top['status'] ?>', this)">
-                                                                                <i class="bi <?= $top['status'] === 'cancelado' ? 'bi-toggle-on' : 'bi-toggle-off' ?>"></i>
-                                                                            </button>
-                                                                            <?php endif; ?>
-                                                                            <?php if ($top['status'] === 'cancelado'): ?>
-                                                                            <button class="btn btn-outline-secondary btn-sm"
-                                                                                title="Ativar Tópico"
-                                                                                style="font-size:1.08rem;"
-                                                                                onclick="abrirModalToggleTopico(<?= $top['id'] ?>, '<?= addslashes($top['titulo']) ?>', '<?= $top['status'] ?>', this)">
-                                                                                <i class="bi bi-toggle-on"></i>
-                                                                            </button>
+                                                                            <?php if ($top['status'] !== 'concluido' && $top['status'] !== 'pendente'): ?>
+                                                                            <span style="display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;background:rgba(255,255,255,0.7);border-radius:50%;box-shadow:0 2px 8px #0002;z-index:51;">
+                                                                                <button class="btn btn-toggle-no-border btn-outline-secondary btn-sm"
+                                                                                    title="Ativar/Cancelar Tópico"
+                                                                                    style="font-size:2rem;background:none;border:none;box-shadow:none;outline:none;padding:0;margin:0;z-index:52;"
+                                                                                    onclick="abrirModalToggleTopico(<?= $top['id'] ?>, '<?= addslashes($top['titulo']) ?>', '<?= $top['status'] ?>', this)">
+                                                                                    <i class="bi <?= $top['status'] === 'cancelado' ? 'bi-toggle-on' : 'bi-toggle-off' ?>"></i>
+                                                                                </button>
+                                                                            </span>
+                                                                            <?php elseif ($top['status'] === 'cancelado'): ?>
+                                                                            <span style="display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;background:rgba(255,255,255,0.7);border-radius:50%;box-shadow:0 2px 8px #0002;z-index:51;">
+                                                                                <button class="btn btn-toggle-no-border btn-outline-secondary btn-sm"
+                                                                                    title="Ativar Tópico"
+                                                                                    style="font-size:2rem;background:none;border:none;box-shadow:none;outline:none;padding:0;margin:0;z-index:52;"
+                                                                                    onclick="abrirModalToggleTopico(<?= $top['id'] ?>, '<?= addslashes($top['titulo']) ?>', '<?= $top['status'] ?>', this)">
+                                                                                    <i class="bi bi-toggle-on"></i>
+                                                                                </button>
+                                                                            </span>
                                                                             <?php endif; ?>
                                                                         </div>
                                                                     </div>
@@ -1100,14 +1134,6 @@ if ($turma_id && !empty($planos)) {
     }
 
     function fecharModalExcluirPlano() {
-        document.getElementById('modalExcluirPlano').style.display = 'none';
-    }
-
-    function abrirModalExcluirCapitulo(id, nome) {
-        document.getElementById('excluir_id_capitulo').value = id;
-        document.getElementById('excluir_nome_capitulo').innerHTML = '<b>' + nome + '</b>';
-        document.getElementById('modalExcluirCapitulo').style.display = 'block';
-    }
 
     function fecharModalExcluirCapitulo() {
         document.getElementById('modalExcluirCapitulo').style.display = 'none';
