@@ -15,7 +15,6 @@ if (
     $descricao = isset($_POST['descricao']) ? trim($_POST['descricao']) : '';
     $ordem = 0;
     $status = isset($_POST['status']) ? $_POST['status'] : 'em_andamento';
-    $duracao = isset($_POST['duracao_estimativa']) ? intval($_POST['duracao_estimativa']) : null;
     require_once '../config/conexao.php';
     // Calcular ordem
     $res = $conn->prepare('SELECT MAX(ordem) as max_ordem FROM capitulos WHERE plano_id = ?');
@@ -26,8 +25,8 @@ if (
         $ordem = is_null($row['max_ordem']) ? 0 : $row['max_ordem'] + 1;
     }
     $res->close();
-    $stmt = $conn->prepare('INSERT INTO capitulos (plano_id, titulo, descricao, ordem, status, duracao_estimativa) VALUES (?, ?, ?, ?, ?, ?)');
-    $stmt->bind_param('issisi', $plano_id, $titulo, $descricao, $ordem, $status, $duracao);
+    $stmt = $conn->prepare('INSERT INTO capitulos (plano_id, titulo, descricao, ordem, status) VALUES (?, ?, ?, ?, ?)');
+    $stmt->bind_param('issis', $plano_id, $titulo, $descricao, $ordem, $status);
     if ($stmt->execute()) {
         $id = $stmt->insert_id;
         $cap = $conn->query("SELECT * FROM capitulos WHERE id = $id")->fetch_assoc();
