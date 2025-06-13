@@ -14,10 +14,9 @@ if (
     $titulo = trim($_POST['titulo']);
     $descricao = isset($_POST['descricao']) ? trim($_POST['descricao']) : '';
     $status = isset($_POST['status']) ? $_POST['status'] : 'em_andamento';
-    $duracao = isset($_POST['duracao_estimativa']) ? intval($_POST['duracao_estimativa']) : null;
     require_once '../config/conexao.php';
-    $stmt = $conn->prepare('UPDATE capitulos SET titulo = ?, descricao = ?, status = ?, duracao_estimativa = ? WHERE id = ?');
-    $stmt->bind_param('sssii', $titulo, $descricao, $status, $duracao, $id);
+    $stmt = $conn->prepare('UPDATE capitulos SET titulo = ?, descricao = ?, status = ? WHERE id = ?');
+    $stmt->bind_param('sssi', $titulo, $descricao, $status, $id);
     if ($stmt->execute()) {
         $cap = $conn->query("SELECT * FROM capitulos WHERE id = $id")->fetch_assoc();
         echo json_encode(['success' => true, 'capitulo' => $cap]);
