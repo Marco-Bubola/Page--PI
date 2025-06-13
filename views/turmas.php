@@ -414,10 +414,10 @@ if ($result && $result->num_rows > 0) {
                                 </div>
                                 <div class="turma-actions">
                                     <?php if ($isProfessor): ?>
-                                    <?php if ($turma['status'] === 'ativa'): ?>
+                                    <?php if ($turma['status'] === 'ativa' || $turma['status'] === 'concluída'): ?>
                                     <a href="registro_aulas.php?turma_id=<?= $turma['id'] ?>"
-                                        class="btn btn-outline-primary btn-sm" title="Registrar Aula">
-                                        <i class="bi bi-journal-plus"></i> Registrar Aula
+                                    class="btn btn-outline-primary btn-sm" title="Registrar Aula">
+                                    <i class="bi bi-journal-plus"></i> Registrar Aula
                                     </a>
                                     <?php endif; ?>
                                     <?php else: ?>
