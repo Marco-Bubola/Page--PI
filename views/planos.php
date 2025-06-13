@@ -221,7 +221,7 @@ if ($turma_id && !empty($planos)) {
                         role="tabpanel" aria-labelledby="tab-<?= $disc['id'] ?>">
                         <div class="col-12 ">
                             <!-- Card principal da disciplina -->
-                            <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
                                 <!-- Bloco do plano e capítulos dentro da aba/disciplina -->
                                 <?php if (isset($planos[$disc['id']])): $plano = $planos[$disc['id']];
                                 $capitulos = !empty($capitulosPorPlano[$plano['id']]) ? $capitulosPorPlano[$plano['id']] : [];
@@ -232,46 +232,42 @@ if ($turma_id && !empty($planos)) {
                                 }
                             ?>
                                 <div>
-                                   
-                                    <span class="badge bg-info-subtle text-dark border border-info"><i
+                                    <span class="badge bg-info-subtle text-dark border border-info" style="font-size:1.2rem;padding:8px 12px;"><i
                                             class="bi bi-journal-text"></i> Plano:
                                         <b><?= htmlspecialchars($plano['titulo']) ?></b></span>
-                                    <span class="badge bg-light text-dark border border-secondary"><i
+                                    <span class="badge bg-light text-dark border border-secondary" style="font-size:1.2rem;padding:8px 12px;"><i
                                             class="bi bi-calendar2-week"></i> Criado em:
                                         <?= isset($plano['criado_em']) ? date('d/m/Y', strtotime($plano['criado_em'])) : '-' ?></span>
-                                    <span
-                                        class="badge <?= $plano['status'] === 'concluido' ? 'bg-success' : 'bg-warning text-dark' ?> border border-<?= $plano['status'] === 'concluido' ? 'success' : 'warning' ?>"><i
+                                    <span class="badge <?= $plano['status'] === 'concluido' ? 'bg-success' : 'bg-warning text-dark' ?> border border-<?= $plano['status'] === 'concluido' ? 'success' : 'warning' ?>" style="font-size:1.2rem;padding:8px 12px;"><i
                                             class="bi bi-activity"></i>
                                         <?= $plano['status'] === 'concluido' ? 'Concluído' : 'Em andamento' ?></span>
-                                    <span class="badge bg-primary-subtle text-primary border border-primary">
+                                    <span class="badge bg-primary-subtle text-primary border border-primary" style="font-size:1.2rem;padding:8px 12px;">
                                         <i class="bi bi-journal-bookmark-fill"></i>
                                         <?= $totalCapitulos ?> capítulo<?= $totalCapitulos == 1 ? '' : 's' ?>
                                     </span>
-                                    <span class="badge bg-info-subtle text-info border border-info">
+                                    <span class="badge bg-info-subtle text-info border border-info" style="font-size:1.2rem;padding:8px 12px;">
                                         <i class="bi bi-list-task"></i>
                                         <?= $totalTopicos ?> tópico<?= $totalTopicos == 1 ? '' : 's' ?>
                                     </span>
                                     <?php if ($totalCapitulos > 0): ?>
-                                    <div class="mb-2 d-flex flex-wrap gap-2 align-items-center">
-                                        <span class="badge bg-secondary-subtle text-dark border border-secondary">
+                                        <span class="badge bg-secondary-subtle text-dark border border-secondary" style="font-size:1.2rem;padding:8px 12px;">
                                             <i class="bi bi-eye"></i>
                                             Capítulo <span id="capitulo-atual-<?= $plano['id'] ?>">1</span> de
                                             <?= $totalCapitulos ?>
                                         </span>
-                                    </div>
                                     <?php endif; ?>
                                 </div>
                                 
                                 <div class="turma-actions">
                                     <?php if (isset($planos[$disc['id']])): $plano = $planos[$disc['id']]; ?>
-                                    <button class="btn btn-success btn-sm"
+                                    <button class="btn btn-success btn-sm" style="font-size:1.2rem;padding:8px 16px;"
                                         onclick="abrirModalCapitulo(<?= $plano['id'] ?>)"><i
                                             class="bi bi-plus-circle"></i> Adicionar Capítulo</button>
-                                    <button class="btn btn-primary btn-sm" title="Editar Plano"
+                                    <button class="btn btn-primary btn-sm" title="Editar Plano" style="font-size:1.2rem;padding:8px 16px;"
                                         onclick="abrirModalEditarPlano(<?= $plano['id'] ?>, '<?= htmlspecialchars(addslashes($plano['titulo'])) ?>', <?= $plano['disciplina_id'] ?>, '<?= htmlspecialchars(addslashes($plano['descricao'])) ?>', '<?= $plano['status'] ?>', <?= $plano['turma_id'] ?>, '<?= $plano['data_inicio'] ?>', '<?= $plano['data_fim'] ?>', '<?= htmlspecialchars(addslashes($plano['objetivo_geral'])) ?>')">
                                         <i class="bi bi-pencil-square"></i>
                                     </button>
-                                    <button class="btn btn-danger btn-sm" title="Excluir Plano"
+                                    <button class="btn btn-danger btn-sm" title="Excluir Plano" style="font-size:1.2rem;padding:8px 16px;"
                                         onclick="abrirModalExcluirPlano(<?= $plano['id'] ?>, '<?= htmlspecialchars(addslashes($plano['titulo'])) ?>')">
                                         <i class="bi bi-trash"></i>
                                     </button>
@@ -324,7 +320,7 @@ if ($turma_id && !empty($planos)) {
                                                         <div class="status-overlay d-flex flex-column justify-content-center align-items-center"
                                                             style="position:absolute;top:0;left:0;width:100%;height:100%;
                                                             background:<?= $capStatus === 'cancelado' ? 'rgba(108,117,125,0.13)' : 'rgba(40,167,69,0.10)' ?>;
-                                                            z-index:10;border-radius:18px;
+                                                            z-index:1;border-radius:18px;
                                                             color:<?= $capStatus === 'cancelado' ? '#444' : '#155724' ?>;
                                                             font-size:1.5em;font-weight:bold;text-shadow:0 2px 8px #fff;
                                                             pointer-events:none;">
@@ -333,7 +329,7 @@ if ($turma_id && !empty($planos)) {
                                                             <?= $capStatus === 'cancelado' ? 'Capítulo Cancelado' : 'Capítulo Concluído' ?>
                                                         </div>
                                                     <?php endif; ?>
-                                                    <div class="card-body d-flex flex-column <?= ($capStatus === 'cancelado' || $capStatus === 'concluido') ? 'opacity-50' : '' ?>" style="position:relative;">
+                                                    <div class="card-body d-flex flex-column <?= ($capStatus === 'cancelado' || $capStatus === 'concluido') ? 'opacity-50' : '' ?>" style="position:relative;z-index:2;">
                                                         <div class="mb-2 d-flex flex-wrap gap-3 align-items-center"
                                                             style="font-size:1.25rem;">
                                                             <span
@@ -354,8 +350,7 @@ if ($turma_id && !empty($planos)) {
                                                                 ?>" style="font-size:1.13rem;">
                                                                 <i class="bi bi-activity"></i> <?= $cap['status'] ?>
                                                             </span>
-                                                            <div class="ms-auto d-flex gap-2 action-btns-on-top"
-                                                                style="position:absolute;top:10px;right:10px;z-index:50;">
+                                                            <div class="ms-auto d-flex gap-2 action-btns-on-top" style="position:absolute;top:10px;right:10px;z-index:1000;">
                                                                 <button class="btn btn-primary btn-sm"
                                                                     title="Editar Capítulo" style="font-size:1.15rem;"
                                                                     onclick="abrirModalEditarCapitulo(<?= $cap['id'] ?>, '<?= htmlspecialchars(addslashes($cap['titulo'])) ?>', <?= $cap['ordem'] ?>, '<?= $cap['status'] ?>', '<?= htmlspecialchars(addslashes($cap['descricao'])) ?>', <?= $cap['duracao_estimativa'] ? $cap['duracao_estimativa'] : 'null' ?>)">
@@ -375,7 +370,7 @@ if ($turma_id && !empty($planos)) {
                                                                 <span style="display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;background:rgba(255,255,255,0.7);border-radius:50%;box-shadow:0 2px 8px #0002;z-index:51;">
                                                                     <button class="btn btn-toggle-no-border btn-outline-secondary btn-sm"
                                                                         title="Ativar/Cancelar Capítulo"
-                                                                        style="font-size:2.2rem;background:none;border:none;box-shadow:none;outline:none;padding:0;margin:0;z-index:52;"
+                                                                        style="font-size:2.2rem;background:none;border:none;box-shadow:none;outline:none;padding:0;margin:0;z-index:1000;pointer-events:auto;position:relative;"
                                                                         onclick="abrirModalToggleCapitulo(<?= $cap['id'] ?>, '<?= addslashes($cap['titulo']) ?>', '<?= $cap['status'] ?>', this)">
                                                                         <i class="bi <?= $cap['status'] === 'cancelado' ? 'bi-toggle-on' : 'bi-toggle-off' ?>"></i>
                                                                     </button>
@@ -384,7 +379,7 @@ if ($turma_id && !empty($planos)) {
                                                                 <span style="display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;background:rgba(255,255,255,0.7);border-radius:50%;box-shadow:0 2px 8px #0002;z-index:51;">
                                                                     <button class="btn btn-toggle-no-border btn-outline-secondary btn-sm"
                                                                         title="Ativar Capítulo"
-                                                                        style="font-size:2.2rem;background:none;border:none;box-shadow:none;outline:none;padding:0;margin:0;z-index:52;"
+                                                                        style="font-size:2.2rem;background:none;border:none;box-shadow:none;outline:none;padding:0;margin:0;z-index:100;pointer-events:auto;"
                                                                         onclick="abrirModalToggleCapitulo(<?= $cap['id'] ?>, '<?= addslashes($cap['titulo']) ?>', '<?= $cap['status'] ?>', this)">
                                                                         <i class="bi bi-toggle-on"></i>
                                                                     </button>
@@ -393,12 +388,9 @@ if ($turma_id && !empty($planos)) {
                                                             </div>
                                                         </div>
                                                         <div class="mb-3">
-                                                            <div
-                                                                style="background: linear-gradient(90deg, #e3f0ff 80%, #f8fafc 100%); border: 1.5px solid #b6d4fe; border-radius: 12px; box-shadow: 0 2px 8px #0d6efd11; padding: 10px 16px; display: flex; align-items: center; gap: 10px; min-height: 38px;">
-                                                                <i class="bi bi-card-text text-primary"
-                                                                    style="font-size:1.15rem;"></i>
-                                                                <span
-                                                                    style="color:#222; font-size:1.15rem; line-height:1.5; white-space:pre-line; word-break:break-word;">
+                                                            <div style="background: linear-gradient(90deg, #e3f0ff 80%, #f8fafc 100%); border: 1.5px solid #b6d4fe; border-radius: 12px; box-shadow: 0 2px 8px #0d6efd11; padding: 15px 20px; display: flex; align-items: center; gap: 12px; min-height: 45px;">
+                                                                <i class="bi bi-card-text text-primary" style="font-size:1.4rem;"></i>
+                                                                <span style="color:#222; font-size:1.25rem; line-height:1.6; white-space:pre-line; word-break:break-word;">
                                                                     <?= nl2br(htmlspecialchars($cap['descricao'])) ?>
                                                                 </span>
                                                             </div>
@@ -423,7 +415,7 @@ if ($turma_id && !empty($planos)) {
                                                                     <div class="status-overlay d-flex flex-column justify-content-center align-items-center"
                                                                         style="position:absolute;top:0;left:0;width:100%;height:100%;
                                                                         background:<?= $topStatus === 'cancelado' ? 'rgba(108,117,125,0.13)' : 'rgba(40,167,69,0.10)' ?>;
-                                                                        z-index:10;border-radius:12px;
+                                                                        z-index:1;border-radius:12px;
                                                                         color:<?= $topStatus === 'cancelado' ? '#444' : '#155724' ?>;
                                                                         font-size:1.2em;font-weight:bold;text-shadow:0 2px 8px #fff;
                                                                         pointer-events:none;">
@@ -432,7 +424,7 @@ if ($turma_id && !empty($planos)) {
                                                                         <?= $topStatus === 'cancelado' ? 'Tópico Cancelado' : 'Tópico Concluído' ?>
                                                                     </div>
                                                                 <?php endif; ?>
-                                                                <div class="<?= ($topStatus === 'cancelado' || $topStatus === 'concluido') ? 'opacity-50' : '' ?>">
+                                                                <div class="<?= ($topStatus === 'cancelado' || $topStatus === 'concluido') ? 'opacity-50' : '' ?>" style="position:relative;z-index:2;">
                                                                     <div class="d-flex align-items-center mb-1">
                                                                         <i class="bi bi-dot fs-4 text-primary me-1"></i>
                                                                         <span class="fw-bold fs-5 text-primary"
@@ -462,7 +454,7 @@ if ($turma_id && !empty($planos)) {
                                                                             <i class="bi bi-calendar-event"></i>
                                                                             <?= date('d/m/Y', strtotime($top['data_criacao'])) ?>
                                                                         </span>
-                                                                        <div class="ms-auto d-flex gap-2 action-btns-on-top" style="position:absolute;top:10px;right:10px;z-index:50;">
+                                                                        <div class="ms-auto d-flex gap-2 action-btns-on-top" >
                                                                             <button class="btn btn-primary btn-sm"
                                                                                 title="Editar Tópico"
                                                                                 style="font-size:1.08rem;"
@@ -476,19 +468,19 @@ if ($turma_id && !empty($planos)) {
                                                                                 <i class="bi bi-trash"></i>
                                                                             </button>
                                                                             <?php if ($top['status'] !== 'concluido' && $top['status'] !== 'pendente'): ?>
-                                                                            <span style="display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;background:rgba(255,255,255,0.7);border-radius:50%;box-shadow:0 2px 8px #0002;z-index:51;">
+                                                                            <span style="display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;box-shadow:0 2px 8px #0002;z-index:51;">
                                                                                 <button class="btn btn-toggle-no-border btn-outline-secondary btn-sm"
                                                                                     title="Ativar/Cancelar Tópico"
-                                                                                    style="font-size:2rem;background:none;border:none;box-shadow:none;outline:none;padding:0;margin:0;z-index:52;"
+                                                                                    style="font-size:2rem;background:none;border:none;box-shadow:none;outline:none;padding:0;margin:0;pointer-events:auto;position:relative;"
                                                                                     onclick="abrirModalToggleTopico(<?= $top['id'] ?>, '<?= addslashes($top['titulo']) ?>', '<?= $top['status'] ?>', this)">
                                                                                     <i class="bi <?= $top['status'] === 'cancelado' ? 'bi-toggle-on' : 'bi-toggle-off' ?>"></i>
                                                                                 </button>
                                                                             </span>
                                                                             <?php elseif ($top['status'] === 'cancelado'): ?>
-                                                                            <span style="display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;background:rgba(255,255,255,0.7);border-radius:50%;box-shadow:0 2px 8px #0002;z-index:51;">
+                                                                            <span style="display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;box-shadow:0 2px 8px #0002;z-index:51;">
                                                                                 <button class="btn btn-toggle-no-border btn-outline-secondary btn-sm"
                                                                                     title="Ativar Tópico"
-                                                                                    style="font-size:2rem;background:none;border:none;box-shadow:none;outline:none;padding:0;margin:0;z-index:52;"
+                                                                                    style="font-size:2rem;background:none;border:none;box-shadow:none;outline:none;padding:0;margin:0;z-index:100;pointer-events:auto;"
                                                                                     onclick="abrirModalToggleTopico(<?= $top['id'] ?>, '<?= addslashes($top['titulo']) ?>', '<?= $top['status'] ?>', this)">
                                                                                     <i class="bi bi-toggle-on"></i>
                                                                                 </button>
@@ -609,28 +601,26 @@ if ($turma_id && !empty($planos)) {
                             </div>
                             <?php endif; ?>
                             <?php else: ?>
-    <div class="d-flex justify-content-center align-items-center" style="min-height:320px;">
-        <div class="w-100 mx-auto" style="max-width:540px;">
-            <div class="p-4 rounded-4 shadow-sm border border-2 border-danger bg-white text-center"
-                style="background:linear-gradient(90deg,#fff 80%,#ffeaea 100%);">
-                <div class="mb-3">
-                    <i class="bi bi-exclamation-octagon-fill text-danger"
-                        style="font-size:3em;"></i>
-                </div>
-                <h4 class="fw-bold text-danger mb-2">Nenhum plano cadastrado para esta
-                    disciplina!</h4>
-                <div class="text-muted mb-3" style="font-size:1.13em;">
-                    O coordenador pode criar um plano para esta disciplina clicando no botão
-                    abaixo.
-                </div>
-                <button class="btn btn-success btn-lg d-flex align-items-center gap-2 mx-auto"
-                    style="font-size:1.15em;box-shadow:0 2px 8px #19875433;"
-                    onclick="abrirModalPlanoDisciplina(<?= $disc['id'] ?>, '<?= htmlspecialchars(addslashes($disc['nome'])) ?>', <?= $turma_id ?>)">
-                    <i class="bi bi-plus-circle"></i> Criar Plano
-                </button>
-            </div>
-        </div>
-    </div>
+                            <div class="d-flex justify-content-center align-items-center w-100 h-100" style="min-height:320px;">
+                            <div class="w-100 mx-auto" style="max-width:540px;">
+                            <div class="p-4 rounded-4 shadow-sm border border-2 border-danger bg-white text-center"
+                            style="background:linear-gradient(90deg,#fff 80%,#ffeaea 100%);">
+                            <div class="mb-3">
+                            <i class="bi bi-exclamation-octagon-fill text-danger"
+                            style="font-size:3em;"></i>
+                            </div>
+                            <h4 class="fw-bold text-danger mb-2">Nenhum plano cadastrado para esta disciplina!</h4>
+                            <div class="text-muted mb-3" style="font-size:1.13em;">
+                            O coordenador pode criar um plano para esta disciplina clicando no botão abaixo.
+                            </div>
+                            <button class="btn btn-success btn-lg d-flex align-items-center gap-2 mx-auto"
+                            style="font-size:1.15em;box-shadow:0 2px 8px #19875433;"
+                            onclick="abrirModalPlanoDisciplina(<?= $disc['id'] ?>, '<?= htmlspecialchars(addslashes($disc['nome'])) ?>', <?= $turma_id ?>)">
+                            <i class="bi bi-plus-circle"></i> Criar Plano
+                            </button>
+                            </div>
+                            </div>
+                            </div>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -1134,6 +1124,8 @@ if ($turma_id && !empty($planos)) {
     }
 
     function fecharModalExcluirPlano() {
+        document.getElementById('modalExcluirPlano').style.display = 'none';
+    }
 
     function fecharModalExcluirCapitulo() {
         document.getElementById('modalExcluirCapitulo').style.display = 'none';
@@ -1211,8 +1203,7 @@ if ($turma_id && !empty($planos)) {
     function abrirModalToggleCapitulo(id, nome, status, btn) {
         document.getElementById('toggle_id_capitulo').value = id;
         document.getElementById('toggle_nome_capitulo').innerHTML = '<b>' + nome + '</b>';
-        document.getElementById('toggle_status_capitulo').value = status === 'cancelado' ? 'em_andamento' :
-            'cancelado';
+        document.getElementById('toggle_status_capitulo').value = status === 'cancelado' ? 'em_andamento' : 'cancelado';
         document.getElementById('modalToggleCapitulo').style.display = 'block';
     }
 
@@ -1224,8 +1215,7 @@ if ($turma_id && !empty($planos)) {
     function abrirModalToggleTopico(id, nome, status, btn) {
         document.getElementById('toggle_id_topico').value = id;
         document.getElementById('toggle_nome_topico').innerHTML = '<b>' + nome + '</b>';
-        document.getElementById('toggle_status_topico').value = status === 'cancelado' ? 'em_andamento' :
-            'cancelado';
+        document.getElementById('toggle_status_topico').value = status === 'cancelado' ? 'em_andamento' : 'cancelado';
         document.getElementById('modalToggleTopico').style.display = 'block';
     }
 
