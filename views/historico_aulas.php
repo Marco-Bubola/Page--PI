@@ -218,34 +218,39 @@ while ($row = $res_disc->fetch_assoc()) $disciplinas[] = $row['nome'];
                         </div>
                     </div>
                     <div class="col-lg-6 col-md-6 col-12 mt-3 mt-md-0">
-                        <form class="d-flex align-items-end justify-content-end" method="get" action="">
-                            <div class="input-group flex-nowrap" style="max-width:360px;">
-                                <span class="input-group-text bg-white border-end-0" style="border-radius:8px 0 0 8px;">
-                                    <i class="fa-solid fa-search text-primary"></i>
-                                </span>
-                                <input type="text" class="form-control border-start-0 border-end-0" name="search"
-                                    placeholder="Pesquisar aula, disciplina, turma..." value="<?= htmlspecialchars($search) ?>"
-                                    style="border-radius:0; box-shadow:none;">
-                                <?php if ($search !== ''): ?>
-                                <button type="submit" class="btn btn-outline-secondary border-start-0 border-end-0"
-                                    style="border-radius:0;" tabindex="-1"
-                                    onclick="this.form.search.value=''; this.form.submit(); return false;"
-                                    title="Limpar pesquisa">
-                                    <i class="fa-solid fa-xmark"></i>
+                        <form class="d-flex align-items-end justify-content-end w-100" method="get" action="">
+                            <div class="d-flex gap-2 w-100" style="max-width: 600px;">
+                                <div class="input-group flex-nowrap" style="flex:2 1 0; min-width:0;">
+                                    <span class="input-group-text bg-white border-end-0" style="border-radius:8px 0 0 8px;">
+                                        <i class="fa-solid fa-search text-primary"></i>
+                                    </span>
+                                    <input type="text" class="form-control border-start-0 border-end-0" name="search"
+                                        placeholder="Pesquisar aula, disciplina, turma..." value="<?= htmlspecialchars($search) ?>"
+                                        style="border-radius:0; box-shadow:none;">
+                                    <?php if ($search !== ''): ?>
+                                    <button type="submit" class="btn btn-outline-secondary border-start-0 border-end-0"
+                                        style="border-radius:0;" tabindex="-1"
+                                        onclick="this.form.search.value=''; this.form.submit(); return false;"
+                                        title="Limpar pesquisa">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
+                                    <?php endif; ?>
+                                    <button class="btn btn-primary" type="submit" style="border-radius:0 8px 8px 0;">
+                                        <i class="fa-solid fa-arrow-right"></i>
+                                    </button>
+                                </div>
+                                <button class="btn btn-gradient-primary dropdown-toggle fw-bold shadow-sm px-3 py-2 btn-historico-aulas"
+                                    type="button" id="dropdownFiltros" data-bs-toggle="dropdown" aria-expanded="false"
+                                    style="border-radius: 12px; background: linear-gradient(90deg,#0d6efd 60%,#4f8cff 100%); color: #fff; border: none; min-width: 110px; max-width: 110px;">
+                                    <i class="bi bi-funnel-fill me-1"></i> Filtros
                                 </button>
-                                <?php endif; ?>
-                                <button class="btn btn-primary" type="submit" style="border-radius:0 8px 8px 0;">
-                                    <i class="fa-solid fa-arrow-right"></i>
+                                <button type="button" class="btn btn-gradient-dicas shadow-sm px-3 py-2 d-flex align-items-center gap-2 fw-bold btn-historico-aulas" onclick="abrirModalDicasAulas()"  title="Dicas da página" style="border-radius: 14px; font-size:1.13em; box-shadow: 0 2px 8px #0d6efd33; min-width: 110px; max-width: 110px;">
+                                    <i class="bi bi-lightbulb-fill" style="font-size:1.35em;"></i>
+                                    Dicas
                                 </button>
                             </div>
-                            <div class="dropdown ms-2 d-flex align-items-center gap-2" style="z-index:1050;">
-                                <button class="btn btn-gradient-primary dropdown-toggle fw-bold shadow-sm px-3 py-2"
-                                    type="button" id="dropdownFiltros" data-bs-toggle="dropdown" aria-expanded="false"
-                                    style="border-radius: 12px; background: linear-gradient(90deg,#0d6efd 60%,#4f8cff 100%); color: #fff; border: none;">
-                                    <i class="fa-solid fa-filter me-1"></i> Filtros
-                                </button>
-                                <div class="dropdown-menu p-4 shadow-lg border-0"
-                                    style="min-width: 320px; border-radius: 18px; background: #f8faff;" onclick="event.stopPropagation();">
+                            <div class="dropdown-menu p-4 shadow-lg border-0"
+                                style="min-width: 320px; border-radius: 18px; background: #f8faff;" onclick="event.stopPropagation();">
                                     <div class="mb-3">
                                         <label class="form-label mb-2 fw-semibold text-primary">
                                             <i class="fa-solid fa-sort me-1"></i>Ordenar:
@@ -318,10 +323,7 @@ while ($row = $res_disc->fetch_assoc()) $disciplinas[] = $row['nome'];
                                         </button>
                                     </div>
                                 </div>
-                                <button type="button" class="btn btn-info dica-btn d-flex align-items-center gap-2 fw-bold" onclick="abrirModalDicasAulas()" title="Dicas da página">
-                                <i class="fa-solid fa-lightbulb"></i> Dicas
-                                </button>
-                            </div>
+                                                             </div>
                         </form>
                     </div>
                 </div>
