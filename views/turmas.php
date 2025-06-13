@@ -149,7 +149,7 @@ if ($result && $result->num_rows > 0) {
         <div class="col-12">
             <div class="bg-white rounded shadow-sm p-4 mb-3 border border-3 border-primary position-relative">
                 <div class="row align-items-end g-2 mb-2">
-                    <div class="col-lg-7 col-md-7 col-12">
+                    <div class="col-lg-6 col-md-6 col-12">
                         <div class="d-flex align-items-center gap-3 h-100">
                             <span
                                 class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center"
@@ -190,13 +190,18 @@ if ($result && $result->num_rows > 0) {
                                     <i class="bi bi-arrow-right-circle"></i>
                                 </button>
                             </div>
-                            <div class="dropdown ms-2" style="z-index:1050;">
+                            <div class="dropdown ms-2 d-flex align-items-center gap-2" style="z-index:1050;">
                                 <button class="btn btn-gradient-primary dropdown-toggle fw-bold shadow-sm px-3 py-2"
                                     type="button" id="dropdownFiltros" data-bs-toggle="dropdown" aria-expanded="false"
                                     style="border-radius: 12px; background: linear-gradient(90deg,#0d6efd 60%,#4f8cff 100%); color: #fff; border: none;" data-bs-boundary="viewport">
                                     <i class="bi bi-funnel-fill me-1"></i> Filtros
                                 </button>
-                                                               <div class="dropdown-menu p-4 shadow-lg border-0"
+                                <!-- Botão de dicas -->
+                                <button type="button" class="btn btn-gradient-dicas shadow-sm px-3 py-2 d-flex align-items-center gap-2 fw-bold" id="btnDicasTurmas" title="Dicas da página" style="border-radius: 14px; font-size:1.13em; box-shadow: 0 2px 8px #0d6efd33;">
+                                    <i class="bi bi-lightbulb-fill" style="font-size:1.35em;"></i>
+                                    Dicas
+                                </button>
+                                <div class="dropdown-menu p-4 shadow-lg border-0"
                                     style="min-width: 520px; border-radius: 18px; background: #f8faff;"
                                     onclick="event.stopPropagation();">
                                     <div class="mb-3">
@@ -277,7 +282,7 @@ if ($result && $result->num_rows > 0) {
                         </form>
                     </div>
                     <?php if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'professor'): ?>
-                    <div class="col-lg-1 col-md-12 col-12 d-flex justify-content-lg-end justify-content-start mt-2 mt-lg-0">
+                    <div class="col-lg-2 col-md-12 col-12 d-flex justify-content-lg-end justify-content-start mt-2 mt-lg-0">
                         <button class="btn btn-success d-flex align-items-center gap-2 shadow-sm px-3 py-2"
                             style="font-size:1em;" onclick="abrirModalTurma()">
                             <i class="bi bi-plus-circle"></i> Nova Turma
@@ -571,6 +576,208 @@ if ($result && $result->num_rows > 0) {
         </div>
     </div>
     </div>
+    <!-- Modal de Dicas de Funcionamento -->
+    <div id="modalDicasTurmas" style="display:none;position:fixed;z-index:2100;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.45);">
+        <div class="modal-dicas-content">
+            <div class="modal-dicas-header">
+                <div class="modal-dicas-icone">
+                    <i class="bi bi-lightbulb-fill"></i>
+                </div>
+                <h4 class="mb-0 text-white">Dicas de Funcionamento</h4>
+                <span onclick="fecharModalDicasTurmas()" class="modal-dicas-close">&times;</span>
+            </div>
+            <div class="modal-dicas-body">
+                <!-- Stepper -->
+                <div id="stepperDicasTurmas" class="mb-4">
+                    <div class="d-flex justify-content-center align-items-center gap-2 mb-3">
+                        <span class="step-circle" id="stepCircleTurmas1"><i class="bi"></i></span>
+                        <span class="step-line"></span>
+                        <span class="step-circle" id="stepCircleTurmas2"><i class="bi"></i></span>
+                        <span class="step-line"></span>
+                        <span class="step-circle" id="stepCircleTurmas3"><i class="bi"></i></span>
+                        <span class="step-line"></span>
+                        <span class="step-circle" id="stepCircleTurmas4"><i class="bi"></i></span>
+                        <span class="step-line"></span>
+                        <span class="step-circle" id="stepCircleTurmas5"><i class="bi"></i></span>
+                        <span class="step-line"></span>
+                        <span class="step-circle" id="stepCircleTurmas6"><i class="bi"></i></span>
+                    </div>
+                </div>
+                <div id="stepContentDicasTurmas">
+                    <!-- Conteúdo dos steps será preenchido via JS -->
+                </div>
+            </div>
+            <div class="modal-dicas-footer">
+                <button class="btn btn-outline-primary" id="btnStepAnteriorTurmas" style="display:none;"><i class="bi bi-arrow-left"></i> Anterior</button>
+                <button class="btn btn-outline-primary ms-3" id="btnStepProximoTurmas">Próximo <i class="bi bi-arrow-right"></i></button>
+            </div>
+        </div>
+        <style>
+        .btn-gradient-dicas {
+            background: linear-gradient(90deg,#0d6efd 60%,#4f8cff 100%);
+            color: #fff !important;
+            border: none;
+            transition: background 0.2s, box-shadow 0.2s;
+        }
+        .btn-gradient-dicas:hover, .btn-gradient-dicas:focus {
+            background: linear-gradient(90deg,#4f8cff 60%,#0d6efd 100%);
+            color: #fff !important;
+            box-shadow: 0 4px 16px #0d6efd33;
+        }
+        /* Esconde dropdown e botão de dicas quando modal customizado está aberto */
+        body.modal-aberta .dropdown,
+        body.modal-aberta .btn-gradient-dicas {
+            z-index: 1 !important;
+            pointer-events: none !important;
+            opacity: 1 !important;
+        }
+        .modal-dicas-content {
+            background: #fff;
+            border-radius: 22px;
+            max-width: 760px;
+            width: 98vw;
+            min-width: 420px;
+            min-height: 660px;
+            max-height: 900px;
+            margin: 60px auto;
+            position: relative;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-dicas-header {
+            background: linear-gradient(90deg,#0d6efd 60%,#4f8cff 100%);
+            padding: 28px 36px 20px 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 18px;
+            position: relative;
+            text-align: center;
+        }
+        .modal-dicas-icone {
+            background: #fff;
+            color: #0d6efd;
+            border-radius: 50%;
+            width: 56px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            box-shadow: 0 2px 8px #0d6efd33;
+        }
+        .modal-dicas-header h4 {
+            color: #fff;
+            font-weight: bold;
+            font-size: 1.55em;
+            margin-bottom: 0;
+            flex: 1 1 auto;
+            text-align: center;
+        }
+        .modal-dicas-close {
+            position: absolute;
+            top: 18px;
+            right: 28px;
+            font-size: 32px;
+            cursor: pointer;
+            color: #fff;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+        .modal-dicas-close:hover {
+            opacity: 1;
+        }
+        .modal-dicas-body {
+            padding: 38px 32px 28px 32px;
+            flex: 1 1 auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+        .modal-dicas-footer {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 18px;
+            padding: 22px 0 18px 0;
+            background: #f8faff;
+            border-top: 1.5px solid #e3e9f7;
+            border-radius: 0 0 22px 22px;
+            min-height: 70px;
+        }
+        .modal-dicas-footer .btn {
+            min-width: 120px;
+            font-size: 1.08em;
+            font-weight: 500;
+        }
+        #modalDicasTurmas .step-circle {
+            width: 32px; height: 32px; border-radius: 50%; background: #e3e9f7; color: #0d6efd; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.15em; border: 2px solid #b6c6e6;
+            transition: background 0.2s, color 0.2s;
+        }
+        #modalDicasTurmas .step-circle.active {
+            background: #0d6efd; color: #fff; border-color: #0d6efd;
+        }
+        #modalDicasTurmas .step-line {
+            flex: 1 1 0; height: 3px; background: #b6c6e6;
+        }
+        #stepContentDicasTurmas {
+            min-height: 110px;
+            max-height: 180px;
+            margin-bottom: 0.5em;
+        }
+        .dica-step-card {
+            display: flex;
+            align-items: flex-start;
+            gap: 18px;
+            border-radius: 16px;
+            padding: 18px 18px 18px 18px;
+            margin-bottom: 0.5em;
+            box-shadow: 0 2px 12px #e3e9f7;
+            font-size: 1.13em;
+            font-weight: 500;
+            background: #f8faff;
+        }
+        .dica-step-icone {
+            font-size: 2.3em;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 2px;
+            box-shadow: 0 2px 8px #e3e9f7;
+        }
+        .dica-blue { color: #0d6efd; background: #e3e9f7; }
+        .dica-green { color: #198754; background: #e6f7ec; }
+        .dica-yellow { color: #ffc107; background: #fffbe6; }
+        .dica-red { color: #dc3545; background: #ffe6e9; }
+        .dica-orange { color: #fd7e14; background: #fff3e6; }
+        .dica-purple { color: #6f42c1; background: #f3e6ff; }
+        .bg-dica-blue { background: #f8faff; }
+        .bg-dica-green { background: #e6f7ec; }
+        .bg-dica-yellow { background: #fffbe6; }
+        .bg-dica-red { background: #ffe6e9; }
+        .bg-dica-orange { background: #fff3e6; }
+        .bg-dica-purple { background: #f3e6ff; }
+        .text-dica-blue { color: #0d6efd; }
+        .text-dica-purple { color: #6f42c1; }
+        @media (max-width: 600px) {
+            .modal-dicas-content {
+                max-width: 98vw;
+                min-width: 0;
+                padding: 0;
+            }
+            .modal-dicas-header, .modal-dicas-body {
+                padding-left: 12px;
+                padding-right: 12px;
+            }
+        }
+        </style>
+    </div>
     <!-- Modal de Criar/Editar Turma -->
     <div id="modalTurma"
         style="display:none;position:fixed;z-index:1000;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.4);">
@@ -691,57 +898,7 @@ if ($result && $result->num_rows > 0) {
             </div>
         </div>
     </div>
-    <!-- Modal de Confirmar Toggle de Capítulo -->
-    <div id="modalToggleCapitulo" style="display:none;position:fixed;z-index:1000;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.4);">
-        <div style="background:#fff;padding:0;border-radius:14px;max-width:400px;margin:100px auto;position:relative;box-shadow:0 8px 32px rgba(0,0,0,0.18);overflow:hidden;">
-            <div style="background:linear-gradient(90deg,#0d6efd 60%,#4f8cff 100%);padding:16px 24px 12px 24px;display:flex;align-items:center;gap:10px;">
-                <i class="bi bi-toggle-on text-white" style="font-size:1.7rem;"></i>
-                <h4 class="mb-0 text-white">Ativar/Cancelar Capítulo</h4>
-                <span onclick="fecharModalToggleCapitulo()" style="position:absolute;top:10px;right:18px;font-size:26px;cursor:pointer;color:#fff;opacity:0.8;">&times;</span>
-            </div>
-            <div style="padding:24px 24px 18px 24px;">
-                <div class="alert alert-info d-flex align-items-center gap-2 mb-3" style="font-size:1.1em;">
-                    <i class="bi bi-info-circle-fill" style="font-size:1.5em;"></i>
-                    Confirme a ação para o capítulo.
-                </div>
-                <form action="../controllers/toggle_capitulo_ajax.php" method="POST" id="formToggleCapitulo">
-                    <input type="hidden" name="id_capitulo" id="toggle_id_capitulo">
-                    <input type="hidden" name="status" id="toggle_status_capitulo">
-                    <p id="toggle_nome_capitulo" style="margin:15px 0;"></p>
-                    <div class="d-flex justify-content-end gap-2 pt-2">
-                        <button type="submit" class="btn btn-primary d-flex align-items-center gap-1"><i class="bi bi-check-circle"></i> Confirmar</button>
-                        <button type="button" class="btn btn-secondary d-flex align-items-center gap-1" onclick="fecharModalToggleCapitulo()"><i class="bi bi-x-circle"></i> Cancelar</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
 
-    <!-- Modal de Confirmar Toggle de Tópico -->
-    <div id="modalToggleTopico" style="display:none;position:fixed;z-index:1000;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.4);">
-        <div style="background:#fff;padding:0;border-radius:14px;max-width:400px;margin:100px auto;position:relative;box-shadow:0 8px 32px rgba(0,0,0,0.18);overflow:hidden;">
-            <div style="background:linear-gradient(90deg,#0d6efd 60%,#4f8cff 100%);padding:16px 24px 12px 24px;display:flex;align-items:center;gap:10px;">
-                <i class="bi bi-toggle-on text-white" style="font-size:1.7rem;"></i>
-                <h4 class="mb-0 text-white">Ativar/Cancelar Tópico</h4>
-                <span onclick="fecharModalToggleTopico()" style="position:absolute;top:10px;right:18px;font-size:26px;cursor:pointer;color:#fff;opacity:0.8;">&times;</span>
-            </div>
-            <div style="padding:24px 24px 18px 24px;">
-                <div class="alert alert-info d-flex align-items-center gap-2 mb-3" style="font-size:1.1em;">
-                    <i class="bi bi-info-circle-fill" style="font-size:1.5em;"></i>
-                    Confirme a ação para o tópico.
-                </div>
-                <form action="../controllers/toggle_topico_ajax.php" method="POST" id="formToggleTopico">
-                    <input type="hidden" name="id_topico" id="toggle_id_topico">
-                    <input type="hidden" name="status" id="toggle_status_topico">
-                    <p id="toggle_nome_topico" style="margin:15px 0;"></p>
-                    <div class="d-flex justify-content-end gap-2 pt-2">
-                        <button type="submit" class="btn btn-primary d-flex align-items-center gap-1"><i class="bi bi-check-circle"></i> Confirmar</button>
-                        <button type="button" class="btn btn-secondary d-flex align-items-center gap-1" onclick="fecharModalToggleTopico()"><i class="bi bi-x-circle"></i> Cancelar</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
     <script>
     function atualizarAnoLetivo() {
         var inicio = document.getElementById('inicio_turma').value;
@@ -780,6 +937,7 @@ if ($result && $result->num_rows > 0) {
             tokenSeparators: [',', ' ']
         });
         document.getElementById('modalTurma').style.display = 'block';
+        document.body.classList.add('modal-aberta');
     }
 
     function abrirModalEditarTurma(id, nome, ano, turno, inicio, fim, status) {
@@ -818,10 +976,12 @@ if ($result && $result->num_rows > 0) {
             tokenSeparators: [',', ' ']
         });
         document.getElementById('modalTurma').style.display = 'block';
+        document.body.classList.add('modal-aberta');
     }
 
     function fecharModalTurma() {
         document.getElementById('modalTurma').style.display = 'none';
+        document.body.classList.remove('modal-aberta');
     }
 
     function abrirModalExcluirTurma(id, nome) {
@@ -829,10 +989,12 @@ if ($result && $result->num_rows > 0) {
         document.getElementById('excluir_nome_turma').innerHTML = 'Tem certeza que deseja excluir a turma <b>' + nome +
             '</b>?';
         document.getElementById('modalExcluirTurma').style.display = 'block';
+        document.body.classList.add('modal-aberta');
     }
 
     function fecharModalExcluirTurma() {
         document.getElementById('modalExcluirTurma').style.display = 'none';
+        document.body.classList.remove('modal-aberta');
     }
     window.onclick = function(event) {
         var modalCriar = document.getElementById('modalTurma');
@@ -1226,6 +1388,116 @@ if ($result && $result->num_rows > 0) {
     };
     </script>
     <?php include 'footer.php'; ?>
+<script>
+// Modal de Dicas de Funcionamento para Turmas
+<?php $isProfessor = (isset($_SESSION['usuario_tipo']) && $_SESSION['usuario_tipo'] === 'professor'); ?>
+const stepsDicasTurmas = <?php if ($isProfessor): ?>[
+    {
+        title: 'Filtros e Pesquisa',
+        html: `<div class="dica-step-card bg-dica-blue"><div class="dica-step-icone dica-blue"><i class="bi bi-funnel-fill"></i></div><div><span class="fw-bold text-dica-blue">Filtros:</span> Use o campo de busca para filtrar turmas pelo nome.<br><span class="fw-bold text-dica-blue">Ordenação:</span> Escolha como deseja ordenar as turmas.<br><span class="fw-bold text-dica-blue">Status:</span> Filtre por turmas ativas, concluídas ou canceladas.<br><span class="text-muted">Dica: Você só verá turmas vinculadas a você.</span></div></div>`
+    },
+    {
+        title: 'Visualizar e Registrar Aula',
+        html: `<div class="dica-step-card bg-dica-blue"><div class="dica-step-icone dica-blue"><i class="bi bi-journal-plus"></i></div><div><b>Visualize suas turmas e clique em <span class='badge bg-primary text-white'><i class='bi bi-journal-plus'></i> Registrar Aula</span> para lançar as aulas ministradas.</b><br>Preencha a data, o conteúdo e outras informações da aula.<br><div class='exemplo-bloco bg-primary-subtle text-primary border border-primary mt-4 mb-1 p-2 rounded-3' style='display:inline-block;'><b>Exemplo:</b> Aula de 10/04/2024 - Capítulo 2 - Exercícios</div></div></div>`
+    },
+    {
+        title: 'Badges, Planos, Capítulos e Tópicos',
+        html: `<div class="dica-step-card bg-dica-purple"><div class="dica-step-icone dica-purple"><i class="bi bi-collection"></i></div><div><span class="fw-bold text-dica-purple">Badges:</span> Mostram o total de turmas ativas, concluídas e canceladas.<br><span class="fw-bold text-dica-purple">Planos:</span> Cada turma pode ter planos de ensino para cada disciplina.<br><span class="fw-bold text-dica-purple">Paginação:</span> Navegue entre as páginas usando os botões abaixo dos cards.<br><div class='exemplo-bloco mt-2'><span class='badge bg-success'><i class='bi bi-check-circle-fill'></i> Ativa</span> <span class='badge bg-info text-dark'><i class='bi bi-flag'></i> Concluída</span> <span class='badge bg-secondary'><i class='bi bi-x-circle-fill'></i> Cancelada</span></div></div></div>`
+    }
+]<?php else: ?>[
+    {
+        title: 'Filtros e Pesquisa',
+        html: `
+        <div class="dica-step-card bg-dica-blue">
+            <div class="dica-step-icone dica-blue"><i class="bi bi-funnel-fill"></i></div>
+            <div>
+                <span class="fw-bold text-dica-blue">Filtros:</span> Use o botão <span class="badge bg-primary text-white"><i class="bi bi-funnel-fill"></i></span> para abrir filtros avançados.<br>
+                <span class="fw-bold text-dica-blue">Pesquisa:</span> Digite no campo para buscar turmas pelo nome.<br>
+                <span class="fw-bold text-dica-blue">Ordenação:</span> Escolha como deseja ordenar as turmas.<br>
+                <span class="fw-bold text-dica-blue">Status:</span> Filtre por turmas ativas, concluídas ou canceladas.
+            </div>
+        </div>`
+    },
+    {
+        title: 'Criar Nova Turma',
+        html: `<div class="dica-step-card bg-dica-green"><div class="dica-step-icone dica-green"><i class="bi bi-plus-circle"></i></div><div><b>1º passo:</b> Clique em <span class="badge bg-success text-white"><i class="bi bi-plus-circle"></i> Nova Turma</span> para adicionar uma nova turma.<br>Preencha os campos obrigatórios e clique em <span class="badge bg-primary text-white"><i class="bi bi-check-circle"></i> Salvar</span>.<br><div class='exemplo-bloco bg-success-subtle text-success border border-success mt-2 p-2 rounded-3'><b>Exemplo:</b> Turma: <span class='fw-bold'>1º Ano A</span></div></div></div>`
+    },
+    {
+        title: 'Editar Turma',
+        html: `<div class="dica-step-card bg-dica-yellow"><div class="dica-step-icone dica-yellow"><i class="bi bi-pencil-square"></i></div><div><b>2º passo:</b> Clique no botão <span class="badge bg-primary text-white"><i class="bi bi-pencil-square"></i> Editar</span> em um card para editar os dados da turma.<br>Altere as informações desejadas e clique em <span class="badge bg-primary text-white"><i class="bi bi-check-circle"></i> Salvar</span>.<br><div class='exemplo-bloco bg-warning-subtle text-warning border border-warning mt-2 p-2 rounded-3'><b>Exemplo:</b> Editar nome, turno, disciplinas vinculadas...</div></div></div>`
+    },
+    {
+        title: 'Excluir Turma',
+        html: `<div class="dica-step-card bg-dica-red"><div class="dica-step-icone dica-red"><i class="bi bi-trash"></i></div><div><b>3º passo:</b> Clique no botão <span class="badge bg-danger text-white"><i class="bi bi-trash"></i> Excluir</span> para remover uma turma.<br><span class="fw-bold text-danger">Atenção:</span> esta ação é <u>irreversível</u>!<br><div class='exemplo-bloco bg-danger-subtle text-danger border border-danger mt-2 p-2 rounded-3'><b>Exemplo:</b> Excluir turma que não será mais utilizada.</div></div></div>`
+    },
+    {
+        title: 'Ativar/Cancelar Turma',
+        html: `<div class="dica-step-card bg-dica-orange"><div class="dica-step-icone dica-orange"><i class="bi bi-toggle-on"></i></div><div><b>4º passo:</b> Use o botão <span class="badge bg-warning text-dark"><i class="bi bi-toggle-off"></i> / <i class="bi bi-toggle-on"></i></span> para ativar ou cancelar uma turma.<br>Confirme a ação no modal exibido.<br><div class='exemplo-bloco bg-warning-subtle text-warning border border-warning mt-2 p-2 rounded-3'><b>Exemplo:</b> Cancelar turma que não terá mais aulas.</div></div></div>`
+    },
+    {
+        title: 'Badges, Planos, Capítulos e Tópicos',
+        html: `<div class="dica-step-card bg-dica-purple"><div class="dica-step-icone dica-purple"><i class="bi bi-collection"></i></div><div><span class="fw-bold text-dica-purple">Badges:</span> Mostram o total de turmas ativas, concluídas e canceladas.<br><span class="fw-bold text-dica-purple">Planos:</span> Cada turma pode ter planos de ensino para cada disciplina.<br><span class="fw-bold text-dica-purple">Paginação:</span> Navegue entre as páginas usando os botões abaixo dos cards.<br><div class='exemplo-bloco mt-2'><span class='badge bg-success'><i class='bi bi-check-circle-fill'></i> Ativa</span> <span class='badge bg-info text-dark'><i class='bi bi-flag'></i> Concluída</span> <span class='badge bg-secondary'><i class='bi bi-x-circle-fill'></i> Cancelada</span></div></div></div>`
+    }
+]<?php endif; ?>;
+let stepAtualTurmas = 0;
+function mostrarStepDicasTurmas(idx) {
+    stepAtualTurmas = idx;
+    // Atualiza stepper
+    // Stepper: mostra só o número de steps correto
+    let totalSteps = stepsDicasTurmas.length;
+    // Ícones para cada step (ordem deve bater com stepsDicasTurmas)
+    let icones = <?php if ($isProfessor): ?>[
+        'bi-funnel-fill',
+        'bi-journal-plus',
+        'bi-collection'
+    ]<?php else: ?>[
+        'bi-funnel-fill',
+        'bi-plus-circle',
+        'bi-pencil-square',
+        'bi-trash',
+        'bi-toggle-on',
+        'bi-collection'
+    ]<?php endif; ?>;
+    for (let i = 0; i < 6; i++) {
+        let el = document.getElementById('stepCircleTurmas'+(i+1));
+        if (el) {
+            el.style.display = i < totalSteps ? '' : 'none';
+            el.classList.toggle('active', i === idx);
+            let icon = el.querySelector('i');
+            if (icon) {
+                icon.className = 'bi ' + (icones[i] || '');
+                icon.style.opacity = i < totalSteps ? 1 : 0;
+                icon.style.fontSize = '1.25em';
+            }
+        }
+        let line = el && el.nextElementSibling && el.nextElementSibling.classList.contains('step-line') ? el.nextElementSibling : null;
+        if (line) line.style.display = (i < totalSteps-1) ? '' : 'none';
+    }
+    // Atualiza conteúdo
+    document.getElementById('stepContentDicasTurmas').innerHTML = `
+        <h5 class='fw-bold mb-3 text-primary'>${stepsDicasTurmas[idx].title}</h5>
+        <div style='font-size:1.13em;'>${stepsDicasTurmas[idx].html}</div>
+    `;
+    // Botões
+    document.getElementById('btnStepAnteriorTurmas').style.display = idx === 0 ? 'none' : '';
+    document.getElementById('btnStepProximoTurmas').innerHTML = idx === stepsDicasTurmas.length-1 ? 'Fechar <i class="bi bi-x"></i>' : 'Próximo <i class="bi bi-arrow-right"></i>';
+}
+document.getElementById('btnDicasTurmas').onclick = function(e) {
+    if (e) e.stopPropagation();
+    document.getElementById('modalDicasTurmas').style.display = 'block';
+    mostrarStepDicasTurmas(0);
+};
+document.getElementById('btnStepAnteriorTurmas').onclick = function() {
+    if (stepAtualTurmas > 0) mostrarStepDicasTurmas(stepAtualTurmas-1);
+};
+document.getElementById('btnStepProximoTurmas').onclick = function() {
+    if (stepAtualTurmas < stepsDicasTurmas.length-1) mostrarStepDicasTurmas(stepAtualTurmas+1);
+    else fecharModalDicasTurmas();
+};
+function fecharModalDicasTurmas() {
+    document.getElementById('modalDicasTurmas').style.display = 'none';
+}
+</script>
 </body>
 
 </html>
