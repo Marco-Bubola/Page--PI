@@ -25,6 +25,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['id_capitulo']) && is
             if (!$stmt2->execute()) throw new Exception('Erro ao cancelar tópicos do capítulo');
             $stmt2->close();
         }
+        // Se ativar o capítulo, ativa todos os tópicos dele
+        else if ($novo_status === 'em_andamento') {
+            $stmt2 = $conn->prepare('UPDATE topicos SET status = ? WHERE capitulo_id = ?');
+            $statusTopico = 'em_andamento';
+            $stmt2->bind_param('si', $statusTopico, $id_capitulo);
+            if (!$stmt2->execute()) throw new Exception('Erro ao ativar tópicos do capítulo');
+            $stmt2->close();
+        }
         $conn->commit();
         ob_end_clean();
         echo json_encode(['success' => true]);
