@@ -67,6 +67,9 @@ $pagina_atual = basename($_SERVER['PHP_SELF']);
             <a class="nav-link<?php if ($pagina_atual == 'disciplinas.php') echo ' active'; ?>" href="disciplinas.php">Disciplinas</a>
           </li>
           <li class="nav-item">
+            <a class="nav-link<?php if ($pagina_atual == 'historico_aulas.php') echo ' active'; ?>" href="historico_aulas.php">Histórico de Aulas</a>
+          </li>
+          <li class="nav-item">
             <a class="nav-link<?php if ($pagina_atual == 'turmas.php') echo ' active'; ?>" href="turmas.php">Turmas</a>
           </li>
           <li class="nav-item">
