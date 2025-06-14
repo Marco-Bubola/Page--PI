@@ -22,7 +22,6 @@ if (
     $turma_id = intval($_POST['turma_id']);
     $data_inicio = !empty($_POST['data_inicio']) ? $_POST['data_inicio'] : null;
     $data_fim = !empty($_POST['data_fim']) ? $_POST['data_fim'] : null;
-    $objetivo_geral = isset($_POST['objetivo_geral']) ? trim($_POST['objetivo_geral']) : '';
     require_once '../config/conexao.php';
     $stmt = $conn->prepare('SELECT id FROM planos WHERE disciplina_id = ? AND turma_id = ? AND titulo = ? AND id != ?');
     $stmt->bind_param('iisi', $disciplina_id, $turma_id, $titulo, $id);
@@ -33,8 +32,8 @@ if (
         exit();
     }
     $stmt->close();
-    $stmt = $conn->prepare('UPDATE planos SET turma_id = ?, disciplina_id = ?, titulo = ?, descricao = ?, status = ?, data_inicio = ?, data_fim = ?, objetivo_geral = ? WHERE id = ?');
-    $stmt->bind_param('iissssssi', $turma_id, $disciplina_id, $titulo, $descricao, $status, $data_inicio, $data_fim, $objetivo_geral, $id);
+    $stmt = $conn->prepare('UPDATE planos SET turma_id = ?, disciplina_id = ?, titulo = ?, descricao = ?, status = ?, data_inicio = ?, data_fim = ? WHERE id = ?');
+    $stmt->bind_param('iisssssi', $turma_id, $disciplina_id, $titulo, $descricao, $status, $data_inicio, $data_fim, $id);
     if ($stmt->execute()) {
         $plano = $conn->query("SELECT p.*, d.nome AS disciplina_nome FROM planos p JOIN disciplinas d ON p.disciplina_id = d.id WHERE p.id = $id")->fetch_assoc();
         echo json_encode(['success' => true, 'plano' => $plano]);
