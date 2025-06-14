@@ -316,13 +316,13 @@ if ($turma_id && !empty($planos)) {
                                         <button type="button"
                                             class="btn btn-gradient-dicas shadow-sm px-3 py-2 d-flex align-items-center gap-2 fw-bold"
                                             id="btnDicasPlanos" title="Dicas da página"
-                                            style="border-radius: 14px; font-size:1.13em; box-shadow: 0 2px 8px #0d6efd33;">
-                                            <i class="bi bi-lightbulb-fill" style="font-size:1.35em;"></i>
+                                            style="border-radius: 14px; font-size:1.13em; background:#0d6efd; box-shadow: 0 2px 8px #0d6efd33; color: #fff;">
+                                            <i class="bi bi-lightbulb-fill" style="font-size:1.35em; color: #fff;"></i>
                                             Dicas
                                         </button>
                                     </div>
                                     <!-- Modal de Dicas de Funcionamento -->
-                                    <?php include __DIR__ . '/modais_planos/modalDicasPlanos.php'; ?>
+                                    <?php include __DIR__ . '/modais/modalDicasaulas.php'; ?>
                                     <!-- Fim do modal de dicas -->
                                     <div class="text-muted" style="font-size:1.08em;">
                                         <i class="bi bi-info-circle"></i>
@@ -869,6 +869,12 @@ if (!empty($topicosPersonalizadosPorPlano[$plano['id']])): ?>
             })();
         <?php endforeach; ?>
     });
+
+    // Abrir modal de dicas ao clicar no botão
+    document.getElementById('btnDicasPlanos').onclick = function() {
+        var modal = new bootstrap.Modal(document.getElementById('modalDicasAulas'));
+        modal.show();
+    };
     </script>
     <?php include 'footer.php'; ?>
 </body>
