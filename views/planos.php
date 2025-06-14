@@ -121,20 +121,6 @@ if ($turma_id && !empty($planos)) {
         }
     }
 }
-
-// Últimos registros de aula
-$ultimas_aulas = [];
-if ($turma_id) {
-    $sql = 'SELECT a.*, d.nome AS disciplina_nome, t.turma_id FROM aulas a JOIN disciplinas d ON a.disciplina_id = d.id JOIN turmas t ON a.turma_id = t.id WHERE a.turma_id = ? ORDER BY a.data DESC, a.id DESC LIMIT 10';
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param('i', $turma_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    while ($row = $result->fetch_assoc()) {
-        $ultimas_aulas[] = $row;
-    }
-    $stmt->close();
-}
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -919,6 +905,20 @@ if ($turma_id) {
             tempDiv.innerHTML = html.trim();
             const novoWizard = tempDiv.querySelector('.wizard-stepper-capitulos');
             const novaMsgVazio = tempDiv.querySelector('#mensagem-sem-capitulo-' + plano_id);
+            // --- CORREÇÃO ABA: ativa a aba correta antes de inserir o stepper/mensagem ---
+            const abaBtn = document.querySelector(`#tab-${plano_id}`);
+            if (abaBtn && !abaBtn.classList.contains('active')) {
+                abaBtn.click();
+            }
+            setTimeout(() => {
+                const planoTab = document.querySelector(`#disciplina-${plano_id} .col-12`);
+                if (planoTab) {
+                    const turmaActions = planoTab.querySelector('.turma-actions');
+                    if (novoWizard) {
+                        if (turmaActions && turmaActions.parentNode) {
+                            turmaActions.parentNode.insertBefore(novoWizard, turmaActions.nextSibling);
+                        } else if (planoTab.firstChild) {
+                            planoTab.insertBefore(novoWizard, planoTab.firstChild);
                         } else {
                             planoTab.appendChild(novoWizard);
                         }
