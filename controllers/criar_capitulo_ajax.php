@@ -30,6 +30,25 @@ if (
     if ($stmt->execute()) {
         $id = $stmt->insert_id;
         $cap = $conn->query("SELECT * FROM capitulos WHERE id = $id")->fetch_assoc();
+        // Atualizar status do plano para 'em_andamento'
+        $updatePlano = $conn->prepare("UPDATE planos SET status = 'em_andamento' WHERE id = ? AND status != 'em_andamento'");
+        $updatePlano->bind_param('i', $plano_id);
+        $updatePlano->execute();
+        $updatePlano->close();
+        // Atualizar status da turma para 'ativa' se estiver 'concluída'
+        $getTurma = $conn->prepare("SELECT turma_id FROM planos WHERE id = ?");
+        $getTurma->bind_param('i', $plano_id);
+        $getTurma->execute();
+        $getTurma->bind_result($turma_id);
+        if ($getTurma->fetch()) {
+            $getTurma->close();
+            $updateTurma = $conn->prepare("UPDATE turmas SET status = 'ativa' WHERE id = ? AND status = 'concluída'");
+            $updateTurma->bind_param('i', $turma_id);
+            $updateTurma->execute();
+            $updateTurma->close();
+        } else {
+            $getTurma->close();
+        }
         echo json_encode(['success' => true, 'capitulo' => $cap]);
     } else {
         echo json_encode(['success' => false, 'error' => 'Erro ao salvar no banco']);
