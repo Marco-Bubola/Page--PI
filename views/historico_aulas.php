@@ -1,7 +1,7 @@
 <?php
 session_start();
-if (!isset($_SESSION['usuario_nome']) || $_SESSION['usuario_tipo'] !== 'professor') {
-    header('Location: index.php');
+if (!isset($_SESSION['usuario_nome']) || !in_array($_SESSION['usuario_tipo'], ['professor', 'coordenador', 'admin'])) {
+    header('Location: ../index.php');
     exit();
 }
 require_once '../config/conexao.php';
