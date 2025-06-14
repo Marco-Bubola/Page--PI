@@ -1,0 +1,77 @@
+
+/* Fonte do Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+/* Variáveis de cor */
+:root {
+  --cor-primaria: #112130;
+  --cor-secundaria: #1e3a56;
+  --cor-destaque: #2979ff;
+  --cor-clara: #f0f4f8;
+  --texto-claro: #ffffff;
+  --texto-escuro: #1c1c1c;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
+
+body {
+  background-color: var(--cor-clara);
+  color: var(--texto-escuro);
+  line-height: 1.6;
+}
+
+/* Container responsivo */
+.container {
+  width: 90%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Estilo geral de botões */
+button, .btn {
+  background-color: var(--cor-destaque);
+  color: var(--texto-claro);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover, .btn:hover {
+  background-color: #005ecb;
+}
+
+/* Navegação */
+nav {
+  background-color: var(--cor-primaria);
+  padding: 10px 0;
+}
+
+nav a {
+  color: var(--texto-claro);
+  text-decoration: none;
+  margin: 0 15px;
+  font-weight: 500;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  nav a {
+    display: block;
+    margin: 10px 0;
+  }
+
+  .container {
+    width: 95%;
+  }
+
+  table {
+    font-size: 14px;
+  }
+}

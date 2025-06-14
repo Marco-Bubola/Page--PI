@@ -247,6 +247,7 @@ $erro = isset($_GET['erro']) ? $_GET['erro'] : '';
 <head>
     <meta charset="UTF-8">
     <title>Gerenciar Usuários</title>
+    <link rel="stylesheet" href="../assets/css/css_base_page.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="icon" type="image/png" href="../assets/img/LOGO_PAGE.png">
     <style>

@@ -184,6 +184,7 @@ if ($result && $result->num_rows > 0) {
 <head>
     <meta charset="UTF-8">
     <title>Home Professor - PI Page</title>
+    <link rel="stylesheet" href="../assets/css/css_base_page.css">
     <link rel="icon" type="image/png" href="../assets/img/LOGO_PAGE.png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">

@@ -135,6 +135,9 @@ if ($turma_id && !empty($planos)) {
 
 <head>
     <meta charset="UTF-8">
+
+    <title>Registro de Aulas - PI Page</title>
+    <link rel="stylesheet" href="../assets/css/css_base_page.css">
     <title>
         Registro de Aulas<?= isset($turma_nome) && $turma_nome ? ' - ' . htmlspecialchars($turma_nome) : '' ?> - PI Page
     </title>
