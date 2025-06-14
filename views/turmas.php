@@ -336,9 +336,7 @@ if ($result && $result->num_rows > 0) {
     </div>
 
     <script>
-    // Mantém seleção ao redirecionar (Bootstrap já faz isso, mas garantimos)
     document.getElementById('filtrosForm').onsubmit = function(e) {
-        // Não faz nada especial, apenas deixa o submit padrão acontecer
     };
     </script>
     <?php
