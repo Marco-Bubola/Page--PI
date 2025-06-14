@@ -1,6 +1,9 @@
 <?php
 session_start();
-if (!isset($_SESSION['usuario_nome']) || $_SESSION['usuario_tipo'] !== 'professor') {
+if (
+    !isset($_SESSION['usuario_nome']) ||
+    !in_array($_SESSION['usuario_tipo'], ['professor', 'coordenador', 'admin'])
+) {
     http_response_code(403);
     exit('Acesso negado');
 }
@@ -74,7 +77,12 @@ foreach ($turmas_pagina as $turma) {
     $html .= '<div class="d-flex justify-content-between align-items-center mb-2">';
     $html .= '<div><span class="fw-bold fs-5"><i class="fa-solid fa-graduation-cap text-primary me-1"></i>' . htmlspecialchars($turma['nome']) . '</span></div>';
     $html .= '<div class="turma-actions">';
-    if ($isProfessor && $turma['status'] === 'ativa') {
+    // Botão Gerenciar Planos para coordenador e admin
+    if (
+        (isset($_SESSION['usuario_tipo']) && ($_SESSION['usuario_tipo'] === 'coordenador' || $_SESSION['usuario_tipo'] === 'admin'))
+    ) {
+        $html .= '<a href="../views/planos.php?turma_id=' . $turma['id'] . '" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-2 px-3 py-2 shadow" style="font-weight:600; border-radius:10px; font-size:1.08rem;" title="Gerenciar Planos"><i class="fa-solid fa-list-check"></i> Gerenciar Planos</a>';
+    } else if ($isProfessor && $turma['status'] === 'ativa') {
         $html .= '<a href="../views/registro_aulas.php?turma_id=' . $turma['id'] . '" class="btn btn-primary btn-sm d-flex align-items-center gap-2 px-3 py-2 shadow" style="font-weight:600; border-radius:10px; font-size:1.08rem;" title="Registrar Aula"><i class="fa-solid fa-chalkboard-user"></i> Registrar Aula</a>';
     }
     $html .= '</div></div>';
