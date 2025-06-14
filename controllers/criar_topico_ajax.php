@@ -32,6 +32,41 @@ if (
     if ($stmt->execute()) {
         $id = $stmt->insert_id;
         $top = $conn->query("SELECT * FROM topicos WHERE id = $id")->fetch_assoc();
+        // Atualizar status do capítulo para 'em_andamento' se estiver 'concluido'
+        $updateCapitulo = $conn->prepare("UPDATE capitulos SET status = 'em_andamento' WHERE id = ? AND status = 'concluido'");
+        $updateCapitulo->bind_param('i', $capitulo_id);
+        $updateCapitulo->execute();
+        $updateCapitulo->close();
+        // Buscar plano_id do capítulo
+        $getPlano = $conn->prepare("SELECT plano_id FROM capitulos WHERE id = ?");
+        $getPlano->bind_param('i', $capitulo_id);
+        $getPlano->execute();
+        $getPlano->bind_result($plano_id);
+        if ($getPlano->fetch()) {
+            $getPlano->close();
+            // Atualizar status do plano para 'em_andamento' se estiver 'concluido'
+            $updatePlano = $conn->prepare("UPDATE planos SET status = 'em_andamento' WHERE id = ? AND status = 'concluido'");
+            $updatePlano->bind_param('i', $plano_id);
+            $updatePlano->execute();
+            $updatePlano->close();
+            // Buscar turma_id do plano
+            $getTurma = $conn->prepare("SELECT turma_id FROM planos WHERE id = ?");
+            $getTurma->bind_param('i', $plano_id);
+            $getTurma->execute();
+            $getTurma->bind_result($turma_id);
+            if ($getTurma->fetch()) {
+                $getTurma->close();
+                // Atualizar status da turma para 'ativa' se estiver 'concluída'
+                $updateTurma = $conn->prepare("UPDATE turmas SET status = 'ativa' WHERE id = ? AND status = 'concluída'");
+                $updateTurma->bind_param('i', $turma_id);
+                $updateTurma->execute();
+                $updateTurma->close();
+            } else {
+                $getTurma->close();
+            }
+        } else {
+            $getPlano->close();
+        }
         echo json_encode(['success' => true, 'topico' => $top]);
     } else {
         echo json_encode(['success' => false, 'error' => 'Erro ao salvar no banco']);
