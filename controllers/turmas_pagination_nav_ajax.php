@@ -1,6 +1,9 @@
 <?php
 session_start();
-if (!isset($_SESSION['usuario_nome']) || $_SESSION['usuario_tipo'] !== 'professor') {
+if (
+    !isset($_SESSION['usuario_nome']) ||
+    !in_array($_SESSION['usuario_tipo'], ['professor', 'coordenador', 'admin'])
+) {
     http_response_code(403);
     exit('Acesso negado');
 }
