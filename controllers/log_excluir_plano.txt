@@ -1,2 +1,0 @@
-2025-06-14 15:21:24 - Início do script
-2025-06-14 15:21:24 - Requisição não é AJAX
