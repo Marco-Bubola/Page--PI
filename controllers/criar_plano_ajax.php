@@ -20,7 +20,7 @@ if (
     $status = isset($_POST['status']) ? $_POST['status'] : 'em_andamento';
     $data_inicio = !empty($_POST['data_inicio']) ? $_POST['data_inicio'] : null;
     $data_fim = !empty($_POST['data_fim']) ? $_POST['data_fim'] : null;
-    $objetivo_geral = isset($_POST['objetivo_geral']) ? trim($_POST['objetivo_geral']) : '';
+
     require_once '../config/conexao.php';
     $stmt = $conn->prepare('SELECT id FROM planos WHERE disciplina_id = ? AND turma_id = ? AND titulo = ?');
     $stmt->bind_param('iis', $disciplina_id, $turma_id, $titulo);
@@ -31,9 +31,14 @@ if (
         exit();
     }
     $stmt->close();
-    $stmt = $conn->prepare('INSERT INTO planos (turma_id, disciplina_id, titulo, descricao, status, criado_por, data_inicio, data_fim, objetivo_geral) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
-    $stmt->bind_param('iisssisss', $turma_id, $disciplina_id, $titulo, $descricao, $status, $criado_por, $data_inicio, $data_fim, $objetivo_geral);
+    $stmt = $conn->prepare('INSERT INTO planos (turma_id, disciplina_id, titulo, descricao, status, criado_por, data_inicio, data_fim) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
+    $stmt->bind_param('iisssiss', $turma_id, $disciplina_id, $titulo, $descricao, $status, $criado_por, $data_inicio, $data_fim);
     if ($stmt->execute()) {
+        // Atualizar status da turma para 'ativa' se estiver 'concluída'
+        $updateTurma = $conn->prepare("UPDATE turmas SET status = 'ativa' WHERE id = ? AND status = 'concluída'");
+        $updateTurma->bind_param('i', $turma_id);
+        $updateTurma->execute();
+        $updateTurma->close();
         $id = $stmt->insert_id;
         $plano = $conn->query("SELECT p.*, d.nome AS disciplina_nome FROM planos p JOIN disciplinas d ON p.disciplina_id = d.id WHERE p.id = $id")->fetch_assoc();
         echo json_encode(['success' => true, 'plano' => $plano]);
