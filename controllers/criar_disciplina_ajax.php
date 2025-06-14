@@ -1,21 +1,21 @@
 <?php
 session_start();
 header('Content-Type: application/json');
-if (!isset($_SESSION['usuario_nome']) || !in_array($_SESSION['usuario_tipo'], ['coordenador', 'admin', 'professor'])) {
+if (!isset($_SESSION['usuario_nome']) || !in_array($_SESSION['usuario_tipo'], ['coordenador', 'admin'])) {
     echo json_encode(['success' => false, 'error' => 'Acesso negado']);
     exit();
 }
 if (
     $_SERVER['REQUEST_METHOD'] === 'POST' &&
-    !empty($_POST['nome_disciplina']) &&
-    isset($_POST['codigo_disciplina']) &&
-    isset($_POST['descricao_disciplina']) &&
-    isset($_POST['ativa_disciplina'])
+    !empty($_POST['nome']) &&
+    isset($_POST['codigo']) &&
+    isset($_POST['descricao'])
 ) {
-    $nome = trim($_POST['nome_disciplina']);
-    $codigo = trim($_POST['codigo_disciplina']);
-    $descricao = trim($_POST['descricao_disciplina']);
-    $ativa = isset($_POST['ativa_disciplina']) && $_POST['ativa_disciplina'] == '1' ? 1 : 0;
+    $nome = trim($_POST['nome']);
+    $codigo = trim($_POST['codigo']);
+    $descricao = trim($_POST['descricao']);
+    $status = 'ativa'; // Sempre ativa ao criar
+
     require_once '../config/conexao.php';
     $stmt = $conn->prepare('SELECT id FROM disciplinas WHERE nome = ?');
     $stmt->bind_param('s', $nome);
@@ -26,8 +26,8 @@ if (
         exit();
     }
     $stmt->close();
-    $stmt = $conn->prepare('INSERT INTO disciplinas (nome, codigo, descricao, ativa) VALUES (?, ?, ?, ?)');
-    $stmt->bind_param('sssi', $nome, $codigo, $descricao, $ativa);
+    $stmt = $conn->prepare('INSERT INTO disciplinas (nome, codigo, descricao, status) VALUES (?, ?, ?, ?)');
+    $stmt->bind_param('ssss', $nome, $codigo, $descricao, $status);
     if ($stmt->execute()) {
         $id = $stmt->insert_id;
         $disciplina = $conn->query("SELECT * FROM disciplinas WHERE id = $id")->fetch_assoc();

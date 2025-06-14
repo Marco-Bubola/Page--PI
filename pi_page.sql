@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 03/06/2025 às 15:13
+-- Tempo de geração: 13/06/2025 às 18:05
 -- Versão do servidor: 9.2.0
 -- Versão do PHP: 8.2.12
 
@@ -50,9 +50,8 @@ CREATE TABLE `capitulos` (
   `plano_id` int NOT NULL,
   `titulo` varchar(255) NOT NULL,
   `ordem` int DEFAULT NULL,
-  `status` enum('em_andamento','concluido') DEFAULT 'em_andamento',
-  `descricao` text,
-  `duracao_estimativa` int DEFAULT NULL
+  `status` enum('em_andamento','concluido','cancelado') DEFAULT 'em_andamento',
+  `descricao` text
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -66,7 +65,7 @@ CREATE TABLE `disciplinas` (
   `nome` varchar(100) NOT NULL,
   `codigo` varchar(20) DEFAULT NULL,
   `descricao` text,
-  `ativa` tinyint(1) DEFAULT '1'
+  `status` enum('ativa','concluída','cancelada') DEFAULT 'ativa'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -87,6 +86,14 @@ CREATE TABLE `enderecos` (
   `estado` varchar(2) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+--
+-- Despejando dados para a tabela `enderecos`
+--
+
+INSERT INTO `enderecos` (`id`, `usuario_id`, `cep`, `rua`, `numero`, `complemento`, `bairro`, `cidade`, `estado`) VALUES
+(4, 8, '13973043', 'Rua Nhambiquara de Tupã', '444', '222', 'Jardim Macucos', 'Itapira', 'SP'),
+(6, 3, '13973043', 'Rua Nhambiquara de Tupã', '444', '', 'Jardim Macucos', 'Itapira', 'SP');
+
 -- --------------------------------------------------------
 
 --
@@ -103,8 +110,7 @@ CREATE TABLE `planos` (
   `criado_por` int NOT NULL,
   `criado_em` datetime DEFAULT CURRENT_TIMESTAMP,
   `data_inicio` date DEFAULT NULL,
-  `data_fim` date DEFAULT NULL,
-  `objetivo_geral` text
+  `data_fim` date DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -119,7 +125,7 @@ CREATE TABLE `topicos` (
   `titulo` varchar(255) NOT NULL,
   `descricao` text NOT NULL,
   `ordem` int DEFAULT NULL,
-  `status` enum('em_andamento','concluido','pendente') DEFAULT 'em_andamento',
+  `status` enum('em_andamento','concluido','cancelado') DEFAULT 'em_andamento',
   `observacoes` text,
   `data_criacao` datetime DEFAULT CURRENT_TIMESTAMP,
   `data_atualizacao` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -207,14 +213,13 @@ CREATE TABLE `usuarios` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Despejando dados para a tabela `usuarios` senha = 12345
+-- Despejando dados para a tabela `usuarios` sena 12345
 --
 
 INSERT INTO `usuarios` (`id`, `nome`, `sobrenome`, `email`, `senha`, `tipo`, `cpf`, `telefone`, `data_nascimento`, `foto_perfil`, `matricula`, `data_admissao`, `status`, `data_criacao`, `data_ultimo_login`, `endereco`, `genero`, `observacoes`) VALUES
-(1, 'marco', NULL, 'marcobubola@hotmail.com', '$2y$10$w/SlRhAFyvSPEN9q8.qE9.Fvt1kqH/xxeGsXIogPbx7LM95sBfGFa', 'admin', NULL, NULL, NULL, NULL, NULL, NULL, 'ativo', '2025-06-01 15:11:01', NULL, NULL, NULL, NULL),
+(1, 'marco', NULL, 'admin@hotmail.com', '$2y$10$w/SlRhAFyvSPEN9q8.qE9.Fvt1kqH/xxeGsXIogPbx7LM95sBfGFa', 'admin', NULL, NULL, NULL, NULL, NULL, NULL, 'ativo', '2025-06-01 15:11:01', NULL, NULL, NULL, NULL),
 (3, 'professor', 'teste', 'professor@gmail.com', '$2y$10$w/SlRhAFyvSPEN9q8.qE9.Fvt1kqH/xxeGsXIogPbx7LM95sBfGFa', 'professor', '444444', '199841221111', '2025-06-02', '../assets/img/foto_683cc7f0aa7bd7.41819667.png', '111111', '2025-06-03', 'ativo', '2025-06-01 15:11:01', NULL, NULL, 'Masculino', ''),
-(8, 'coordenador', 'tes', 'coordenador@hotmail.com', '$2y$10$w/SlRhAFyvSPEN9q8.qE9.Fvt1kqH/xxeGsXIogPbx7LM95sBfGFa', 'coordenador', '44444444444', '19984122111', '2025-06-01', 'https://via.placeholder.com/70x70?text=Usuário', '4444444444', '2025-06-01', 'ativo', '2025-06-01 16:09:16', NULL, NULL, 'Masculino', ''),
-(10, 'teste', NULL, 'teste@hotmail.com', '$2y$10$w/SlRhAFyvSPEN9q8.qE9.Fvt1kqH/xxeGsXIogPbx7LM95sBfGFa', 'professor', NULL, NULL, NULL, NULL, NULL, NULL, 'ativo', '2025-06-01 23:12:37', NULL, NULL, NULL, NULL);
+(8, 'coordenador', 'tes', 'coordenador@hotmail.com', '$2y$10$w/SlRhAFyvSPEN9q8.qE9.Fvt1kqH/xxeGsXIogPbx7LM95sBfGFa', 'coordenador', '44444444444', '19984122111', '2025-06-01', 'https://via.placeholder.com/70x70?text=Usuário', '4444444444', '2025-06-01', 'ativo', '2025-06-01 16:09:16', NULL, NULL, 'Masculino', '');
 
 --
 -- Índices para tabelas despejadas
@@ -330,7 +335,7 @@ ALTER TABLE `disciplinas`
 -- AUTO_INCREMENT de tabela `enderecos`
 --
 ALTER TABLE `enderecos`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT de tabela `planos`
