@@ -310,7 +310,8 @@ if ($turma_id && !empty($planos)) {
                                 <div>
                                     <div class="d-flex align-items-center gap-2">
                                         <h2 class="mb-0 fw-bold text-primary">
-                                            Planos de Aula<?= $turma_id ? ' <span class="text-primary">da Turma: ' . (isset($turma_nome) && $turma_nome ? htmlspecialchars($turma_nome) : '') . '</span>' : '' ?>
+                                            Planos de
+                                            Aula<?= $turma_id ? ' <span class="text-primary">da Turma: ' . (isset($turma_nome) && $turma_nome ? htmlspecialchars($turma_nome) : '') . '</span>' : '' ?>
                                         </h2>
                                         <button type="button"
                                             class="btn btn-gradient-dicas shadow-sm px-3 py-2 d-flex align-items-center gap-2 fw-bold"
@@ -507,16 +508,33 @@ if ($turma_id && !empty($planos)) {
                             <?php else: ?>
                             <div class="text-muted">Nenhum capítulo cadastrado.</div>
                             <?php endif; ?>
-                            <?php if (!empty($topicosPersonalizadosPorPlano[$plano['id']])): ?>
+                            <?php
+// Exibir tópicos personalizados no mesmo estilo dos tópicos planejados
+if (!empty($topicosPersonalizadosPorPlano[$plano['id']])): ?>
                             <div class="mt-2">
-                                <b><i class="fa-solid fa-lightbulb"></i> Tópicos personalizados ministrados:</b>
-                                <?php foreach ($topicosPersonalizadosPorPlano[$plano['id']] as $desc): ?>
-                                <div class="topico-personalizado-box mb-1">
-                                    <span class="topico-personalizado-title"><i class="fa-solid fa-circle-dot"></i>
-                                        Tópico personalizado</span>
-                                    <div class="topico-personalizado-desc"><?= nl2br(htmlspecialchars($desc)) ?></div>
+                                <div class="d-flex justify-content-center align-items-center mb-3"
+                                    style="background: linear-gradient(90deg,#fffbe6 60%,#fff8dc 100%); border-radius: 12px; padding: 12px 0;">
+                                    <span class="me-2" style="font-size:2rem; color:#ffc107;">
+                                        <i class="fa-solid fa-lightbulb"></i>
+                                    </span>
+                                    <span class="fw-bold" style="font-size:1.25rem; color:#b8860b;">
+                                        Tópicos personalizados ministrados
+                                    </span>
                                 </div>
-                                <?php endforeach; ?>
+                                <div class="row g-3 mt-1">
+                                    <?php foreach ($topicosPersonalizadosPorPlano[$plano['id']] as $desc): ?>
+                                    <div class="col-12 col-md-6">
+                                        <div class="p-3 rounded bg-warning-subtle border-warning mb-2"
+                                            style="border:2px solid; border-radius:12px; min-height:70px;">
+                                            <div class="d-flex align-items-center gap-2 mb-1">
+                                                <i class="fa-solid fa-lightbulb text-warning"
+                                                    style="font-size:1.3em;"></i>
+                                                <?= nl2br(htmlspecialchars($desc)) ?>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <?php endforeach; ?>
+                                </div>
                             </div>
                             <?php endif; ?>
                             <?php else: ?>
@@ -528,33 +546,42 @@ if ($turma_id && !empty($planos)) {
                     <!-- Conteúdo da aba Último Registro -->
                     <div class="tab-pane fade" id="ultimoregistro" role="tabpanel" aria-labelledby="tab-ultimoregistro">
                         <div class="mb-4">
-                            <div class="alert alert-info d-flex align-items-center gap-2 mb-0 py-2 px-3" style="font-size:1.13em;">
+                            <div class="alert alert-info d-flex align-items-center gap-2 mb-0 py-2 px-3"
+                                style="font-size:1.13em;">
                                 <i class="fa-solid fa-circle-info me-2"></i>
-                                Veja o histórico das últimas aulas registradas nesta turma, incluindo tópicos planejados e personalizados.
+                                Veja o histórico das últimas aulas registradas nesta turma, incluindo tópicos planejados
+                                e personalizados.
                             </div>
                         </div>
-                        <div class="card card-historico shadow-lg border-3 border-primary mb-5" style="background: linear-gradient(90deg, #eaf1fb 60%, #f8fafc 100%);">
+                        <div class="card card-historico shadow-lg border-3 border-primary mb-5"
+                            style="background: linear-gradient(90deg, #eaf1fb 60%, #f8fafc 100%);">
                             <div class="card-body">
                                 <?php if ($ultimas_aulas): ?>
-                                    <div class="row">
+                                <div class="row">
                                     <?php foreach ($ultimas_aulas as $aula): ?>
-                                        <div class="col-md-6">
-                                            <div class="list-group-item py-4 px-3 mb-3 rounded-4 shadow-sm border-2 border-primary" style="background: #fff;">
-                                                <div class="d-flex align-items-center mb-2 gap-3">
-                                                    <span class="badge bg-primary fs-6 d-flex align-items-center gap-2 px-3 py-2" style="border-radius: 12px;">
-                                                        <i class="fa-solid fa-book"></i>
-                                                        <?= htmlspecialchars($aula['disciplina_nome']) ?>
-                                                    </span>
-                                                    <span class="badge bg-info text-dark fs-6 d-flex align-items-center gap-2 px-3 py-2" style="border-radius: 12px;">
-                                                        <i class="fa-solid fa-calendar-day"></i>
-                                                        <?= date('d/m/Y', strtotime($aula['data'])) ?>
-                                                    </span>
-                                                </div>
-                                                <div class="mb-2">
-                                                    <b class="text-primary"><i class="fa-solid fa-list-check me-1"></i>Tópicos ministrados:</b>
-                                                    <?php if (!empty($topicos_aula[$aula['id']])): ?>
-                                                        <span class="ms-1">
-                                                            <?=
+                                    <div class="col-md-6">
+                                        <div class="list-group-item py-4 px-3 mb-3 rounded-4 shadow-sm border-2 border-primary"
+                                            style="background: #fff;">
+                                            <div class="d-flex align-items-center mb-2 gap-3">
+                                                <span
+                                                    class="badge bg-primary fs-6 d-flex align-items-center gap-2 px-3 py-2"
+                                                    style="border-radius: 12px;">
+                                                    <i class="fa-solid fa-book"></i>
+                                                    <?= htmlspecialchars($aula['disciplina_nome']) ?>
+                                                </span>
+                                                <span
+                                                    class="badge bg-info text-dark fs-6 d-flex align-items-center gap-2 px-3 py-2"
+                                                    style="border-radius: 12px;">
+                                                    <i class="fa-solid fa-calendar-day"></i>
+                                                    <?= date('d/m/Y', strtotime($aula['data'])) ?>
+                                                </span>
+                                            </div>
+                                            <div class="mb-2">
+                                                <b class="text-primary"><i
+                                                        class="fa-solid fa-list-check me-1"></i>Tópicos ministrados:</b>
+                                                <?php if (!empty($topicos_aula[$aula['id']])): ?>
+                                                <span class="ms-1">
+                                                    <?=
                                                                 implode(
                                                                     ', ',
                                                                     array_map(
@@ -563,39 +590,46 @@ if ($turma_id && !empty($planos)) {
                                                                     )
                                                                 )
                                                             ?>
-                                                        </span>
-                                                    <?php else: ?>
-                                                        <span class="text-muted ms-1">Nenhum tópico registrado</span>
-                                                    <?php endif; ?>
-                                                </div>
-                                                <?php if (!empty($topicos_personalizados_aula[$aula['id']])): ?>
-                                                    <div class="mb-2">
-                                                        <b class="text-warning"><i class="fa-solid fa-lightbulb"></i> Tópicos personalizados:</b>
-                                                        <ul class="list-group list-group-flush ms-2">
-                                                            <?php foreach ($topicos_personalizados_aula[$aula['id']] as $desc): ?>
-                                                                <li class="list-group-item list-group-item-personalizado border-0 ps-0">
-                                                                    <span class="badge bg-warning-subtle text-warning border border-warning">
-                                                                        <i class="fa-solid fa-lightbulb"></i> <?= htmlspecialchars($desc) ?>
-                                                                    </span>
-                                                                </li>
-                                                            <?php endforeach; ?>
-                                                        </ul>
-                                                    </div>
-                                                <?php endif; ?>
-                                                <?php if (!empty($aula['comentario'])): ?>
-                                                    <div class="mt-2">
-                                                        <span class="badge bg-secondary-subtle text-dark border border-secondary px-3 py-2" style="font-size:1.08em;">
-                                                            <i class="fa-solid fa-comment-dots me-1"></i>
-                                                            <?= nl2br(htmlspecialchars($aula['comentario'])) ?>
-                                                        </span>
-                                                    </div>
+                                                </span>
+                                                <?php else: ?>
+                                                <span class="text-muted ms-1">Nenhum tópico registrado</span>
                                                 <?php endif; ?>
                                             </div>
+                                            <?php if (!empty($topicos_personalizados_aula[$aula['id']])): ?>
+                                            <div class="mb-2">
+                                                <b class="text-warning"><i class="fa-solid fa-lightbulb"></i> Tópicos
+                                                    personalizados:</b>
+                                                <ul class="list-group list-group-flush ms-2">
+                                                    <?php foreach ($topicos_personalizados_aula[$aula['id']] as $desc): ?>
+                                                    <li
+                                                        class="list-group-item list-group-item-personalizado border-0 ps-0">
+                                                        <span
+                                                            class="badge bg-warning-subtle text-warning border border-warning">
+                                                            <i class="fa-solid fa-lightbulb"></i>
+                                                            <?= htmlspecialchars($desc) ?>
+                                                        </span>
+                                                    </li>
+                                                    <?php endforeach; ?>
+                                                </ul>
+                                            </div>
+                                            <?php endif; ?>
+                                            <?php if (!empty($aula['comentario'])): ?>
+                                            <div class="mt-2">
+                                                <span
+                                                    class="badge bg-secondary-subtle text-dark border border-secondary px-3 py-2"
+                                                    style="font-size:1.08em;">
+                                                    <i class="fa-solid fa-comment-dots me-1"></i>
+                                                    <?= nl2br(htmlspecialchars($aula['comentario'])) ?>
+                                                </span>
+                                            </div>
+                                            <?php endif; ?>
                                         </div>
-                                    <?php endforeach; ?>
                                     </div>
+                                    <?php endforeach; ?>
+                                </div>
                                 <?php else: ?>
-                                    <div class="text-muted"><i class="fa-solid fa-circle-exclamation me-1"></i>Nenhum registro de aula encontrado.</div>
+                                <div class="text-muted"><i class="fa-solid fa-circle-exclamation me-1"></i>Nenhum
+                                    registro de aula encontrado.</div>
                                 <?php endif; ?>
                             </div>
                         </div>
@@ -658,18 +692,20 @@ if ($turma_id && !empty($planos)) {
             const capitulosArr = capitulos[plano.id];
             let currentStep = 0;
             renderStepperCapitulos(plano, capitulosArr, currentStep);
+
             function renderCapituloStep(idx) {
                 const cap = capitulosArr[idx];
                 // Atualiza nome do capítulo sempre que trocar
                 document.getElementById('nome_capitulo_modal').innerText = cap.titulo;
                 let html = `<div class="row g-3">`;
-            (topicos[cap.id] || []).forEach(top => {
-                const topStatus = top.status;
-                const topBg = topStatus === 'concluido' ? 'bg-success-subtle' : 'bg-light';
-                const topIcon = topStatus === 'concluido' ? 'fa-circle-check text-success' : 'fa-circle text-primary';
-                const topBorder = topStatus === 'concluido' ? 'border-success' : 'border-primary';
-                // Toggle switch para seleção
-                html += `
+                (topicos[cap.id] || []).forEach(top => {
+                    const topStatus = top.status;
+                    const topBg = topStatus === 'concluido' ? 'bg-success-subtle' : 'bg-light';
+                    const topIcon = topStatus === 'concluido' ? 'fa-circle-check text-success' :
+                        'fa-circle text-primary';
+                    const topBorder = topStatus === 'concluido' ? 'border-success' : 'border-primary';
+                    // Toggle switch para seleção
+                    html += `
                     <div class="col-12 col-md-6">
                         <div class="p-3 rounded ${topBg} ${topBorder} mb-2" style="border:2px solid; border-radius:12px; min-height:90px;">
                             <div class="d-flex align-items-center gap-2 mb-1">
@@ -690,54 +726,69 @@ if ($turma_id && !empty($planos)) {
                         </div>
                     </div>
                 `;
-            });
-            html += '</div>';
-            document.getElementById('topicos_aula_box').innerHTML = html;
-        }
-        renderCapituloStep(currentStep);
-        setTimeout(() => {
-            const steps = document.querySelectorAll('#stepper_capitulos_modal .wizard-step-circle');
-            const btnPrev = document.getElementById('modal-stepper-prev');
-            const btnNext = document.getElementById('modal-stepper-next');
-            function updateStep(idx) {
-                steps.forEach((el, i) => el.classList.toggle('border-3', i === idx));
-                renderCapituloStep(idx);
-                if (btnPrev) btnPrev.disabled = idx === 0;
-                if (btnNext) btnNext.disabled = idx === steps.length - 1;
+                });
+                html += '</div>';
+                document.getElementById('topicos_aula_box').innerHTML = html;
             }
-            steps.forEach((el, idx) => {
-                el.onclick = () => { currentStep = idx; updateStep(currentStep); };
-            });
-            if (btnPrev) btnPrev.onclick = () => { if (currentStep > 0) { currentStep--; updateStep(currentStep); } };
-            if (btnNext) btnNext.onclick = () => { if (currentStep < steps.length - 1) { currentStep++; updateStep(currentStep); } };
-            updateStep(currentStep);
-        }, 100);
-    } else {
-        document.getElementById('stepper_capitulos_modal').innerHTML = '';
-        document.getElementById('topicos_aula_box').innerHTML = '<div class="text-muted">Nenhum capítulo/tópico disponível.</div>';
-        document.getElementById('nome_capitulo_modal').innerText = '';
-    }
-    new bootstrap.Modal(document.getElementById('modalAula')).show();
+            renderCapituloStep(currentStep);
+            setTimeout(() => {
+                const steps = document.querySelectorAll('#stepper_capitulos_modal .wizard-step-circle');
+                const btnPrev = document.getElementById('modal-stepper-prev');
+                const btnNext = document.getElementById('modal-stepper-next');
 
-    // Navegação dos steps do modal
-    document.getElementById('btn-modal-next').onclick = function() {
-        modalStep = 2;
-        document.getElementById('modal-step-1').style.display = 'none';
-        document.getElementById('modal-step-2').style.display = '';
-        document.getElementById('btn-modal-prev').style.display = '';
-        document.getElementById('btn-modal-next').style.display = 'none';
-        document.getElementById('btn-modal-save').style.display = '';
-        setModalProgressStep(2);
-    };
-    document.getElementById('btn-modal-prev').onclick = function() {
-        modalStep = 1;
-        document.getElementById('modal-step-1').style.display = '';
-        document.getElementById('modal-step-2').style.display = 'none';
-        document.getElementById('btn-modal-prev').style.display = 'none';
-        document.getElementById('btn-modal-next').style.display = '';
-        document.getElementById('btn-modal-save').style.display = 'none';
-        setModalProgressStep(1);
-    };
+                function updateStep(idx) {
+                    steps.forEach((el, i) => el.classList.toggle('border-3', i === idx));
+                    renderCapituloStep(idx);
+                    if (btnPrev) btnPrev.disabled = idx === 0;
+                    if (btnNext) btnNext.disabled = idx === steps.length - 1;
+                }
+                steps.forEach((el, idx) => {
+                    el.onclick = () => {
+                        currentStep = idx;
+                        updateStep(currentStep);
+                    };
+                });
+                if (btnPrev) btnPrev.onclick = () => {
+                    if (currentStep > 0) {
+                        currentStep--;
+                        updateStep(currentStep);
+                    }
+                };
+                if (btnNext) btnNext.onclick = () => {
+                    if (currentStep < steps.length - 1) {
+                        currentStep++;
+                        updateStep(currentStep);
+                    }
+                };
+                updateStep(currentStep);
+            }, 100);
+        } else {
+            document.getElementById('stepper_capitulos_modal').innerHTML = '';
+            document.getElementById('topicos_aula_box').innerHTML =
+                '<div class="text-muted">Nenhum capítulo/tópico disponível.</div>';
+            document.getElementById('nome_capitulo_modal').innerText = '';
+        }
+        new bootstrap.Modal(document.getElementById('modalAula')).show();
+
+        // Navegação dos steps do modal
+        document.getElementById('btn-modal-next').onclick = function() {
+            modalStep = 2;
+            document.getElementById('modal-step-1').style.display = 'none';
+            document.getElementById('modal-step-2').style.display = '';
+            document.getElementById('btn-modal-prev').style.display = '';
+            document.getElementById('btn-modal-next').style.display = 'none';
+            document.getElementById('btn-modal-save').style.display = '';
+            setModalProgressStep(2);
+        };
+        document.getElementById('btn-modal-prev').onclick = function() {
+            modalStep = 1;
+            document.getElementById('modal-step-1').style.display = '';
+            document.getElementById('modal-step-2').style.display = 'none';
+            document.getElementById('btn-modal-prev').style.display = 'none';
+            document.getElementById('btn-modal-next').style.display = '';
+            document.getElementById('btn-modal-save').style.display = 'none';
+            setModalProgressStep(1);
+        };
     }
     // Validação Bootstrap
     (function() {
