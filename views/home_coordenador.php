@@ -61,9 +61,9 @@ if ($res && $row = $res->fetch_assoc()) $total_usuarios = $row['total'];
 $total_planos = 0;
 $res = $conn->query('SELECT COUNT(*) as total FROM planos');
 if ($res && $row = $res->fetch_assoc()) $total_planos = $row['total'];
-// Buscar últimos 5 planos
+// Buscar últimos 6 planos
 $ultimos_planos = [];
-$res = $conn->query('SELECT p.id, p.titulo, p.status, p.criado_em, d.nome AS disciplina_nome, t.nome AS turma_nome FROM planos p JOIN disciplinas d ON p.disciplina_id = d.id JOIN turmas t ON p.turma_id = t.id ORDER BY p.criado_em DESC LIMIT 5');
+$res = $conn->query('SELECT p.id, p.titulo, p.status, p.criado_em, d.nome AS disciplina_nome, t.nome AS turma_nome FROM planos p JOIN disciplinas d ON p.disciplina_id = d.id JOIN turmas t ON p.turma_id = t.id ORDER BY p.criado_em DESC LIMIT 12');
 if ($res && $res->num_rows > 0) {
     while ($row = $res->fetch_assoc()) $ultimos_planos[] = $row;
 }
@@ -76,222 +76,431 @@ if ($res && $res->num_rows > 0) {
     <link rel="stylesheet" href="../assets/css/css_base_page.css">
     <link rel="icon" type="image/png" href="../assets/img/LOGO_PAGE.png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
-        body { background: #f5f5f5; }
-        .user { font-size: 18px; color: #007bff; margin-top: 10px; }
-        .card-home { border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.07); }
-        .carousel-item .disc-card { background:#f1f1f1; padding:18px 12px; border-radius:7px; min-width:80px; max-width:100px; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,0.07); font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-        .btn-nav { min-width: 180px; margin-bottom: 10px; }
-        .turma-card { background: #f8f9fa; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); margin-bottom: 18px; padding: 18px 18px 10px 18px; }
-        .turma-title { font-size: 1.1rem; font-weight: 600; color: #007bff; }
-        .disciplina-badge { background: #e9ecef; color: #333; border-radius: 5px; padding: 2px 8px; margin-right: 6px; font-size: 0.95em; }
-        .plano-badge { margin-left: 8px; }
-        .section-title { font-size: 1.3rem; font-weight: 600; color: #222; margin-bottom: 0.7rem; }
-        .section-desc { color: #666; font-size: 1.01rem; margin-bottom: 1.2rem; }
-        /* --- Adicionado do turmas.php --- */
-        .card-turma {
-            border-radius: 14px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-            background: #fff;
-            position: relative;
-            margin-bottom: 24px;
-        }
-        .card-turma.cancelada {
-            opacity: 0.7;
-            filter: grayscale(0.2);
-        }
-        .card-turma.concluida {
-            border: 2px solid #198754;
-        }
-        .status-overlay {
-            position: absolute;
-            top: 12px;
-            left: 12px;
-            background: #e9ecef;
-            color: #333;
-            border-radius: 8px;
-            padding: 4px 14px;
-            font-size: 1.05em;
-            font-weight: 600;
-            z-index: 2;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
-        }
-        .turma-status-badge {
-            font-size: 1em;
-            padding: 7px 12px;
-        }
-        .disciplina-status {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 7px 10px;
-            margin-bottom: 6px;
-        }
-        /* Fim do CSS de turmas.php */
+ 
+    /* Adicione ajustes específicos se necessário, mas a base já está no css_base_page.css */
+    .card-home {
+        border-radius: 18px;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.10);
+    }
+    .section-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #222;
+        margin-bottom: 1.2rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .section-desc {
+        color: #666;
+        font-size: 1.15rem;
+        margin-bottom: 1.5rem;
+    }
+    .badge {
+        font-size: 1em;
+        padding: 7px 12px;
+    }
+    .turma-status-badge {
+        font-size: 1em;
+        font-weight: 600;
+        border-radius: 8px;
+        margin-left: 0.2em;
+    }
+    .card-turma {
+        border-radius: 18px;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.13);
+        background: linear-gradient(120deg, #f8fafc 80%, #e3f0ff 100%);
+        border: none;
+        transition: transform 0.13s, box-shadow 0.13s;
+        position: relative;
+        margin-bottom: 24px;
+    }
+    .card-turma:hover {
+        transform: translateY(-4px) scale(1.01);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.16);
+    }
+    .card-turma .card-title {
+        font-size: 1.18rem;
+        font-weight: 700;
+        color: #222;
+    }
+    .card-turma .disciplina-status {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 7px 10px;
+        margin-bottom: 6px;
+        font-size: 1.08em;
+        box-shadow: 0 1px 4px rgba(13, 110, 253, 0.04);
+    }
+    .card-turma .badge.bg-success {
+        background: #e6f9ea;
+        color: #198754;
+        border: 1.5px solid #19875433;
+    }
+    .card-turma .badge.bg-warning.text-dark {
+        background: #fffbe6;
+        color: #ffc107;
+        border: 1.5px solid #ffc10733;
+    }
+    .card-turma .badge.bg-light.text-dark {
+        background: #f8f9fa;
+        color: #333;
+        border: 1.5px solid #adb5bd33;
+    }
+    .status-overlay {
+        font-size: 1.2rem;
+        padding: 0.5em 1.5em;
+        border-radius: 1em;
+        font-weight: bold;
+        z-index: 2;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        background: #e9ecef;
+        color: #333;
+    }
+    .barra-turmas {
+        background: var(--cor-primaria);
+        border-radius: 10px;
+    }
+    .barra-turmas .btn {
+        background: #fff;
+        color: var(--cor-primaria);
+        font-weight: 600;
+    }
+    .barra-turmas .btn:hover {
+        background: var(--cor-destaque);
+        color: #fff;
+    }
+    #turmas-pagination-nav .pagination .page-link {
+        color: var(--cor-primaria);
+        background: #fff;
+        border: 1px solid var(--cor-primaria);
+        border-radius: 6px;
+        margin-left: 2px;
+        margin-right: 2px;
+        transition: background 0.2s, color 0.2s;
+    }
+    #turmas-pagination-nav .pagination .page-item.active .page-link,
+    #turmas-pagination-nav .pagination .page-link:hover {
+        background: var(--cor-primaria);
+        color: #fff;
+        border-color: var(--cor-primaria);
+    }
+    #turmas-pagination-nav .pagination {
+        margin-bottom: 0;
+    }
+    /* Disciplinas em destaque */
+    .disciplinas-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 18px;
+    }
+    .disc-card {
+        background: linear-gradient(120deg, #f8fafc 80%, #e3f0ff 100%);
+        border-radius: 14px;
+        box-shadow: 0 2px 12px rgba(17,33,48,0.07);
+        min-width: 0;
+        flex: 1 1 30%;
+        max-width: 32%;
+        padding: 22px 10px 16px 10px;
+        text-align: center;
+        font-weight: 600;
+        color: var(--cor-primaria);
+        position: relative;
+        transition: box-shadow 0.2s, transform 0.2s;
+        border: 2px solid #e3f0ff;
+    }
+    .disc-card:hover {
+        box-shadow: 0 6px 24px #2979ff22;
+        transform: translateY(-2px) scale(1.03);
+        border-color: var(--cor-destaque);
+    }
+    .disc-card .disc-icon {
+        font-size: 2.2em;
+        margin-bottom: 8px;
+        color: var(--cor-destaque);
+        display: block;
+    }
+    .disc-card .disc-nome {
+        font-size: 1.13em;
+        font-weight: 700;
+        word-break: break-word;
+    }
+    /* Últimos planos grid */
+    .planos-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 18px;
+    }
+    .plano-card {
+        background: linear-gradient(120deg, #f8fafc 80%, #e3f0ff 100%);
+        border-radius: 14px;
+        box-shadow: 0 2px 12px rgba(17,33,48,0.07);
+        flex: 1 1 22%;
+        max-width: 23%;
+        min-width: 220px;
+        padding: 18px 14px 14px 14px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        border: 2px solid #e3f0ff;
+        transition: box-shadow 0.2s, transform 0.2s;
+        position: relative;
+    }
+    .plano-card:hover {
+        box-shadow: 0 6px 24px #2979ff22;
+        transform: translateY(-2px) scale(1.03);
+        border-color: var(--cor-destaque);
+    }
+    .plano-card .plano-title {
+        font-size: 1.12em;
+        font-weight: 700;
+        color: var(--cor-primaria);
+        margin-bottom: 0.3em;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+    }
+    .plano-card .plano-info {
+        font-size: 0.98em;
+        color: #444;
+        margin-bottom: 0.2em;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+    .plano-card .badge {
+        font-size: 0.97em;
+        padding: 5px 10px;
+        border-radius: 7px;
+        margin-right: 3px;
+        margin-bottom: 2px;
+    }
+    .plano-card .plano-footer {
+        font-size: 0.93em;
+        color: #888;
+        margin-top: 0.7em;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .plano-card .plano-icon {
+        font-size: 1.5em;
+        color: var(--cor-destaque);
+        margin-right: 5px;
+    }
+    @media (max-width: 1200px) {
+        .planos-grid .plano-card { max-width: 48%; flex-basis: 48%; }
+        .disciplinas-grid .disc-card { max-width: 48%; flex-basis: 48%; }
+    }
+    @media (max-width: 768px) {
+        .planos-grid, .disciplinas-grid { flex-direction: column; gap: 12px; }
+        .planos-grid .plano-card, .disciplinas-grid .disc-card { max-width: 100%; flex-basis: 100%; }
+    }
     </style>
 </head>
 <body>
-<div class="container-fluid py-5">
-    <div class="row">
-        <div class="col-12">
-            <div class="mb-4">
-                <div class="row g-3">
-                    <div class="col-6 col-md-3">
-                        <div class="card text-center shadow-sm">
-                            <div class="card-body">
-                                <div class="fs-2 fw-bold text-primary"><?php echo count($turmas); ?></div>
-                                <div class="text-muted">Turmas</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-6 col-md-3">
-                        <div class="card text-center shadow-sm">
-                            <div class="card-body">
-                                <div class="fs-2 fw-bold text-success"><?php echo count($disciplinas); ?></div>
-                                <div class="text-muted">Disciplinas</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-6 col-md-3">
-                        <div class="card text-center shadow-sm">
-                            <div class="card-body">
-                                <div class="fs-2 fw-bold text-warning"><?php echo $total_planos; ?></div>
-                                <div class="text-muted">Planos de Aula</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-6 col-md-3">
-                        <div class="card text-center shadow-sm">
-                            <div class="card-body">
-                                <div class="fs-2 fw-bold text-info"><?php echo $total_usuarios; ?></div>
-                                <div class="text-muted">Usuários</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="card card-home p-4 mb-4">
-                <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-3">
-                    <div>
-                        <h2 class="mb-1">Bem-vindo, Coordenador</h2>
-                        <div class="user">Olá, <strong><?php echo htmlspecialchars($nome); ?></strong>!</div>
-                    </div>
-                    <?php if (isset($_SESSION['usuario_tipo']) && $_SESSION['usuario_tipo'] === 'admin'): ?>
-                        <a href="gerenciar_usuarios.php" class="btn btn-primary btn-nav ms-md-3 mt-3 mt-md-0">Gerenciar Usuários</a>
-                    <?php endif; ?>
-                </div>
-                <hr class="my-3">
-                <div class="row g-4">
-                    <div class="col-12 col-md-6">
-                        <div class="section-title">Disciplinas em destaque</div>
-                        <div class="section-desc">Veja as principais disciplinas cadastradas no sistema. Acesse a página de disciplinas para gerenciar todas.</div>
-                        <div class="d-flex align-items-center justify-content-between mb-2">
-                            <a href="disciplinas.php" class="btn btn-outline-primary btn-sm me-2">Ver Disciplinas</a>
-                        </div>
-                        <div id="carouselDisciplinas" class="carousel slide" data-bs-ride="carousel">
-                            <div class="carousel-inner">
-                                <?php
-                                $total = count($disciplinas);
-                                $por_slide = 4;
-                                $num_slides = ceil($total / $por_slide);
-                                for ($i = 0; $i < $num_slides; $i++): ?>
-                                    <div class="carousel-item<?= $i === 0 ? ' active' : '' ?>">
-                                        <div class="d-flex justify-content-center gap-3 flex-wrap">
-                                            <?php for ($j = $i * $por_slide; $j < min(($i+1)*$por_slide, $total); $j++): ?>
-                                                <div class="disc-card">
-                                                    <?= htmlspecialchars($disciplinas[$j]['nome']) ?>
-                                                </div>
-                                            <?php endfor; ?>
+    <div class="container-fluid py-2">
+        <div class="row">
+            <div class="col-12">
+                <!-- Cabeçalho igual ao do professor -->
+                <div class="col-12 mb-2">
+                    <div class="bg-white rounded shadow-sm p-1 mb-1 border border-3 border-primary position-relative">
+                        <div class="row align-items-end g-2 mb-2">
+                            <div class="col-lg-7 col-md-7 col-12">
+                                <div class="d-flex align-items-center gap-3 h-100">
+                                    <span class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center"
+                                        style="width:56px;height:56px;font-size:2.2rem;box-shadow:0 2px 8px #0d6efd33;">
+                                        <i class="bi bi-person-badge-fill"></i>
+                                    </span>
+                                    <div>
+                                        <h2 class="mb-0 fw-bold text-primary">Bem-vindo, Coordenador</h2>
+                                        <div class="text-muted" style="font-size:1.08em;">
+                                            <i class="bi bi-info-circle"></i>
+                                            Olá, <strong><?= htmlspecialchars($nome) ?></strong>!<br>
+                                            Aqui você pode acompanhar as turmas, disciplinas, planos de aula e usuários do sistema.
+                                        </div>
+                                        <div class="mt-2 d-flex flex-wrap gap-2">
+                                            <span class="badge bg-primary-subtle text-primary border border-primary d-flex align-items-center gap-1"
+                                                style="font-size:1.08em;">
+                                                <i class="bi bi-collection"></i> Turmas: <b><?= count($turmas) ?></b>
+                                            </span>
+                                            <span class="badge bg-info-subtle text-info border border-info d-flex align-items-center gap-1"
+                                                style="font-size:1.08em;">
+                                                <i class="bi bi-journal-text"></i> Disciplinas: <b><?= count($disciplinasNomes) ?></b>
+                                            </span>
+                                            <span class="badge bg-warning-subtle text-warning border border-warning d-flex align-items-center gap-1"
+                                                style="font-size:1.08em;">
+                                                <i class="bi bi-journal-bookmark-fill"></i> Planos: <b><?= $total_planos ?></b>
+                                            </span>
+                                            <span class="badge bg-secondary-subtle text-secondary border border-secondary d-flex align-items-center gap-1"
+                                                style="font-size:1.08em;">
+                                                <i class="bi bi-people"></i> Usuários: <b><?= $total_usuarios ?></b>
+                                            </span>
                                         </div>
                                     </div>
-                                <?php endfor; ?>
+                                </div>
                             </div>
-                            <?php if ($num_slides > 1): ?>
-                            <button class="carousel-control-prev" type="button" data-bs-target="#carouselDisciplinas" data-bs-slide="prev">
-                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                                <span class="visually-hidden">Anterior</span>
-                            </button>
-                            <button class="carousel-control-next" type="button" data-bs-target="#carouselDisciplinas" data-bs-slide="next">
-                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                                <span class="visually-hidden">Próximo</span>
-                            </button>
-                            <?php endif; ?>
+                            <div class="col-lg-5 col-md-5 col-12 d-flex justify-content-lg-end justify-content-start mt-2 mt-lg-0 align-items-end gap-2">
+                                <?php if (isset($_SESSION['usuario_tipo']) && $_SESSION['usuario_tipo'] === 'admin'): ?>
+                                    <a href="gerenciar_usuarios.php"
+                                        class="btn btn-gradient-dicas shadow-sm px-3 py-2 d-flex align-items-center gap-2 fw-bold"
+                                        style="border-radius: 14px; font-size:1.13em; box-shadow: 0 2px 8px #0d6efd33; min-width: 110px; max-width: 160px;">
+                                        <i class="bi bi-people-fill" style="font-size:1.35em;"></i>
+                                        <span>Gerenciar Usuários</span>
+                                    </a>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Grid de cards igual ao professor -->
+                <div class="row g-4">
+                    <div class="col-12 col-md-6">
+                        <div class="card card-home p-4 h-100">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="section-title" style="color: var(--cor-destaque);">
+                                    <i class="fa-solid fa-users-viewfinder me-2" style="color: var(--cor-destaque);"></i>
+                                    Turmas, Disciplinas e Planos
+                                </span>
+                            </div>
+                            <div class="section-desc">Veja as turmas cadastradas, suas disciplinas vinculadas e o status dos planos de aula.</div>
+                            <!-- Barra com cor primária -->
+                            <div class="barra-turmas d-flex align-items-center justify-content-between mb-3 px-3 py-2">
+                                <a href="turmas.php"
+                                    class="btn btn-light btn-sm d-flex align-items-center gap-2 px-3 py-2 shadow"
+                                    style="font-weight:600; border-radius:10px; font-size:1.08rem;">
+                                    <i class="fa-solid fa-users-viewfinder"></i> Ver Todas as Turmas
+                                </a>
+                                <div id="turmas-pagination-nav" class="mb-0"></div>
+                            </div>
+                            <div id="turmas-cards-container"></div>
                         </div>
                     </div>
                     <div class="col-12 col-md-6">
-                        <div class="section-title">Turmas, Disciplinas e Planos</div>
-                        <div class="section-desc">Veja as turmas cadastradas, suas disciplinas vinculadas e o status dos planos de aula.</div>
-                        <div class="d-flex align-items-center justify-content-between mb-2">
-                            <a href="turmas.php" class="btn btn-outline-success btn-sm ms-2">Ver Turmas</a>
-                        </div>
-                        <?php foreach ($turmas as $turma): ?>
-                            <div class="turma-card mb-3">
-                                <div class="turma-title mb-1">
-                                    <?= htmlspecialchars($turma['nome']) ?> <span class="badge bg-secondary ms-2">Ano: <?= htmlspecialchars($turma['ano_letivo']) ?></span> <span class="badge bg-info text-dark ms-1">Turno: <?= htmlspecialchars($turma['turno']) ?></span>
-                                </div>
-                                <div class="mb-1"><b>Disciplinas:</b></div>
-                                <ul class="mb-2 ps-3">
-                                    <?php if (!empty($turmaDisciplinas[$turma['id']])): foreach ($turmaDisciplinas[$turma['id']] as $disc_id): ?>
-                                        <li>
-                                            <span class="disciplina-badge"><?= htmlspecialchars($disciplinasNomes[$disc_id] ?? '-') ?></span>
-                                            <?php if (isset($planosTurmaDisc[$turma['id']][$disc_id])): $plano = $planosTurmaDisc[$turma['id']][$disc_id]; ?>
-                                                <span class="plano-badge badge <?= $plano['status'] === 'concluido' ? 'bg-success' : 'bg-warning text-dark' ?>">Plano: <?= htmlspecialchars($plano['titulo']) ?> (<?= $plano['status'] === 'concluido' ? 'Concluído' : 'Em andamento' ?>)</span>
-                                            <?php else: ?>
-                                                <span class="plano-badge badge bg-light text-dark">Sem plano</span>
-                                            <?php endif; ?>
-                                        </li>
-                                    <?php endforeach; else: ?>
-                                        <li class="text-muted">Nenhuma disciplina vinculada</li>
-                                    <?php endif; ?>
-                                </ul>
-                                <a href="planos.php?turma_id=<?= $turma['id'] ?>" class="btn btn-outline-secondary btn-sm">Gerenciar Planos</a>
+                        <!-- Disciplinas em destaque estilizado -->
+                        <div class="card card-home p-4 mb-4">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="section-title" style="color: var(--cor-destaque);">
+                                    <i class="fa-solid fa-book me-2" style="color: var(--cor-destaque);"></i>
+                                    Disciplinas em destaque
+                                </span>
+                                <a href="disciplinas.php" class="btn btn-outline-primary btn-sm ms-2">Ver Disciplinas</a>
                             </div>
-                        <?php endforeach; ?>
+                            <div class="section-desc">Veja as principais disciplinas cadastradas no sistema.</div>
+                            <div class="disciplinas-grid">
+                                <?php
+                                // Mostra até 12 disciplinas e usa sempre o mesmo ícone
+                                foreach ($disciplinas as $disc):
+                                ?>
+                                    <div class="disc-card">
+                                        <span class="disc-icon"><i class="fa-solid fa-book"></i></span>
+                                        <span class="disc-nome"><?= htmlspecialchars($disc['nome']) ?></span>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                        <!-- Últimos Planos em grid estiloso -->
+                        <div class="card card-home p-4">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="section-title" style="color: var(--cor-destaque);">
+                                    <i class="fa-solid fa-chalkboard me-2" style="color: var(--cor-destaque);"></i>
+                                    Últimos Planos de Aula
+                                </span>
+                            </div>
+                            <div class="section-desc">Acompanhe os planos de aula mais recentes criados no sistema.</div>
+                            <div class="row g-3">
+                                <?php if ($ultimos_planos): foreach ($ultimos_planos as $plano):
+                                    // Buscar capítulos e tópicos deste plano
+                                    $capCount = 0;
+                                    $topCount = 0;
+                                    $plano_id = intval($plano['id']);
+                                    $sqlCap = "SELECT id FROM capitulos WHERE plano_id = $plano_id";
+                                    $resCap = $conn->query($sqlCap);
+                                    $capIds = [];
+                                    if ($resCap && $resCap->num_rows > 0) {
+                                        $capCount = $resCap->num_rows;
+                                        while ($rowCap = $resCap->fetch_assoc()) $capIds[] = $rowCap['id'];
+                                        if (count($capIds) > 0) {
+                                            $capIdsStr = implode(',', $capIds);
+                                            $sqlTop = "SELECT COUNT(*) as total FROM topicos WHERE capitulo_id IN ($capIdsStr)";
+                                            $resTop = $conn->query($sqlTop);
+                                            if ($resTop && $rowTop = $resTop->fetch_assoc()) {
+                                                $topCount = intval($rowTop['total']);
+                                            }
+                                        }
+                                    }
+                                ?>
+                                <div class="col-12 col-sm-6  col-lg-3 ">
+                                    <div class="plano-card h-100">
+                                        <div>
+                                            <div class="plano-title" style="color: var(--cor-destaque);">
+                                                <span class="plano-icon"><i class="fa-solid fa-file-lines"></i></span>
+                                                <?= htmlspecialchars($plano['titulo']) ?>
+                                            </div>
+                                            <div class="plano-info">
+                                                <span class="badge bg-primary"><i class="fa-solid fa-book"></i> <?= htmlspecialchars($plano['disciplina_nome']) ?></span>
+                                                <span class="badge bg-info text-dark"><i class="fa-solid fa-users"></i> <?= htmlspecialchars($plano['turma_nome']) ?></span>
+                                                <span class="badge <?= $plano['status'] === 'concluido' ? 'bg-success' : 'bg-warning text-dark' ?>">
+                                                    <i class="fa-solid <?= $plano['status'] === 'concluido' ? 'fa-check-circle' : 'fa-hourglass-half' ?>"></i>
+                                                    <?= $plano['status'] === 'concluido' ? 'Concluído' : 'Em andamento' ?>
+                                                </span>
+                                            </div>
+                                            <div class="plano-info">
+                                                <span class="badge bg-secondary"><i class="fa-solid fa-layer-group"></i> <?= $capCount ?> capítulo(s)</span>
+                                                <span class="badge bg-secondary"><i class="fa-solid fa-list-ul"></i> <?= $topCount ?> tópico(s)</span>
+                                            </div>
+                                        </div>
+                                        <div class="plano-footer">
+                                            <i class="fa-regular fa-calendar"></i>
+                                            <?= date('d/m/Y H:i', strtotime($plano['criado_em'])) ?>
+                                        </div>
+                                    </div>
+                                </div>
+                                <?php endforeach; else: ?>
+                                    <div class="text-muted w-100 text-center" style="padding: 2em 0;">Nenhum plano cadastrado recentemente.</div>
+                                <?php endif; ?>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <hr class="my-4">
-                <div class="mb-2 d-flex align-items-center justify-content-between">
-                    <div class="section-title mb-0">Últimos Planos de Aula</div>
-                    <a href="planos.php" class="btn btn-outline-secondary btn-sm">Ver Todos</a>
-                </div>
-                <div class="section-desc">Acompanhe os planos de aula mais recentes criados no sistema.</div>
-                <ul class="list-group mb-2">
-                    <?php if ($ultimos_planos): foreach ($ultimos_planos as $plano): ?>
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <div>
-                                <b><?= htmlspecialchars($plano['titulo']) ?></b>
-                                <span class="badge bg-primary ms-2">Disciplina: <?= htmlspecialchars($plano['disciplina_nome']) ?></span>
-                                <span class="badge bg-info text-dark ms-2">Turma: <?= htmlspecialchars($plano['turma_nome']) ?></span>
-                                <span class="badge <?= $plano['status'] === 'concluido' ? 'bg-success' : 'bg-warning text-dark' ?> ms-2"><?= $plano['status'] === 'concluido' ? 'Concluído' : 'Em andamento' ?></span>
-                            </div>
-                            <span class="text-muted small"><?= date('d/m/Y H:i', strtotime($plano['criado_em'])) ?></span>
-                        </li>
-                    <?php endforeach; else: ?>
-                        <li class="list-group-item text-muted">Nenhum plano cadastrado recentemente.</li>
-                    <?php endif; ?>
-                </ul>
             </div>
         </div>
     </div>
-</div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
-// Exibir notificação se houver parâmetro na URL
-const urlParams = new URLSearchParams(window.location.search);
-if (urlParams.has('sucesso')) {
-    let msg = '';
-    if (urlParams.get('sucesso') === 'turma_criada') msg = 'Turma criada com sucesso!';
-    if (urlParams.get('sucesso') === 'disciplina_criada') msg = 'Disciplina criada com sucesso!';
-    if (msg) mostrarNotificacao(msg, 'success');
+// Função para carregar turmas e paginação dinamicamente
+function loadTurmasCoordenador(page = 1) {
+    fetch('../controllers/turmas_paginacao_ajax.php?page=' + page)
+        .then(resp => resp.text())
+        .then(html => {
+            document.getElementById('turmas-cards-container').innerHTML = html;
+        });
+    fetch('../controllers/turmas_pagination_nav_ajax.php?page=' + page)
+        .then(resp => resp.text())
+        .then(html => {
+            document.getElementById('turmas-pagination-nav').innerHTML = html;
+            bindTurmasPaginationCoordenador();
+        });
 }
-if (urlParams.has('erro')) {
-    let msg = '';
-    if (urlParams.get('erro') === 'disciplina_existente') msg = 'Disciplina já existe!';
-    if (urlParams.get('erro') === 'erro_banco') msg = 'Erro ao salvar no banco!';
-    if (urlParams.get('erro') === 'dados_invalidos') msg = 'Dados inválidos!';
-    if (msg) mostrarNotificacao(msg, 'danger');
+function bindTurmasPaginationCoordenador() {
+    document.querySelectorAll('#turmas-pagination-nav .pagination .page-link').forEach(function(link) {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const page = this.getAttribute('href').replace('?page=', '');
+            loadTurmasCoordenador(page);
+        });
+    });
 }
+document.addEventListener('DOMContentLoaded', function() {
+    loadTurmasCoordenador(1);
+});
 </script>
 <?php include 'footer.php'; ?>
 </body>
