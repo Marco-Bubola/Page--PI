@@ -22,7 +22,8 @@ $where = [];
 $params = [];
 $types = '';
 if ($search !== '') {
-    $where[] = "(d.nome LIKE ? OR t.nome LIKE ? OR u.nome LIKE ? OR a.data LIKE ? OR a.comentario LIKE ?)";
+    // Busca insensível a caixa e acentuação
+    $where[] = "(CONVERT(d.nome USING utf8) COLLATE utf8_general_ci LIKE ? OR CONVERT(t.nome USING utf8) COLLATE utf8_general_ci LIKE ? OR CONVERT(u.nome USING utf8) COLLATE utf8_general_ci LIKE ? OR a.data LIKE ? OR CONVERT(a.comentario USING utf8) COLLATE utf8_general_ci LIKE ?)";
     for ($i=0; $i<5; $i++) {
         $params[] = "%$search%";
         $types .= 's';
@@ -143,7 +144,6 @@ while ($row = $res_disc->fetch_assoc()) $disciplinas[] = $row['nome'];
             background: #fff;
             box-shadow: 0 2px 12px rgba(0,0,0,0.06);
             padding: 1.5rem 2rem 1.2rem 2rem;
-            margin-bottom: 2.2rem;
             position: relative;
         }
         .head-historico .icon {
@@ -202,13 +202,13 @@ while ($row = $res_disc->fetch_assoc()) $disciplinas[] = $row['nome'];
 </head>
 <body>
 <?php include 'navbar.php'; ?>
-<div class="container-fluid py-5">
-    <div class="row mb-4">
+<div class="container-fluid py-2">
+    <div class="row ">
         <div class="col-12">
             <div class="head-historico">
                 <div class="row align-items-end g-2 mb-2">
                     <div class="col-lg-6 col-md-6 col-12">
-                        <div class="d-flex align-items-center gap-3 h-100">
+                        <div class="d-flex align-items-center gap-3 ">
                             <span class="icon"><i class="fa-solid fa-chalkboard"></i></span>
                             <div>
                                 <h2 class="section-title mb-0">Histórico de Aulas Ministradas</h2>
@@ -240,91 +240,96 @@ while ($row = $res_disc->fetch_assoc()) $disciplinas[] = $row['nome'];
                                         <i class="fa-solid fa-arrow-right"></i>
                                     </button>
                                 </div>
-                                <button class="btn btn-gradient-primary dropdown-toggle fw-bold shadow-sm px-3 py-2 btn-historico-aulas"
-                                    type="button" id="dropdownFiltros" data-bs-toggle="dropdown" aria-expanded="false"
-                                    style="border-radius: 12px; background: linear-gradient(90deg,#0d6efd 60%,#4f8cff 100%); color: #fff; border: none; min-width: 110px; max-width: 110px;">
-                                    <i class="bi bi-funnel-fill me-1"></i> Filtros
-                                </button>
-                                <button type="button" class="btn btn-gradient-dicas shadow-sm px-3 py-2 d-flex align-items-center gap-2 fw-bold btn-historico-aulas" onclick="abrirModalDicasAulas()"  title="Dicas da página" style="border-radius: 14px; font-size:1.13em; box-shadow: 0 2px 8px #0d6efd33; min-width: 110px; max-width: 110px;">
-                                    <i class="bi bi-lightbulb-fill" style="font-size:1.35em;"></i>
-                                    Dicas
-                                </button>
-                            </div>
-                            <div class="dropdown-menu p-4 shadow-lg border-0"
-                                style="min-width: 320px; border-radius: 18px; background: #f8faff;" onclick="event.stopPropagation();">
-                                    <div class="mb-3">
-                                        <label class="form-label mb-2 fw-semibold text-primary">
-                                            <i class="fa-solid fa-sort me-1"></i>Ordenar:
-                                        </label>
-                                        <div class="btn-group w-100" role="group" aria-label="Ordenar">
-                                            <?php
-                                                $ordem_opts = [
-                                                    'recentes' => ['icon' => 'fa-clock-rotate-left', 'label' => 'Mais recentes'],
-                                                    'antigas' => ['icon' => 'fa-clock', 'label' => 'Mais antigas'],
-                                                    'az' => ['icon' => 'fa-arrow-down-a-z', 'label' => 'A-Z'],
-                                                    'za' => ['icon' => 'fa-arrow-down-z-a', 'label' => 'Z-A']
-                                                ];
-                                            ?>
-                                            <?php foreach ($ordem_opts as $key => $info): ?>
-                                            <input type="radio" class="btn-check" name="ordem" id="ordem_<?= $key ?>"
-                                                value="<?= $key ?>" autocomplete="off" <?= $ordem==$key?'checked':'' ?>>
-                                            <label class="btn btn-outline-primary" for="ordem_<?= $key ?>"
-                                                style="min-width:90px;">
-                                                <i class="fa <?= $info['icon'] ?>"></i> <?= $info['label'] ?>
-                                            </label>
-                                            <?php endforeach; ?>
+                                <div class="d-flex flex-column gap-2" style="min-width: 140px; max-width: 140px;">
+                                    <div class="dropdown w-100">
+                                        <button class="btn btn-gradient-primary dropdown-toggle fw-bold shadow-sm btn-historico-aulas w-100"
+                                            type="button" id="dropdownFiltros" data-bs-toggle="dropdown" aria-expanded="false"
+                                            style="border-radius: 14px; font-size:1.13em; min-width: 130px; max-width: 130px; background: linear-gradient(90deg,#0d6efd 60%,#4f8cff 100%); color: #fff; border: none; padding: 12px 0; height: 48px; display: flex; align-items: center; justify-content: center;">
+                                            <i class="bi bi-funnel-fill me-1"></i> Filtros
+                                        </button>
+                                        <div class="dropdown-menu p-4 shadow-lg border-0"
+                                            style="min-width: 320px; border-radius: 18px; background: #f8faff;" onclick="event.stopPropagation();">
+                                                <div class="mb-3">
+                                                    <label class="form-label mb-2 fw-semibold text-primary">
+                                                        <i class="fa-solid fa-sort me-1"></i>Ordenar:
+                                                    </label>
+                                                    <div class="btn-group w-100" role="group" aria-label="Ordenar">
+                                                        <?php
+                                                            $ordem_opts = [
+                                                                'recentes' => ['icon' => 'fa-clock-rotate-left', 'label' => 'Mais recentes'],
+                                                                'antigas' => ['icon' => 'fa-clock', 'label' => 'Mais antigas'],
+                                                                'az' => ['icon' => 'fa-arrow-down-a-z', 'label' => 'A-Z'],
+                                                                'za' => ['icon' => 'fa-arrow-down-z-a', 'label' => 'Z-A']
+                                                            ];
+                                                        ?>
+                                                        <?php foreach ($ordem_opts as $key => $info): ?>
+                                                        <input type="radio" class="btn-check" name="ordem" id="ordem_<?= $key ?>"
+                                                            value="<?= $key ?>" autocomplete="off" <?= $ordem==$key?'checked':'' ?>>
+                                                        <label class="btn btn-outline-primary" for="ordem_<?= $key ?>"
+                                                            style="min-width:90px;">
+                                                            <i class="fa <?= $info['icon'] ?>"></i> <?= $info['label'] ?>
+                                                        </label>
+                                                        <?php endforeach; ?>
+                                                    </div>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label mb-2 fw-semibold text-primary">
+                                                        <i class="fa-solid fa-chalkboard-user me-1"></i>Professor:
+                                                    </label>
+                                                    <select class="form-select" name="professor" style="border-radius:8px;">
+                                                        <option value="">Todos</option>
+                                                        <?php foreach ($professores as $prof): ?>
+                                                        <option value="<?= htmlspecialchars($prof) ?>" <?= $professor_filtro===$prof?'selected':'' ?>><?= htmlspecialchars($prof) ?></option>
+                                                        <?php endforeach; ?>
+                                                    </select>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label mb-2 fw-semibold text-primary">
+                                                        <i class="fa-solid fa-users me-1"></i>Turma:
+                                                    </label>
+                                                    <select class="form-select" name="turma" style="border-radius:8px;">
+                                                        <option value="">Todas</option>
+                                                        <?php foreach ($turmas as $turma): ?>
+                                                        <option value="<?= htmlspecialchars($turma) ?>" <?= $turma_filtro===$turma?'selected':'' ?>><?= htmlspecialchars($turma) ?></option>
+                                                        <?php endforeach; ?>
+                                                    </select>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label mb-2 fw-semibold text-primary">
+                                                        <i class="fa-solid fa-calendar-day me-1"></i>Data da Aula:
+                                                    </label>
+                                                    <input type="text" class="form-control" id="filtroDataAula" name="data_aula" placeholder="Escolha uma data" style="border-radius:8px; background:#fff;" readonly value="<?= isset($_GET['data_aula']) ? htmlspecialchars($_GET['data_aula']) : '' ?>">
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label mb-2 fw-semibold text-primary">
+                                                        <i class="fa-solid fa-book me-1"></i>Disciplina:
+                                                    </label>
+                                                    <select class="form-select" name="disciplina" style="border-radius:8px;">
+                                                        <option value="">Todas</option>
+                                                        <?php foreach ($disciplinas as $disc): ?>
+                                                        <option value="<?= htmlspecialchars($disc) ?>" <?= $disciplina_filtro===$disc?'selected':'' ?>><?= htmlspecialchars($disc) ?></option>
+                                                        <?php endforeach; ?>
+                                                    </select>
+                                                </div>
+                                                <div class="d-flex gap-2">
+                                                    <button type="submit" class="btn btn-gradient-primary w-100 mt-2 fw-bold"
+                                                        style="border-radius: 8px; background: linear-gradient(90deg,#0d6efd 60%,#4f8cff 100%); color: #fff; border: none;">
+                                                        <i class="fa-solid fa-filter"></i> Salvar Filtros
+                                                    </button>
+                                                    <button type="button" onclick="limparFiltros()" class="btn btn-outline-secondary w-100 mt-2 fw-bold" style="border-radius: 8px;">
+                                                        <i class="fa-solid fa-eraser"></i> Limpar Filtros
+                                                    </button>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="mb-3">
-                                        <label class="form-label mb-2 fw-semibold text-primary">
-                                            <i class="fa-solid fa-chalkboard-user me-1"></i>Professor:
-                                        </label>
-                                        <select class="form-select" name="professor" style="border-radius:8px;">
-                                            <option value="">Todos</option>
-                                            <?php foreach ($professores as $prof): ?>
-                                            <option value="<?= htmlspecialchars($prof) ?>" <?= $professor_filtro===$prof?'selected':'' ?>><?= htmlspecialchars($prof) ?></option>
-                                            <?php endforeach; ?>
-                                        </select>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label mb-2 fw-semibold text-primary">
-                                            <i class="fa-solid fa-users me-1"></i>Turma:
-                                        </label>
-                                        <select class="form-select" name="turma" style="border-radius:8px;">
-                                            <option value="">Todas</option>
-                                            <?php foreach ($turmas as $turma): ?>
-                                            <option value="<?= htmlspecialchars($turma) ?>" <?= $turma_filtro===$turma?'selected':'' ?>><?= htmlspecialchars($turma) ?></option>
-                                            <?php endforeach; ?>
-                                        </select>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label mb-2 fw-semibold text-primary">
-                                            <i class="fa-solid fa-calendar-day me-1"></i>Data da Aula:
-                                        </label>
-                                        <input type="text" class="form-control" id="filtroDataAula" name="data_aula" placeholder="Escolha uma data" style="border-radius:8px; background:#fff;" readonly value="<?= isset($_GET['data_aula']) ? htmlspecialchars($_GET['data_aula']) : '' ?>">
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label mb-2 fw-semibold text-primary">
-                                            <i class="fa-solid fa-book me-1"></i>Disciplina:
-                                        </label>
-                                        <select class="form-select" name="disciplina" style="border-radius:8px;">
-                                            <option value="">Todas</option>
-                                            <?php foreach ($disciplinas as $disc): ?>
-                                            <option value="<?= htmlspecialchars($disc) ?>" <?= $disciplina_filtro===$disc?'selected':'' ?>><?= htmlspecialchars($disc) ?></option>
-                                            <?php endforeach; ?>
-                                        </select>
-                                    </div>
-                                    <div class="d-flex gap-2">
-                                        <button type="submit" class="btn btn-gradient-primary w-100 mt-2 fw-bold"
-                                            style="border-radius: 8px; background: linear-gradient(90deg,#0d6efd 60%,#4f8cff 100%); color: #fff; border: none;">
-                                            <i class="fa-solid fa-filter"></i> Salvar Filtros
-                                        </button>
-                                        <button type="button" onclick="limparFiltros()" class="btn btn-outline-secondary w-100 mt-2 fw-bold" style="border-radius: 8px;">
-                                            <i class="fa-solid fa-eraser"></i> Limpar Filtros
-                                        </button>
-                                    </div>
+                                    <button type="button" class="btn btn-gradient-dicas shadow-sm fw-bold btn-historico-aulas w-100" onclick="abrirModalDicasAulas()"  title="Dicas da página" style="border-radius: 14px; font-size:1.13em; min-width: 130px; max-width: 130px; box-shadow: 0 2px 8px #0d6efd33; padding: 12px 0; height: 48px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                        <i class="bi bi-lightbulb-fill" style="font-size:1.35em;"></i>
+                                        Dicas
+                                    </button>
                                 </div>
-                                                             </div>
+                            </div>
+                            
                         </form>
                     </div>
                 </div>
