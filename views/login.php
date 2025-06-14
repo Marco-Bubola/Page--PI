@@ -63,27 +63,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <link rel="icon" type="image/png" href="../assets/img/LOGO_PAGE.png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-    <style>
-        body { font-family: Arial, sans-serif; background: #f5f5f5; }
-        .login-container { background: #fff; padding: 38px 32px 28px 32px; max-width: 370px; margin: 80px auto 30px auto; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.10); }
-        .app-title { text-align: center; font-size: 2.1rem; font-weight: bold; color: #007bff; letter-spacing: 1px; margin-bottom: 0.2em; }
-        .app-subtitle { text-align: center; color: #555; font-size: 1.08rem; margin-bottom: 1.2em; }
-        h2 { text-align: center; color: #333; font-size: 1.3rem; margin-bottom: 1.2em; }
-        label { font-weight: 500; color: #333; }
-        input[type="email"], input[type="password"] { width: 100%; padding: 10px 38px 10px 12px; margin: 8px 0 18px 0; border: 1px solid #ccc; border-radius: 5px; font-size: 1.05em; background: #f8f9fa; }
-        .input-group { position: relative; }
-        .input-group .toggle-eye { position: absolute; top: 50%; right: 12px; transform: translateY(-50%); background: none; border: none; outline: none; cursor: pointer; color: #888; font-size: 1.2em; }
-        button[type="submit"] { width: 100%; padding: 11px; background: #007bff; color: #fff; border: none; border-radius: 5px; font-size: 1.08em; font-weight: 500; cursor: pointer; margin-top: 8px; transition: background 0.2s; }
-        button[type="submit"]:hover { background: #0056b3; }
-        .erro { color: #d9534f; text-align: center; margin-bottom: 10px; }
-        .sucesso { color: #28a745; text-align: center; font-weight: bold; margin-bottom: 10px; }
-        .register-link { text-align:center; margin-top:18px; }
-        .register-link a { text-decoration: none; }
-        .register-link button { background:#28a745; color:#fff; border:none; border-radius:4px; padding:8px 16px; font-size:15px; cursor:pointer; margin-top:5px; transition: background 0.2s; }
-        .register-link button:hover { background: #1e7e34; }
-        .footer-login { text-align:center; color:#aaa; font-size:0.98em; margin-top:30px; letter-spacing:0.5px; }
-        @media (max-width: 500px) { .login-container { padding: 22px 6vw 18px 6vw; max-width: 98vw; } }
-    </style>
+    <link rel="stylesheet" href="../assets/css/stylelogin.css">
 </head>
 <body>
     <div class="login-container">
