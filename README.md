@@ -107,25 +107,6 @@ Page--PI/
 
 ---
 
-## 🔄 Controllers e Rotas AJAX (Destaques)
-
-- `planos_capitulos_topicos_ajax.php`: Wizard dinâmico de capítulos/tópicos
-- `toggle_capitulo_ajax.php`, `toggle_topico_ajax.php`: Ativar/cancelar status
-- `criar_*, editar_*, excluir_*_ajax.php`: CRUD dinâmico de todas as entidades
-- `turmas_paginacao_ajax.php`, `historico_aulas_ajax.php`: Paginação dinâmica
-- `registrar_aula.php`: Registro de aula com múltiplos tópicos
-- `get_plano_id_by_capitulo.php`, `get_plano_id_by_topico.php`: Busca rápida de IDs
-
----
-
-## 📸 Exemplos Visuais
-
-> ![Exemplo de Card de Turma](https://via.placeholder.com/600x120?text=Card+de+Turma+com+Badges)
-> ![Exemplo de Wizard](https://via.placeholder.com/600x80?text=Stepper+de+Cap%C3%ADtulos+e+T%C3%B3picos)
-> ![Exemplo de Modal](https://via.placeholder.com/400x200?text=Modal+de+Edi%C3%A7%C3%A3o)
-
----
-
 ## 📝 Como Rodar o Projeto
 
 1. Clone este repositório ou baixe os arquivos.
