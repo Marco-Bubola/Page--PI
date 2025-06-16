@@ -708,7 +708,7 @@ CREATE TABLE `usuarios` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Despejando dados para a tabela `usuarios`
+-- Despejando dados para a tabela `usuarios` sena 12345
 --
 
 INSERT INTO `usuarios` (`id`, `nome`, `sobrenome`, `email`, `senha`, `tipo`, `cpf`, `telefone`, `data_nascimento`, `foto_perfil`, `matricula`, `data_admissao`, `status`, `data_criacao`, `data_ultimo_login`, `endereco`, `genero`, `observacoes`) VALUES
