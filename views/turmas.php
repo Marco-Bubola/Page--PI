@@ -338,7 +338,61 @@ if ($result && $result->num_rows > 0) {
 
     <script>
     document.getElementById('filtrosForm').onsubmit = function(e) {
+        e.preventDefault();
     };
+
+    // Função para ativar/desativar turma dinamicamente (chamada só após confirmação)
+    function toggleStatusTurma(id, btn) {
+        btn.disabled = true;
+        fetch('../controllers/toggle_status_turma.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: 'id_turma=' + encodeURIComponent(id)
+            })
+            .then(r => r.json())
+            .then(res => {
+                btn.disabled = false;
+                if (res.success) {
+                    // Atualiza badge de status
+                    const badge = document.getElementById('turma-status-' + id);
+                    if (badge) {
+                        badge.className = 'badge bg-' + (res.novo_status === 'ativa' ? 'success' : (res.novo_status === 'cancelada' ? 'secondary' : 'success')) +
+                            ' text-dark border border-' + (res.novo_status === 'ativa' ? 'success' : (res.novo_status === 'cancelada' ? 'secondary' : 'success')) + ' turma-status-badge';
+                        badge.innerHTML = '<i class="bi bi-activity"></i> ' + res.novo_status;
+                    }
+                    // Atualiza ícone/botão e título
+                    btn.className = 'btn p-0 m-0 border-0 bg-transparent turma-toggle-btn';
+                    btn.style.fontSize = '2.1rem';
+                    btn.style.lineHeight = '1';
+                    btn.style.boxShadow = 'none';
+                    btn.title = (res.novo_status === 'ativa' ? 'Cancelar' : 'Ativar') + ' turma';
+                    btn.querySelector('i').className = 'bi ' + (res.novo_status === 'ativa' ? 'bi-toggle-off' : 'bi-toggle-on');
+                    // Atualiza o card visualmente
+                    const card = btn.closest('.card-turma');
+                    if (card) {
+                        card.classList.remove('cancelada', 'concluida');
+                        let overlay = card.querySelector('.status-overlay');
+                        if (overlay) overlay.remove();
+                        if (res.novo_status === 'cancelada') {
+                            card.classList.add('cancelada');
+                            card.insertAdjacentHTML('afterbegin', '<div class="status-overlay">CANCELADA</div>');
+                        } else if (res.novo_status === 'concluída') {
+                            card.classList.add('concluida');
+                            card.insertAdjacentHTML('afterbegin', '<div class="status-overlay"><i class="bi bi-check-circle-fill"></i> Concluída</div>');
+                        }
+                    }
+                    mostrarNotificacao('Status da turma atualizado com sucesso!', 'success');
+                } else {
+                    mostrarNotificacao(res.error || 'Erro ao atualizar status da turma', 'danger');
+                }
+            })
+            .catch(error => {
+                btn.disabled = false;
+                mostrarNotificacao('Erro ao atualizar status da turma', 'danger');
+            });
+    }
     </script>
     <?php
     // --- ORDEM SQL ---
@@ -1230,10 +1284,8 @@ if ($result && $result->num_rows > 0) {
                     // Atualiza badge de status
                     const badge = document.getElementById('turma-status-' + id);
                     if (badge) {
-                        badge.className = 'badge bg-' + (res.novo_status === 'ativa' ? 'success' : (res
-                                .novo_status === 'cancelada' ? 'secondary' : 'success')) +
-                            ' text-dark border border-' + (res.novo_status === 'ativa' ? 'success' : (res
-                                .novo_status === 'cancelada' ? 'secondary' : 'success')) + ' turma-status-badge';
+                        badge.className = 'badge bg-' + (res.novo_status === 'ativa' ? 'success' : (res.novo_status === 'cancelada' ? 'secondary' : 'success')) +
+                            ' text-dark border border-' + (res.novo_status === 'ativa' ? 'success' : (res.novo_status === 'cancelada' ? 'secondary' : 'success')) + ' turma-status-badge';
                         badge.innerHTML = '<i class="bi bi-activity"></i> ' + res.novo_status;
                     }
                     // Atualiza ícone/botão e título
@@ -1242,8 +1294,7 @@ if ($result && $result->num_rows > 0) {
                     btn.style.lineHeight = '1';
                     btn.style.boxShadow = 'none';
                     btn.title = (res.novo_status === 'ativa' ? 'Cancelar' : 'Ativar') + ' turma';
-                    btn.querySelector('i').className = 'bi ' + (res.novo_status === 'ativa' ? 'bi-toggle-off' :
-                        'bi-toggle-on');
+                    btn.querySelector('i').className = 'bi ' + (res.novo_status === 'ativa' ? 'bi-toggle-off' : 'bi-toggle-on');
                     // Atualiza o card visualmente
                     const card = btn.closest('.card-turma');
                     if (card) {
@@ -1254,20 +1305,18 @@ if ($result && $result->num_rows > 0) {
                             card.classList.add('cancelada');
                             card.insertAdjacentHTML('afterbegin', '<div class="status-overlay">CANCELADA</div>');
                         } else if (res.novo_status === 'concluída') {
-                            card.classList.add('concluída');
-                            card.insertAdjacentHTML('afterbegin',
-                                '<div class="status-overlay"><i class="bi bi-check-circle-fill"></i> Concluída</div>'
-                                );
+                            card.classList.add('concluida');
+                            card.insertAdjacentHTML('afterbegin', '<div class="status-overlay"><i class="bi bi-check-circle-fill"></i> Concluída</div>');
                         }
                     }
-                    mostrarNotificacao('Status da turma atualizado!', 'success');
+                    mostrarNotificacao('Status da turma atualizado com sucesso!', 'success');
                 } else {
-                    mostrarNotificacao(res.error || 'Erro ao atualizar status', 'danger');
+                    mostrarNotificacao(res.error || 'Erro ao atualizar status da turma', 'danger');
                 }
             })
-            .catch(() => {
+            .catch(error => {
                 btn.disabled = false;
-                mostrarNotificacao('Erro de conexão', 'danger');
+                mostrarNotificacao('Erro ao atualizar status da turma', 'danger');
             });
     }
 
