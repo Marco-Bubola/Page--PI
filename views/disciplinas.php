@@ -1,7 +1,7 @@
 <?php
 session_start();
-if (!isset($_SESSION['usuario_nome']) || !in_array($_SESSION['usuario_nome'], ['coordenador', 'admin', 'professor'])) {
-    header('Location: index.php');
+if (!isset($_SESSION['usuario_tipo']) || !in_array($_SESSION['usuario_tipo'], ['coordenador', 'admin', 'professor'])) {
+    header('Location: ../index.php');
     exit();
 }
 include 'navbar.php';
