@@ -11,6 +11,7 @@ if (!$plano_id) exit('');
 // Buscar capítulos e tópicos do plano
 $capitulos = [];
 $topicosPorCapitulo = [];
+
 $sql = "SELECT * FROM capitulos WHERE plano_id = $plano_id ORDER BY ordem ASC, id ASC";
 $result = $conn->query($sql);
 $cap_ids = [];
@@ -20,6 +21,7 @@ if ($result && $result->num_rows > 0) {
         $cap_ids[] = $row['id'];
     }
 }
+
 if ($cap_ids) {
     $in_caps = implode(',', array_map('intval', $cap_ids));
     $sql = "SELECT * FROM topicos WHERE capitulo_id IN ($in_caps) ORDER BY capitulo_id, ordem ASC, id ASC";
@@ -31,28 +33,16 @@ if ($cap_ids) {
     }
 }
 $totalCapitulos = count($capitulos);
+$totalTopicos = 0;
+foreach ($capitulos as $cap) {
+    if (isset($topicosPorCapitulo[$cap['id']])) {
+        $totalTopicos += count($topicosPorCapitulo[$cap['id']]);
+    }
+}
+
 // Renderiza o HTML do stepper (igual ao trecho do wizard-stepper-capitulos)
 ob_start();
-if ($totalCapitulos === 0) {
-?>
-<div id="mensagem-sem-capitulo-<?= $plano_id ?>" class="d-flex justify-content-center align-items-center w-100" style="min-height:220px;">
-    <div class="w-100 mx-auto" style="max-width:480px;">
-        <div class="p-4 rounded-4 shadow-sm border border-2 border-warning bg-white text-center"
-            style="background:linear-gradient(90deg,#fff 80%,#fffbe6 100%);">
-            <div class="mb-2">
-                <i class="bi bi-exclamation-circle text-warning" style="font-size:2em;"></i>
-            </div>
-            <div class="fw-bold text-warning mb-1" style="font-size:1.13em;">
-                Nenhum capítulo cadastrado neste plano!
-            </div>
-            <div class="text-muted" style="font-size:1em;">
-                Clique em <span class="badge bg-success text-white"><i class="bi bi-plus-circle"></i> Adicionar Capítulo</span> para cadastrar o primeiro capítulo deste plano.
-            </div>
-        </div>
-    </div>
-</div>
-<?php
-} else {
+if ($totalCapitulos > 0):
 ?>
 <div class="wizard-stepper-capitulos mb-4" id="wizard-stepper-<?= $plano_id ?>">
     <div class="d-flex flex-row align-items-center justify-content-center gap-4 mb-3" style="gap: 48px !important;">
@@ -92,24 +82,13 @@ if ($totalCapitulos === 0) {
                         style="border-radius:18px; position:relative;
                         <?php if ($capStatus === 'cancelado'): ?>
                             border: 3px solid #6c757d;
+                            background: linear-gradient(90deg, #f8f9fa 80%, #e9ecef 100%);
                         <?php elseif ($capStatus === 'concluido'): ?>
                             border: 3px solid #28a745;
+                            background: linear-gradient(90deg, #f8f9fa 80%, #d4edda 100%);
                         <?php endif; ?>
                         ">
-                        <?php if ($capStatus === 'cancelado' || $capStatus === 'concluido'): ?>
-                            <div class="status-overlay d-flex flex-column justify-content-center align-items-center"
-                                style="position:absolute;top:0;left:0;width:100%;height:100%;
-                                background:<?= $capStatus === 'cancelado' ? 'rgba(108,117,125,0.13)' : 'rgba(40,167,69,0.10)' ?>;
-                                z-index:1;border-radius:18px;
-                                color:<?= $capStatus === 'cancelado' ? '#444' : '#155724' ?>;
-                                font-size:1.5em;font-weight:bold;text-shadow:0 2px 8px #fff;
-                                pointer-events:none;">
-                                <i class="bi <?= $capStatus === 'cancelado' ? 'bi-x-circle-fill' : 'bi-check-circle-fill' ?> mb-2"
-                                    style="font-size:2.5em;"></i>
-                                <?= $capStatus === 'cancelado' ? 'Capítulo Cancelado' : 'Capítulo Concluído' ?>
-                            </div>
-                        <?php endif; ?>
-                        <div class="card-body d-flex flex-column <?= ($capStatus === 'cancelado' || $capStatus === 'concluido') ? 'opacity-50' : '' ?>" style="position:relative;z-index:2;">
+                        <div class="card-body d-flex flex-column" style="position:relative;z-index:2;">
                             <div class="mb-2 d-flex flex-wrap gap-3 align-items-center"
                                 style="font-size:1.25rem;">
                                 <span
@@ -313,7 +292,34 @@ if ($totalCapitulos === 0) {
         <?php endforeach; ?>
     </div>
 </div>
-
 <?php
-} // fecha o else do if ($totalCapitulos === 0)
-echo ob_get_clean();
+else:
+?>
+<div id="mensagem-sem-capitulo-<?= $plano_id ?>" class="d-flex justify-content-center align-items-center w-100" style="min-height:220px;">
+    <div class="w-100 mx-auto" style="max-width:480px;">
+        <div class="p-4 rounded-4 shadow-sm border border-2 border-warning bg-white text-center"
+            style="background:linear-gradient(90deg,#fff 80%,#fffbe6 100%);">
+            <div class="mb-2">
+                <i class="bi bi-exclamation-circle text-warning" style="font-size:2em;"></i>
+            </div>
+            <div class="fw-bold text-warning mb-1" style="font-size:1.13em;">
+                Nenhum capítulo cadastrado neste plano!
+            </div>
+            <div class="text-muted" style="font-size:1em;">
+                Clique em <span class="badge bg-success text-white"><i class="bi bi-plus-circle"></i> Adicionar Capítulo</span> para cadastrar o primeiro capítulo deste plano.
+            </div>
+        </div>
+    </div>
+</div>
+<?php
+endif;
+$html = ob_get_clean();
+
+// Retorna o JSON com os dados
+header('Content-Type: application/json');
+echo json_encode([
+    'html' => $html,
+    'totalCapitulos' => $totalCapitulos,
+    'totalTopicos' => $totalTopicos,
+    'capituloAtual' => isset($capitulos[0]) ? $capitulos[0]['titulo'] : ''
+]);
