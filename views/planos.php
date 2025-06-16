@@ -121,6 +121,18 @@ if ($turma_id && !empty($planos)) {
         }
     }
 }
+
+// --- Identifica a primeira disciplina com plano para ativar a aba correta ---
+$primeiraComPlano = null;
+if (!empty($disciplinas)) {
+    foreach ($disciplinas as $idx => $disc) {
+        if (isset($planos[$disc['id']])) {
+            $primeiraComPlano = $idx;
+            break;
+        }
+    }
+    if ($primeiraComPlano === null) $primeiraComPlano = 0;
+}
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -209,12 +221,13 @@ if ($turma_id && !empty($planos)) {
                     <?php foreach ($disciplinas as $i => $disc): ?>
                     <?php
                         $temPlano = isset($planos[$disc['id']]);
+                        $isActive = ($i === $primeiraComPlano);
                     ?>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link<?= $i === 0 ? ' active' : '' ?>" id="tab-<?= $disc['id'] ?>"
+                        <button class="nav-link<?= $isActive ? ' active' : '' ?>" id="tab-<?= $disc['id'] ?>"
                             data-bs-toggle="tab" data-bs-target="#disciplina-<?= $disc['id'] ?>" type="button"
                             role="tab" aria-controls="disciplina-<?= $disc['id'] ?>"
-                            aria-selected="<?= $i === 0 ? 'true' : 'false' ?>"
+                            aria-selected="<?= $isActive ? 'true' : 'false' ?>"
                             style="font-weight:600;font-size:1.1em;display:flex;align-items:center;gap:7px;position:relative;">
                             <i class="bi bi-journal-bookmark-fill text-primary"></i>
                             <?= htmlspecialchars($disc['nome']) ?>
@@ -230,20 +243,20 @@ if ($turma_id && !empty($planos)) {
                 <div class="tab-content p-3 bg-white rounded-bottom shadow-sm border border-top-0"
                     id="disciplinasTabContent">
                     <?php foreach ($disciplinas as $i => $disc): ?>
-                    <div class="tab-pane fade<?= $i === 0 ? ' show active' : '' ?>" id="disciplina-<?= $disc['id'] ?>"
-                        role="tabpanel" aria-labelledby="tab-<?= $disc['id'] ?>">
-                        <div class="col-12 ">
-                            <!-- Card principal da disciplina -->
+                    <?php $isActive = ($i === $primeiraComPlano); ?>
+                    <div class="tab-pane fade<?= $isActive ? ' show active' : '' ?>" id="disciplina-<?= $disc['id'] ?>"
+                        role="tabpanel" aria-labelledby="tab-<?= $disc['id'] ?>"
+                        data-plano-id="<?= isset($planos[$disc['id']]) ? $planos[$disc['id']]['id'] : '' ?>">
+                        <div class="col-12">
+                            <?php if (isset($planos[$disc['id']]) && !empty($planos[$disc['id']])): $plano = $planos[$disc['id']];
+            $capitulos = !empty($capitulosPorPlano[$plano['id']]) ? $capitulosPorPlano[$plano['id']] : [];
+            $totalCapitulos = count($capitulos);
+            $totalTopicos = 0;
+            foreach ($capitulos as $c) {
+                $totalTopicos += isset($topicosPorCapitulo[$c['id']]) ? count($topicosPorCapitulo[$c['id']]) : 0;
+            }
+        ?>
                             <div class="d-flex justify-content-between align-items-center mb-3">
-                                <!-- Bloco do plano e capítulos dentro da aba/disciplina -->
-                                <?php if (isset($planos[$disc['id']])): $plano = $planos[$disc['id']];
-                                $capitulos = !empty($capitulosPorPlano[$plano['id']]) ? $capitulosPorPlano[$plano['id']] : [];
-                                $totalCapitulos = count($capitulos);
-                                $totalTopicos = 0;
-                                foreach ($capitulos as $c) {
-                                    $totalTopicos += isset($topicosPorCapitulo[$c['id']]) ? count($topicosPorCapitulo[$c['id']]) : 0;
-                                }
-                            ?>
                                 <div>
                                     <span class="badge bg-info-subtle text-dark border border-info"
                                         style="font-size:1.2rem;padding:8px 12px;"><i class="bi bi-journal-text"></i>
@@ -258,12 +271,14 @@ if ($turma_id && !empty($planos)) {
                                         style="font-size:1.2rem;padding:8px 12px;"><i class="bi bi-activity"></i>
                                         <?= $plano['status'] === 'concluido' ? 'Concluído' : 'Em andamento' ?></span>
                                     <span class="badge bg-primary-subtle text-primary border border-primary"
-                                        style="font-size:1.2rem;padding:8px 12px;">
+                                        style="font-size:1.2rem;padding:8px 12px;"
+                                        id="badge-total-capitulos-<?= $plano['id'] ?>">
                                         <i class="bi bi-journal-bookmark-fill"></i>
                                         <?= $totalCapitulos ?> capítulo<?= $totalCapitulos == 1 ? '' : 's' ?>
                                     </span>
                                     <span class="badge bg-info-subtle text-info border border-info"
-                                        style="font-size:1.2rem;padding:8px 12px;">
+                                        style="font-size:1.2rem;padding:8px 12px;"
+                                        id="badge-total-topicos-<?= $plano['id'] ?>">
                                         <i class="bi bi-list-task"></i>
                                         <?= $totalTopicos ?> tópico<?= $totalTopicos == 1 ? '' : 's' ?>
                                     </span>
@@ -276,9 +291,7 @@ if ($turma_id && !empty($planos)) {
                                     </span>
                                     <?php endif; ?>
                                 </div>
-
                                 <div class="turma-actions">
-                                    <?php if (isset($planos[$disc['id']])): $plano = $planos[$disc['id']]; ?>
                                     <button class="btn btn-success btn-sm" style="font-size:1.2rem;padding:8px 16px;"
                                         onclick="abrirModalCapitulo(<?= $plano['id'] ?>)"><i
                                             class="bi bi-plus-circle"></i> Adicionar Capítulo</button>
@@ -292,7 +305,6 @@ if ($turma_id && !empty($planos)) {
                                         onclick="abrirModalExcluirPlano(<?= $plano['id'] ?>, '<?= htmlspecialchars(addslashes($plano['titulo'])) ?>')">
                                         <i class="bi bi-trash"></i>
                                     </button>
-                                    <?php endif; ?>
                                 </div>
                             </div>
                             <!-- Cards dos capítulos -->
@@ -346,19 +358,7 @@ if ($turma_id && !empty($planos)) {
                                                         border: 3px solid #28a745;
                                                     <?php endif; ?>
                                                     ">
-                                                    <?php if ($capStatus === 'cancelado' || $capStatus === 'concluido'): ?>
-                                                    <div class="status-overlay d-flex flex-column justify-content-center align-items-center"
-                                                        style="position:absolute;top:0;left:0;width:100%;height:100%;
-                                                            background:<?= $capStatus === 'cancelado' ? 'rgba(108,117,125,0.13)' : 'rgba(40,167,69,0.10)' ?>;
-                                                            z-index:1;border-radius:18px;
-                                                            color:<?= $capStatus === 'cancelado' ? '#444' : '#155724' ?>;
-                                                            font-size:1.5em;font-weight:bold;text-shadow:0 2px 8px #fff;
-                                                            pointer-events:none;">
-                                                        <i class="bi <?= $capStatus === 'cancelado' ? 'bi-x-circle-fill' : 'bi-check-circle-fill' ?> mb-2"
-                                                            style="font-size:2.5em;"></i>
-                                                        <?= $capStatus === 'cancelado' ? 'Capítulo Cancelado' : 'Capítulo Concluído' ?>
-                                                    </div>
-                                                    <?php endif; ?>
+                                                  
                                                     <div class="card-body d-flex flex-column <?= ($capStatus === 'cancelado' || $capStatus === 'concluido') ? 'opacity-50' : '' ?>"
                                                         style="position:relative;z-index:2;">
                                                         <div class="mb-2 d-flex flex-wrap gap-3 align-items-center"
@@ -586,6 +586,27 @@ if ($turma_id && !empty($planos)) {
                                     <?php endforeach; ?>
                                 </div>
                             </div>
+                            <?php else: ?>
+                            <div id="mensagem-sem-capitulo-<?= $plano['id'] ?>"
+                                class="d-flex justify-content-center align-items-center w-100"
+                                style="min-height:220px;">
+                                <div class="w-100 mx-auto" style="max-width:480px;">
+                                    <div class="p-4 rounded-4 shadow-sm border border-2 border-warning bg-white text-center"
+                                        style="background:linear-gradient(90deg,#fff 80%,#fffbe6 100%);">
+                                        <div class="mb-2">
+                                            <i class="bi bi-exclamation-circle text-warning" style="font-size:2em;"></i>
+                                        </div>
+                                        <div class="fw-bold text-warning mb-1" style="font-size:1.13em;">
+                                            Nenhum capítulo cadastrado neste plano!
+                                        </div>
+                                        <div class="text-muted" style="font-size:1em;">
+                                            Clique em <span class="badge bg-success text-white"><i
+                                                    class="bi bi-plus-circle"></i> Adicionar Capítulo</span> para
+                                            cadastrar o primeiro capítulo deste plano.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                             <?php endif; ?>
                             <?php if (!empty($topicosPersonalizadosPorPlano[$plano['id']])): ?>
                             <div class="mt-2">
@@ -601,6 +622,7 @@ if ($turma_id && !empty($planos)) {
                             </div>
                             <?php endif; ?>
                             <?php else: ?>
+                            <!-- Mensagem de nenhum plano, só nesta aba -->
                             <div class="d-flex justify-content-center align-items-center w-100 h-100"
                                 style="min-height:320px;">
                                 <div class="w-100 mx-auto" style="max-width:540px;">
@@ -670,6 +692,7 @@ if ($turma_id && !empty($planos)) {
         });
     }
 
+
     // Detecta aba ativa ao carregar e restaura (só restaura se não for reload/F5)
     document.addEventListener('DOMContentLoaded', function() {
         const abas = document.querySelectorAll('#disciplinasTab .nav-link');
@@ -710,10 +733,19 @@ if ($turma_id && !empty($planos)) {
         document.getElementById('formCapituloNovo').action = '../controllers/editar_capitulo_ajax.php';
         document.getElementById('tituloModalCapituloNovo').innerText = 'Editar Capítulo';
         document.getElementById('id_capitulo_novo').value = id;
-        document.getElementById('plano_id_capitulo_novo').value = '';
+        
+        // Buscar o plano_id do capítulo
+        fetch(`../controllers/get_plano_id_by_capitulo.php?id=${id}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.plano_id) {
+                    document.getElementById('plano_id_capitulo_novo').value = data.plano_id;
+                }
+            });
+        
         document.getElementById('titulo_capitulo_novo').value = titulo || '';
         document.getElementById('descricao_capitulo_novo').value = descricao || '';
-        document.getElementById('status_capitulo_novo').value = 'em_andamento';
+        document.getElementById('status_capitulo_novo').value = status || 'em_andamento';
         document.getElementById('modalCapituloNovo').style.display = 'block';
     }
     window.abrirModalEditarCapitulo = abrirModalEditarCapitulo;
@@ -872,80 +904,93 @@ if ($turma_id && !empty($planos)) {
 
 
     // Corrige: atualização dinâmica dos capítulos/tópicos SEM PERDER OS ANTIGOS
-    async function atualizarCapitulosTopicos(plano_id) {
-        let currentStep = typeof stepAtualPorPlano[plano_id] === 'undefined' ? 0 : stepAtualPorPlano[plano_id];
-        const resp = await fetch('../controllers/planos_capitulos_topicos_ajax.php?plano_id=' + plano_id);
-        const html = await resp.text();
-        const wizard = document.getElementById('wizard-stepper-' + plano_id);
-        if (wizard) {
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = html.trim();
-            const novoWizard = tempDiv.querySelector('.wizard-stepper-capitulos');
-            if (novoWizard) {
-                wizard.replaceWith(novoWizard);
-                const totalSteps = novoWizard.querySelectorAll('.wizard-step-card').length;
-                if (totalSteps === 1) currentStep = 0;
-                inicializarWizardCapitulos(plano_id, currentStep);
-                // Reatribui funções globais para HTML dinâmico
+    function atualizarCapitulosTopicos(plano_id) {
+        const stepAtual = stepAtualPorPlano[plano_id] || 0;
+        fetch(`../controllers/planos_capitulos_topicos_ajax.php?plano_id=${plano_id}&step=${stepAtual}`)
+            .then(response => response.text())
+            .then(raw => {
+                let data;
+                try {
+                    data = JSON.parse(raw);
+                } catch (e) {
+                    return;
+                }
+
+                // Remove o conteúdo existente
+                const container = document.querySelector(`[data-plano-id="${plano_id}"]`);
+                if (!container) {
+                    return;
+                }
+
+                // Remove o stepper e a mensagem vazia existentes
+                const stepperExistente = container.querySelector('.wizard-stepper-capitulos');
+                const mensagemVaziaExistente = container.querySelector(`#mensagem-sem-capitulo-${plano_id}`);
+                if (stepperExistente) stepperExistente.remove();
+                if (mensagemVaziaExistente) mensagemVaziaExistente.remove();
+
+                // Cria um div temporário para manipular o HTML
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = data.html;
+
+                // Extrai o novo stepper e a mensagem vazia
+                const novoStepper = tempDiv.querySelector('.wizard-stepper-capitulos');
+                const novaMensagemVazia = tempDiv.querySelector(`#mensagem-sem-capitulo-${plano_id}`);
+
+                // Insere o novo conteúdo no container
+                if (novoStepper) {
+                    container.appendChild(novoStepper);
+                } else if (novaMensagemVazia) {
+                    container.appendChild(novaMensagemVazia);
+                }
+
+                // Atualiza o badge do capítulo atual
+                const badgeCapituloAtual = document.getElementById('badge-capitulo-atual-' + plano_id);
+                if (badgeCapituloAtual && data.capituloAtual) {
+                    badgeCapituloAtual.innerHTML = `<i class="bi bi-journal-bookmark"></i> ${data.capituloAtual}`;
+                }
+
+                // Inicializa o wizard
+                if (novoStepper) {
+                    inicializarWizardCapitulos(plano_id, stepAtual);
+                }
+
+                // Reatribui as funções globais
                 window.abrirModalCapitulo = abrirModalCapitulo;
-                window.abrirModalEditarCapitulo = abrirModalEditarCapitulo;
-                window.abrirModalExcluirCapitulo = abrirModalExcluirCapitulo;
                 window.abrirModalTopico = abrirModalTopico;
+                window.abrirModalEditarCapitulo = abrirModalEditarCapitulo;
                 window.abrirModalEditarTopico = abrirModalEditarTopico;
+                window.abrirModalExcluirCapitulo = abrirModalExcluirCapitulo;
                 window.abrirModalExcluirTopico = abrirModalExcluirTopico;
                 window.abrirModalToggleCapitulo = abrirModalToggleCapitulo;
                 window.abrirModalToggleTopico = abrirModalToggleTopico;
-            }
-        } else {
-            // Sempre remover stepper e mensagem de vazio antes de inserir novo conteúdo
-            const msgVazio = document.getElementById('mensagem-sem-capitulo-' + plano_id);
-            if (msgVazio) msgVazio.remove();
-            const wizard = document.getElementById('wizard-stepper-' + plano_id);
-            if (wizard) wizard.remove();
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = html.trim();
-            const novoWizard = tempDiv.querySelector('.wizard-stepper-capitulos');
-            const novaMsgVazio = tempDiv.querySelector('#mensagem-sem-capitulo-' + plano_id);
-            // --- CORREÇÃO ABA: ativa a aba correta antes de inserir o stepper/mensagem ---
-            const abaBtn = document.querySelector(`#tab-${plano_id}`);
-            if (abaBtn && !abaBtn.classList.contains('active')) {
-                abaBtn.click();
-            }
-            setTimeout(() => {
-                const planoTab = document.querySelector(`#disciplina-${plano_id} .col-12`);
-                if (planoTab) {
-                    const turmaActions = planoTab.querySelector('.turma-actions');
-                    if (novoWizard) {
-                        if (turmaActions && turmaActions.parentNode) {
-                            turmaActions.parentNode.insertBefore(novoWizard, turmaActions.nextSibling);
-                        } else if (planoTab.firstChild) {
-                            planoTab.insertBefore(novoWizard, planoTab.firstChild);
+
+                // Força atualização visual do wizard
+                if (novoStepper) {
+                    const steps = novoStepper.querySelectorAll('.wizard-step-circle');
+                    steps.forEach((step, index) => {
+                        if (index <= stepAtual) {
+                            step.classList.add('active');
                         } else {
-                            planoTab.appendChild(novoWizard);
+                            step.classList.remove('active');
                         }
-                        const totalSteps = novoWizard.querySelectorAll('.wizard-step-card').length;
-                        if (totalSteps === 1) currentStep = 0;
-                        inicializarWizardCapitulos(plano_id, currentStep);
-                        window.abrirModalCapitulo = abrirModalCapitulo;
-                        window.abrirModalEditarCapitulo = abrirModalEditarCapitulo;
-                        window.abrirModalExcluirCapitulo = abrirModalExcluirCapitulo;
-                        window.abrirModalTopico = abrirModalTopico;
-                        window.abrirModalEditarTopico = abrirModalEditarTopico;
-                        window.abrirModalExcluirTopico = abrirModalExcluirTopico;
-                        window.abrirModalToggleCapitulo = abrirModalToggleCapitulo;
-                        window.abrirModalToggleTopico = abrirModalToggleTopico;
-                    } else if (novaMsgVazio) {
-                        if (turmaActions && turmaActions.parentNode) {
-                            turmaActions.parentNode.insertBefore(novaMsgVazio, turmaActions.nextSibling);
-                        } else if (planoTab.firstChild) {
-                            planoTab.insertBefore(novaMsgVazio, planoTab.firstChild);
-                        } else {
-                            planoTab.appendChild(novaMsgVazio);
-                        }
-                    }
+                    });
                 }
-            }, 100);
-        }
+
+                // Atualiza os contadores
+                const badgeTotalCapitulos = document.getElementById('badge-total-capitulos-' + plano_id);
+                const badgeTotalTopicos = document.getElementById('badge-total-topicos-' + plano_id);
+                if (badgeTotalCapitulos && data.totalCapitulos !== undefined) {
+                    badgeTotalCapitulos.innerHTML =
+                        `<i class="bi bi-journal-bookmark-fill"></i> ${data.totalCapitulos} capítulo${data.totalCapitulos == 1 ? '' : 's'}`;
+                }
+                if (badgeTotalTopicos && data.totalTopicos !== undefined) {
+                    badgeTotalTopicos.innerHTML =
+                        `<i class="bi bi-list-task"></i> ${data.totalTopicos} tópico${data.totalTopicos == 1 ? '' : 's'}`;
+                }
+            })
+            .catch(error => {
+                return;
+            });
     }
 
     // Função para inicializar wizard de capítulos (deve ser chamada após atualizar HTML)
@@ -1026,184 +1071,231 @@ if ($turma_id && !empty($planos)) {
         });
     });
     // --- AJAX dinâmico para capítulo (criar/editar) ---
-    document.getElementById('formCapituloNovo').onsubmit = async function(e) {
-        e.preventDefault();
-        const form = this;
-        const formData = new FormData(form);
-        const url = form.action;
-        const plano_id = formData.get('plano_id') || formData.get('plano_id_capitulo_novo');
-        const resp = await fetch(url.includes('editar_capitulo_ajax.php') ?
-            '../controllers/editar_capitulo_ajax.php' : '../controllers/criar_capitulo_ajax.php', {
-                method: 'POST',
-                body: formData
-            });
-        const data = await resp.json();
-        if (data.success) {
-            fecharModalCapituloNovo();
-            mostrarNotificacao('Capítulo salvo com sucesso!', 'success');
-            if (plano_id) await atualizarCapitulosTopicos(plano_id);
-        } else {
-            mostrarNotificacao(data.error || 'Erro ao salvar capítulo', 'danger');
-        }
-    };
+    if (document.getElementById('formCapituloNovo')) {
+        document.getElementById('formCapituloNovo').onsubmit = async function(e) {
+            e.preventDefault();
+            const form = this;
+            const formData = new FormData(form);
+            const url = form.action;
+            const plano_id = formData.get('plano_id') || formData.get('plano_id_capitulo_novo');
+            const resp = await fetch(url.includes('editar_capitulo_ajax.php') ?
+                '../controllers/editar_capitulo_ajax.php' : '../controllers/criar_capitulo_ajax.php', {
+                    method: 'POST',
+                    body: formData
+                });
+            const data = await resp.json();
+            if (data.success) {
+                fecharModalCapituloNovo();
+                mostrarNotificacao('Capítulo salvo com sucesso!', 'success');
+                if (plano_id) setTimeout(() => atualizarCapitulosTopicos(plano_id), 500);
+            } else {
+                mostrarNotificacao(data.error || 'Erro ao salvar capítulo', 'danger');
+            }
+        };
+    }
 
     // --- AJAX dinâmico para tópico (criar/editar) ---
-    document.getElementById('formTopicoNovo').onsubmit = async function(e) {
-        e.preventDefault();
-        const form = this;
-        const formData = new FormData(form);
-        const url = form.action;
-        const capitulo_id = formData.get('capitulo_id') || formData.get('capitulo_id_topico_novo');
-        // Buscar plano_id do capítulo via atributo data ou AJAX rápido
-        let plano_id = form.getAttribute('data-plano-id');
-        if (!plano_id && capitulo_id) {
-            // Busca plano_id via AJAX rápido
-            const resp = await fetch('../controllers/get_plano_id_by_capitulo.php?id=' + capitulo_id);
-            const d = await resp.json();
-            plano_id = d.plano_id;
-        }
-        const resp = await fetch(url.includes('editar_topico_ajax.php') ?
-            '../controllers/editar_topico_ajax.php' : '../controllers/criar_topico_ajax.php', {
+    if (document.getElementById('formTopicoNovo')) {
+        document.getElementById('formTopicoNovo').onsubmit = async function(e) {
+            e.preventDefault();
+            const form = this;
+            const formData = new FormData(form);
+            const url = form.action;
+            const capitulo_id = formData.get('capitulo_id') || formData.get('capitulo_id_topico_novo');
+            // Buscar plano_id do capítulo via atributo data ou AJAX rápido
+            let plano_id = form.getAttribute('data-plano-id');
+            if (!plano_id && capitulo_id) {
+                // Busca plano_id via AJAX rápido
+                const resp = await fetch('../controllers/get_plano_id_by_capitulo.php?id=' + capitulo_id);
+                const d = await resp.json();
+                plano_id = d.plano_id;
+            }
+            const resp = await fetch(url.includes('editar_topico_ajax.php') ?
+                '../controllers/editar_topico_ajax.php' : '../controllers/criar_topico_ajax.php', {
+                    method: 'POST',
+                    body: formData
+                });
+            const data = await resp.json();
+            if (data.success) {
+                fecharModalTopicoNovo();
+                mostrarNotificacao('Tópico salvo com sucesso!', 'success');
+                if (plano_id) await atualizarCapitulosTopicos(plano_id);
+            } else {
+                mostrarNotificacao(data.error || 'Erro ao salvar tópico', 'danger');
+            }
+        };
+    }
+
+    // --- Exclusão AJAX dinâmica de Capítulo ---
+    if (document.getElementById('formExcluirCapitulo')) {
+        document.getElementById('formExcluirCapitulo').onsubmit = async function(e) {
+            e.preventDefault();
+            const form = this;
+            const formData = new FormData(form);
+            const capitulo_id = formData.get('id_capitulo');
+            // Buscar plano_id do capítulo via AJAX rápido
+            let plano_id = null;
+            if (capitulo_id) {
+                const respPlano = await fetch('../controllers/get_plano_id_by_capitulo.php?id=' + capitulo_id);
+                const d = await respPlano.json();
+                plano_id = d.plano_id;
+            }
+            const resp = await fetch(form.action, {
                 method: 'POST',
                 body: formData
             });
-        const data = await resp.json();
-        if (data.success) {
-            fecharModalTopicoNovo();
-            mostrarNotificacao('Tópico salvo com sucesso!', 'success');
-            if (plano_id) await atualizarCapitulosTopicos(plano_id);
-        } else {
-            mostrarNotificacao(data.error || 'Erro ao salvar tópico', 'danger');
-        }
-    };
-
-    // --- Exclusão AJAX dinâmica de Capítulo ---
-    document.getElementById('formExcluirCapitulo').onsubmit = async function(e) {
-        e.preventDefault();
-        const form = this;
-        const formData = new FormData(form);
-        const capitulo_id = formData.get('id_capitulo');
-        // Buscar plano_id do capítulo via AJAX rápido
-        let plano_id = null;
-        if (capitulo_id) {
-            const respPlano = await fetch('../controllers/get_plano_id_by_capitulo.php?id=' + capitulo_id);
-            const d = await respPlano.json();
-            plano_id = d.plano_id;
-        }
-        const resp = await fetch(form.action, {
-            method: 'POST',
-            body: formData
-        });
-        const data = await resp.json();
-        if (data.success) {
-            fecharModalExcluirCapitulo();
-            mostrarNotificacao('Capítulo excluído com sucesso!', 'success');
-            if (plano_id) await atualizarCapitulosTopicos(plano_id);
-        } else {
-            mostrarNotificacao(data.error || 'Erro ao excluir capítulo', 'danger');
-        }
-    };
+            const data = await resp.json();
+            if (data.success) {
+                fecharModalExcluirCapitulo();
+                mostrarNotificacao('Capítulo excluído com sucesso!', 'success');
+                if (plano_id) await atualizarCapitulosTopicos(plano_id);
+            } else {
+                mostrarNotificacao(data.error || 'Erro ao excluir capítulo', 'danger');
+            }
+        };
+    }
 
     // --- Exclusão AJAX dinâmica de Tópico ---
-    document.getElementById('formExcluirTopico').onsubmit = async function(e) {
-        e.preventDefault();
-        const form = this;
-        const formData = new FormData(form);
-        const topico_id = formData.get('id_topico');
-        // Buscar plano_id via capitulo_id do tópico
-        let plano_id = null;
-        if (topico_id) {
-            const respPlano = await fetch('../controllers/get_plano_id_by_topico.php?id=' + topico_id);
-            const d = await respPlano.json();
-            plano_id = d.plano_id;
-        }
-        const resp = await fetch(form.action, {
-            method: 'POST',
-            body: formData
-        });
-        const data = await resp.json();
-        if (data.success) {
-            fecharModalExcluirTopico();
-            mostrarNotificacao('Tópico excluído com sucesso!', 'success');
-            if (plano_id) await atualizarCapitulosTopicos(plano_id);
-        } else {
-            mostrarNotificacao(data.error || 'Erro ao excluir tópico', 'danger');
-        }
-    };
+    if (document.getElementById('formExcluirTopico')) {
+        document.getElementById('formExcluirTopico').onsubmit = async function(e) {
+            e.preventDefault();
+            const form = this;
+            const formData = new FormData(form);
+            const topico_id = formData.get('id_topico');
+            // Buscar plano_id via capitulo_id do tópico
+            let plano_id = null;
+            if (topico_id) {
+                const respPlano = await fetch('../controllers/get_plano_id_by_topico.php?id=' + topico_id);
+                const d = await respPlano.json();
+                plano_id = d.plano_id;
+            }
+            const resp = await fetch(form.action, {
+                method: 'POST',
+                body: formData
+            });
+            const data = await resp.json();
+            if (data.success) {
+                fecharModalExcluirTopico();
+                mostrarNotificacao('Tópico excluído com sucesso!', 'success');
+                if (plano_id) await atualizarCapitulosTopicos(plano_id);
+            } else {
+                mostrarNotificacao(data.error || 'Erro ao excluir tópico', 'danger');
+            }
+        };
+    }
 
     // --- Toggle AJAX dinâmico de Capítulo ---
-    document.getElementById('formToggleCapitulo').onsubmit = async function(e) {
-        e.preventDefault();
-        const form = this;
-        const formData = new FormData(form);
-        const capitulo_id = formData.get('id_capitulo');
-        // Buscar plano_id do capítulo via AJAX rápido
-        let plano_id = null;
-        if (capitulo_id) {
-            const respPlano = await fetch('../controllers/get_plano_id_by_capitulo.php?id=' + capitulo_id);
-            const d = await respPlano.json();
-            plano_id = d.plano_id;
-        }
-        const resp = await fetch(form.action, {
-            method: 'POST',
-            body: formData
-        });
-        const data = await resp.json();
-        if (data.success) {
-            fecharModalToggleCapitulo();
-            mostrarNotificacao('Status do capítulo alterado com sucesso!', 'success');
-            if (plano_id) await atualizarCapitulosTopicos(plano_id);
-        } else {
-            mostrarNotificacao(data.error || 'Erro ao alterar status do capítulo', 'danger');
-        }
-    };
+    if (document.getElementById('formToggleCapitulo')) {
+        document.getElementById('formToggleCapitulo').onsubmit = async function(e) {
+            e.preventDefault();
+            const form = this;
+            const formData = new FormData(form);
+            const capitulo_id = formData.get('id_capitulo');
+            // Buscar plano_id do capítulo via AJAX rápido
+            let plano_id = null;
+            if (capitulo_id) {
+                const respPlano = await fetch('../controllers/get_plano_id_by_capitulo.php?id=' + capitulo_id);
+                const d = await respPlano.json();
+                plano_id = d.plano_id;
+            }
+            const resp = await fetch(form.action, {
+                method: 'POST',
+                body: formData
+            });
+            const data = await resp.json();
+            if (data.success) {
+                fecharModalToggleCapitulo();
+                mostrarNotificacao('Status do capítulo alterado com sucesso!', 'success');
+                if (plano_id) await atualizarCapitulosTopicos(plano_id);
+            } else {
+                mostrarNotificacao(data.error || 'Erro ao alterar status do capítulo', 'danger');
+            }
+        };
+    }
 
     // --- Toggle AJAX dinâmico de Tópico ---
-    document.getElementById('formToggleTopico').onsubmit = async function(e) {
-        e.preventDefault();
-        const form = this;
-        const formData = new FormData(form);
-        const topico_id = formData.get('id_topico');
-        // Buscar plano_id via capitulo_id do tópico
-        let plano_id = null;
-        if (topico_id) {
-            const respPlano = await fetch('../controllers/get_plano_id_by_topico.php?id=' + topico_id);
-            const d = await respPlano.json();
-            plano_id = d.plano_id;
-        }
-        const resp = await fetch(form.action, {
-            method: 'POST',
-            body: formData
-        });
-        const data = await resp.json();
-        if (data.success) {
-            fecharModalToggleTopico();
-            mostrarNotificacao('Status do tópico alterado com sucesso!', 'success');
-            if (plano_id) await atualizarCapitulosTopicos(plano_id);
-        } else {
-            mostrarNotificacao(data.error || 'Erro ao alterar status do tópico', 'danger');
-        }
-    };
+    if (document.getElementById('formToggleTopico')) {
+        document.getElementById('formToggleTopico').onsubmit = async function(e) {
+            e.preventDefault();
+            const form = this;
+            const formData = new FormData(form);
+            const topico_id = formData.get('id_topico');
+            // Buscar plano_id via capitulo_id do tópico
+            let plano_id = null;
+            if (topico_id) {
+                const respPlano = await fetch('../controllers/get_plano_id_by_topico.php?id=' + topico_id);
+                const d = await respPlano.json();
+                plano_id = d.plano_id;
+            }
+            const resp = await fetch(form.action, {
+                method: 'POST',
+                body: formData
+            });
+            const data = await resp.json();
+            if (data.success) {
+                fecharModalToggleTopico();
+                mostrarNotificacao('Status do tópico alterado com sucesso!', 'success');
+                if (plano_id) await atualizarCapitulosTopicos(plano_id);
+            } else {
+                mostrarNotificacao(data.error || 'Erro ao alterar status do tópico', 'danger');
+            }
+        };
+    }
 
     // --- AJAX dinâmico para plano (criar/editar) ---
-    document.getElementById('formPlanoNovo').onsubmit = async function(e) {
-        e.preventDefault();
-        const form = this;
-        const formData = new FormData(form);
-        const url = form.action;
-        const resp = await fetch(url, {
-            method: 'POST',
-            body: formData
-        });
-        const data = await resp.json();
-        if (data.success) {
-            fecharModalPlanoNovo();
-            mostrarNotificacao('Plano salvo com sucesso!', 'success');
-            setTimeout(() => location.reload(), 1200);
-        } else {
-            mostrarNotificacao(data.error || 'Erro ao salvar plano', 'danger');
-        }
-    };
+    if (document.getElementById('formPlanoNovo')) {
+        document.getElementById('formPlanoNovo').onsubmit = async function(e) {
+            e.preventDefault();
+            const form = this;
+            const formData = new FormData(form);
+            const url = form.action;
+            const resp = await fetch(url, {
+                method: 'POST',
+                body: formData
+            });
+            const data = await resp.json();
+            if (data.success) {
+                fecharModalPlanoNovo();
+                mostrarNotificacao('Plano salvo com sucesso!', 'success');
+                setTimeout(() => location.reload(), 1200);
+            } else {
+                mostrarNotificacao(data.error || 'Erro ao salvar plano', 'danger');
+            }
+        };
+    }
+
+    // --- Exclusão AJAX dinâmica de Plano ---
+    if (document.getElementById('formExcluirPlano')) {
+        document.getElementById('formExcluirPlano').onsubmit = async function(e) {
+            e.preventDefault();
+            const form = this;
+            const formData = new FormData(form);
+            const url = form.action;
+            const redirect = form.querySelector('input[name="redirect"]').value;
+            const resp = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            });
+            const data = await resp.json();
+            if (data.success) {
+                fecharModalExcluirPlano();
+                mostrarNotificacao('Plano excluído com sucesso!', 'success');
+                setTimeout(() => {
+                    // Após excluir, recarrega a página SEMPRE para garantir que o card de "Nenhum plano" apareça corretamente
+                    if (redirect) {
+                        window.location.href = redirect;
+                    } else {
+                        location.reload();
+                    }
+                }, 1200);
+            } else {
+                mostrarNotificacao(data.error || 'Erro ao excluir plano', 'danger');
+            }
+        };
+    }
     </script>
     <?php include 'footer.php'; ?>
 </body>
