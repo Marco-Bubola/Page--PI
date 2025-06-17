@@ -11,7 +11,7 @@
                 style="position:absolute;top:14px;right:22px;font-size:28px;cursor:pointer;color:#fff;opacity:0.8;">&times;</span>
         </div>
         <div style="padding:30px 32px 18px 32px;">
-            <form id="formPlanoNovo" action="../controllers/criar_plano_ajax.php" method="POST">
+            <form id="formPlanoNovo" action="../controllers/criar_plano_ajax.php" method="POST" class="needs-validation" novalidate>
                 <input type="hidden" name="id_plano" id="id_plano_novo">
                 <?php if ($turma_id): ?>
                 <input type="hidden" name="turma_id" id="turma_id_plano_novo" value="<?= $turma_id ?>">
@@ -25,7 +25,10 @@
                 <div class="input-group mb-2">
                     <span class="input-group-text bg-white"><i class="bi bi-type-bold"></i></span>
                     <input type="text" name="titulo" id="titulo_plano_novo" placeholder="Título do plano" required
-                        class="form-control">
+                        class="form-control" minlength="3" maxlength="100">
+                    <div class="invalid-feedback">
+                        O título deve ter entre 3 e 100 caracteres.
+                    </div>
                 </div>
                 <input type="hidden" name="status" id="status_plano_novo" value="em_andamento">
                 <div class="row mb-2">
@@ -33,14 +36,20 @@
                         <label>Data início:</label>
                         <div class="input-group">
                             <span class="input-group-text bg-white"><i class="bi bi-calendar-event"></i></span>
-                            <input type="date" name="data_inicio" id="data_inicio_plano_novo" class="form-control">
+                            <input type="date" name="data_inicio" id="data_inicio_plano_novo" class="form-control" required>
+                            <div class="invalid-feedback">
+                                Por favor, selecione a data de início.
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <label>Data fim:</label>
                         <div class="input-group">
                             <span class="input-group-text bg-white"><i class="bi bi-calendar2-week"></i></span>
-                            <input type="date" name="data_fim" id="data_fim_plano_novo" class="form-control">
+                            <input type="date" name="data_fim" id="data_fim_plano_novo" class="form-control" required>
+                            <div class="invalid-feedback">
+                                Por favor, selecione a data de término.
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -57,3 +66,42 @@
         </div>
     </div>
 </div>
+
+<script>
+// Validação do formulário
+document.getElementById('formPlanoNovo').addEventListener('submit', function(event) {
+    if (!this.checkValidity()) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    
+    // Validação adicional para datas
+    const dataInicio = document.getElementById('data_inicio_plano_novo').value;
+    const dataFim = document.getElementById('data_fim_plano_novo').value;
+    
+    if (dataInicio && dataFim) {
+        const inicio = new Date(dataInicio);
+        const fim = new Date(dataFim);
+        
+        if (inicio > fim) {
+            event.preventDefault();
+            event.stopPropagation();
+            alert('A data de início não pode ser posterior à data de término.');
+            return;
+        }
+    }
+    
+    this.classList.add('was-validated');
+});
+
+// Validação em tempo real do título
+document.getElementById('titulo_plano_novo').addEventListener('input', function() {
+    if (this.value.length < 3) {
+        this.setCustomValidity('O título deve ter pelo menos 3 caracteres.');
+    } else if (this.value.length > 100) {
+        this.setCustomValidity('O título não pode ter mais de 100 caracteres.');
+    } else {
+        this.setCustomValidity('');
+    }
+});
+</script>
