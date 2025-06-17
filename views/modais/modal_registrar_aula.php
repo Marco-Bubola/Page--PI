@@ -48,6 +48,9 @@
                             <span id="nome_capitulo_modal" class="fw-bold" style="font-size:1.25em;color:#0d6efd;"></span>
                         </div>
                         <div id="topicos_aula_box" style="max-height:400px;overflow-y:auto;overflow-x:hidden;"></div>
+                        <div class="invalid-feedback text-center mt-2">
+                            Selecione pelo menos um tópico para a aula.
+                        </div>
                     </div>
 
                     <!-- Step 2: Data, comentário e tópicos personalizados -->
@@ -74,7 +77,10 @@
                                         </div>
                                         <textarea name="comentario" id="aula_comentario" class="form-control"
                                             placeholder="Observações sobre a aula"
-                                            style="resize:none;min-height:200px;max-width:100%;"></textarea>
+                                            style="resize:none;min-height:200px;max-width:100%;" maxlength="2000"></textarea>
+                                        <div class="invalid-feedback">
+                                            O comentário não pode ter mais de 2000 caracteres.
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -367,6 +373,74 @@ function abrirModalAula(disc_id, disc_nome) {
         btnNext.style.display = 'inline-block';
         btnSave.style.display = 'none';
     });
+}
+
+// Validação do formulário
+document.getElementById('formAula').addEventListener('submit', function(event) {
+    if (!this.checkValidity()) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    
+    // Validação adicional para tópicos selecionados
+    const topicosSelecionados = document.querySelectorAll('input[name="topicos[]"]:checked');
+    if (topicosSelecionados.length === 0) {
+        event.preventDefault();
+        event.stopPropagation();
+        document.querySelector('#modal-step-1 .invalid-feedback').style.display = 'block';
+        return;
+    } else {
+        document.querySelector('#modal-step-1 .invalid-feedback').style.display = 'none';
+    }
+    
+    this.classList.add('was-validated');
+});
+
+// Validação em tempo real do comentário
+document.getElementById('aula_comentario').addEventListener('input', function() {
+    if (this.value.length > 2000) {
+        this.setCustomValidity('O comentário não pode ter mais de 2000 caracteres.');
+    } else {
+        this.setCustomValidity('');
+    }
+});
+
+// Validação da data
+document.getElementById('aula_data').addEventListener('change', function() {
+    const dataSelecionada = new Date(this.value);
+    const hoje = new Date();
+    
+    if (dataSelecionada > hoje) {
+        this.setCustomValidity('A data da aula não pode ser futura.');
+    } else {
+        this.setCustomValidity('');
+    }
+});
+
+// Função para validar tópicos personalizados
+function validarTopicoPersonalizado(input) {
+    if (input.value.length < 3) {
+        input.setCustomValidity('O tópico deve ter pelo menos 3 caracteres.');
+    } else if (input.value.length > 100) {
+        input.setCustomValidity('O tópico não pode ter mais de 100 caracteres.');
+    } else {
+        input.setCustomValidity('');
+    }
+}
+
+// Modificar a função adicionarTopicoPersonalizado para incluir validação
+function adicionarTopicoPersonalizado() {
+    const box = document.getElementById('topicos_personalizados_box');
+    const div = document.createElement('div');
+    div.className = 'input-group mb-2';
+    div.innerHTML = `
+        <input type="text" class="form-control" placeholder="Novo tópico" required
+            minlength="3" maxlength="100" oninput="validarTopicoPersonalizado(this)">
+        <button type="button" class="btn btn-outline-danger" onclick="this.parentElement.remove()">
+            <i class="fa-solid fa-trash"></i>
+        </button>
+    `;
+    box.appendChild(div);
 }
 </script>
 <style>
