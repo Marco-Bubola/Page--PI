@@ -11,21 +11,27 @@
                 style="position:absolute;top:14px;right:22px;font-size:28px;cursor:pointer;color:#fff;opacity:0.8;">&times;</span>
         </div>
         <div style="padding:30px 32px 18px 32px;">
-            <form id="formCapituloNovo" action="../controllers/criar_capitulo_ajax.php" method="POST">
+            <form id="formCapituloNovo" action="../controllers/criar_capitulo_ajax.php" method="POST" class="needs-validation" novalidate>
                 <input type="hidden" name="plano_id" id="plano_id_capitulo_novo">
                 <input type="hidden" name="id_capitulo" id="id_capitulo_novo">
                 <input type="hidden" name="status" id="status_capitulo_novo" value="em_andamento">
                 <div class="input-group mb-2">
                     <span class="input-group-text bg-white"><i class="bi bi-type-bold"></i></span>
                     <input type="text" name="titulo" id="titulo_capitulo_novo" placeholder="Título do capítulo"
-                        required class="form-control">
+                        required class="form-control" minlength="3" maxlength="100">
+                    <div class="invalid-feedback">
+                        O título deve ter entre 3 e 100 caracteres.
+                    </div>
                 </div>
                 <div class="mb-2">
                     <label>Descrição do capítulo:</label>
                     <div class="input-group">
                         <span class="input-group-text bg-white"><i class="bi bi-card-text"></i></span>
                         <textarea name="descricao" id="descricao_capitulo_novo" placeholder="Descrição do capítulo"
-                            class="form-control" rows="2"></textarea>
+                            class="form-control" rows="2" maxlength="500"></textarea>
+                        <div class="invalid-feedback">
+                            A descrição não pode ter mais de 500 caracteres.
+                        </div>
                     </div>
                 </div>
             </form>
@@ -39,3 +45,34 @@
         </div>
     </div>
 </div>
+
+<script>
+// Validação do formulário
+document.getElementById('formCapituloNovo').addEventListener('submit', function(event) {
+    if (!this.checkValidity()) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    this.classList.add('was-validated');
+});
+
+// Validação em tempo real do título
+document.getElementById('titulo_capitulo_novo').addEventListener('input', function() {
+    if (this.value.length < 3) {
+        this.setCustomValidity('O título deve ter pelo menos 3 caracteres.');
+    } else if (this.value.length > 100) {
+        this.setCustomValidity('O título não pode ter mais de 100 caracteres.');
+    } else {
+        this.setCustomValidity('');
+    }
+});
+
+// Validação em tempo real da descrição
+document.getElementById('descricao_capitulo_novo').addEventListener('input', function() {
+    if (this.value.length > 500) {
+        this.setCustomValidity('A descrição não pode ter mais de 500 caracteres.');
+    } else {
+        this.setCustomValidity('');
+    }
+});
+</script>
