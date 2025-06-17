@@ -362,6 +362,28 @@ if ($result && $result->num_rows > 0) {
                             ' text-dark border border-' + (res.novo_status === 'ativa' ? 'success' : (res.novo_status === 'cancelada' ? 'secondary' : 'success')) + ' turma-status-badge';
                         badge.innerHTML = '<i class="bi bi-activity"></i> ' + res.novo_status;
                     }
+                    // Atualiza status dos planos no card
+                    if (res.planos_depois && Array.isArray(res.planos_depois)) {
+                        res.planos_depois.forEach(function(plano) {
+                            // Para cada plano, procure o badge correspondente no card e atualize
+                            const planoBadge = document.querySelector(`[data-plano-id="${plano.id}"]`);
+                            if (planoBadge) {
+                                let icon = '';
+                                let badge = '';
+                                if (plano.status === 'concluido') {
+                                    icon = '<i class="bi bi-check-circle-fill text-success" title="Concluído"></i>';
+                                    badge = '<span class="badge bg-success ms-1">Concluído</span>';
+                                } else if (plano.status === 'cancelado') {
+                                    icon = '<i class="bi bi-x-circle-fill text-danger" title="Cancelado"></i>';
+                                    badge = '<span class="badge bg-secondary text-dark ms-1">Cancelado</span>';
+                                } else {
+                                    icon = '<i class="bi bi-hourglass-split text-warning" title="Em andamento"></i>';
+                                    badge = '<span class="badge bg-warning text-dark ms-1">Em andamento</span>';
+                                }
+                                planoBadge.innerHTML = icon + ' ' + badge;
+                            }
+                        });
+                    }
                     // Atualiza ícone/botão e título
                     btn.className = 'btn p-0 m-0 border-0 bg-transparent turma-toggle-btn';
                     btn.style.fontSize = '2.1rem';
@@ -562,12 +584,16 @@ if ($result && $result->num_rows > 0) {
                                         $topCount = $resTop ? intval($resTop->fetch_assoc()['total']) : 0;
                                     }
                                     // Status visual
-                                    $icon = $plano_status === 'concluido'
-                                        ? '<i class="bi bi-check-circle-fill text-success" title="Concluído"></i>'
-                                        : '<i class="bi bi-hourglass-split text-warning" title="Em andamento"></i>';
-                                    $badge = $plano_status === 'concluido'
-                                        ? '<span class="badge bg-success ms-1">Concluído</span>'
-                                        : '<span class="badge bg-warning text-dark ms-1">Em andamento</span>';
+                                    if ($plano_status === 'concluido') {
+                                        $icon = '<i class="bi bi-check-circle-fill text-success" title="Concluído"></i>';
+                                        $badge = '<span class="badge bg-success ms-1">Concluído</span>';
+                                    } elseif ($plano_status === 'cancelado') {
+                                        $icon = '<i class="bi bi-x-circle-fill text-danger" title="Cancelado"></i>';
+                                        $badge = '<span class="badge bg-secondary text-dark ms-1">Cancelado</span>';
+                                    } else {
+                                        $icon = '<i class="bi bi-hourglass-split text-warning" title="Em andamento"></i>';
+                                        $badge = '<span class="badge bg-warning text-dark ms-1">Em andamento</span>';
+                                    }
                                     echo " <span class='ms-2'>$icon  $badge</span>";
                                     echo " <span class='ms-3'><i class='bi bi-journal-bookmark-fill text-primary'></i> <b>$capCount</b> capítulo(s)</span>";
                                     echo " <span class='ms-2'><i class='bi bi-list-task text-info'></i> <b>$topCount</b> tópico(s)</span>";
